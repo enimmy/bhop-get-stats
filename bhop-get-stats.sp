@@ -11,7 +11,7 @@ public Plugin myinfo =
 	author = "Nimmy",
 	description = "central plugin to call bhop stats",
 	version = "1.0",
-	url = "https://github.com/Nimmy2222/shavit-ssj"
+	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 
 #define BHOP_FRAMES 10
@@ -63,7 +63,7 @@ public void OnPluginStart()
 	g_fTickrate = GetTickInterval();
 	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
 	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
-
+	//yawing not done
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
 
@@ -89,6 +89,7 @@ public void OnClientPutInServer(int client)
 	g_iTicksOnGround[client] = 0;
 	g_iStrafeCount[client] = 0;
 	g_iOldSSJTarget[client] = 0;
+	g_iCmdNum[client] = 0;
 	SDKHook(client, SDKHook_Touch, OnTouch);
 }
 
@@ -146,13 +147,15 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	if(g_iTicksOnGround[client] == 0)
 	{
 		float velocity = GetClientVelocity(client);
-		float AngDiff;
-		AngDiff = NormalizeAngle(g_fLastAngles[client][YAW] - angles[YAW]);
+		float AngDiff = NormalizeAngle(g_fLastAngles[client][YAW] - angles[YAW]);
 		float PerfAngle = PerfStrafeAngle(velocity);
 		float Percentage = FloatAbs(AngDiff) / PerfAngle;
+		
+		//jss based on current tick input, run order influenced
 		g_fJumpJssAvg[client] += Percentage;
 		g_iJssEntryNum[client]++;
 
+		//calcs are wrong onpost if this isnt cached now
 		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
 		g_fRunCmdSpeed[client] = velocity;
 	}
@@ -162,31 +165,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3])
 {
-	int flags = GetEntityFlags(client);
 	float speed = g_fRunCmdSpeed[client];
-
-	if(flags & FL_ONGROUND != FL_ONGROUND) //maybe switch this to vel detection from offsets
-	{
-		if ((g_iButtonCache[client] & IN_FORWARD) != IN_FORWARD && (buttons & IN_FORWARD) == IN_FORWARD)
-		{
-			g_iStrafeCount[client]++;
-		}
-
-		if ((g_iButtonCache[client] & IN_MOVELEFT) != IN_MOVELEFT && (buttons & IN_MOVELEFT) == IN_MOVELEFT)
-		{
-			g_iStrafeCount[client]++;
-		}
-
-		if ((g_iButtonCache[client] & IN_BACK) != IN_BACK && (buttons & IN_BACK) == IN_BACK)
-		{
-			g_iStrafeCount[client]++;
-		}
-
-		if ((g_iButtonCache[client] & IN_MOVERIGHT) != IN_MOVERIGHT && (buttons & IN_MOVERIGHT) == IN_MOVERIGHT)
-		{
-			g_iStrafeCount[client]++;
-		}
-	}
 
 	if(g_fOldVelocity[client] > speed)
 	{
@@ -195,16 +174,19 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 
 	if(g_iTicksOnGround[client] == 0)
 	{
+		//offset shit
 		if(g_iCmdNum[client] >= 1) {
 			int ilvel, icvel;
 			ilvel = RoundToFloor(g_fLastVel[SIDEMOVE][client]) / 10;
 			icvel = RoundToFloor(vel[1]) / 10;
-			if(ilvel * icvel < 0 || (g_fLastVel[SIDEMOVE][client] == 0 && vel[1] != 0)) {
+			if(ilvel * icvel < 0 || (g_fLastVel[SIDEMOVE][client] == 0 && vel[1] != 0)) { //-40 * 40 = -1600 < 0
 				g_iKeyTick[client] = g_iCmdNum[client];
+				g_iStrafeCount[client]++;
 			}
 		}
 
-		g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[YAW][client]);
+		//need to use post yaw difference to properly display autostrafed syncs can maybe change this on request
+		g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
 		if(g_fYawDifference[client] > 0) {
 			if(g_iTurnDir[client] == RIGHT && g_iCmdNum[client] > 1)
 			{
@@ -227,6 +209,7 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 			g_bOverlap[client] = true;
 		}
 
+		//doesnt work with sideways for now, can do it i think
 		if( (g_iTurnTick[client] == g_iCmdNum[client] || g_iKeyTick[client] == g_iCmdNum[client]) && ((g_iTurnDir[client] == RIGHT && vel[1] > 0) || (g_iTurnDir[client] == LEFT && vel[1] < 0) ) ) {
 			StartStrafeForward(client);
 			g_bOverlap[client] = false;
@@ -306,9 +289,9 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	g_iButtonCache[client] = buttons;
 	g_fOldVelocity[client] = speed;
 
+	//run order RunCmd -> Jump Hook -> PostCmd | if you compare runcmd and postcmd gain calcs runcmd has 1 extra raw gain tick if you dont wait till here to finalize
 	if(g_bJumpedThisTick[client]) {
 		g_bJumpedThisTick[client] = false;
-		//send forward
 		StartJumpForward(client);
 		float velocity[3];
 		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", velocity);
@@ -327,8 +310,10 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	}
 
 	g_iCmdNum[client]++;
-	g_fLastAngles[YAW][client] = angles[1];
-	g_fLastVel[SIDEMOVE][client] = vel[1];
+	for(int i = 0; i < 3; i++) {
+		g_fLastAngles[client][i] = angles[i];
+		g_fLastVel[client][i] = vel[i];
+	}
 	return;
 }
 
@@ -339,7 +324,7 @@ void StartJumpForward(int target) {
 	velocity[2] = 0.0;
 	int speed = RoundToFloor(GetVectorLength(velocity));
 	
-	if(g_iJump[target] == 1)
+	if(g_iJump[target] == 1) //probs a better way to do this idk
 	{
 		Call_StartForward(JumpStatsForward);
 		Call_PushCell(target);
