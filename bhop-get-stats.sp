@@ -37,7 +37,7 @@ int g_iTurnTick[MAXPLAYERS + 1];
 int g_iKeyTick[MAXPLAYERS + 1];
 int g_iTurnDir[MAXPLAYERS + 1];
 int g_iCmdNum[MAXPLAYERS + 1];
-int g_iJssEntryNum[MAXPLAYERS + 1];
+int g_iAvgTicksNum[MAXPLAYERS + 1];
 
 float g_fOldHeight[MAXPLAYERS + 1];
 float g_fOldSpeed[MAXPLAYERS + 1];
@@ -49,9 +49,11 @@ float g_fOldVelocity[MAXPLAYERS + 1];
 float g_fRunCmdVelVec[MAXPLAYERS + 1][3];
 float g_fRunCmdSpeed[MAXPLAYERS + 1];
 float g_fLastAngles[MAXPLAYERS + 1][3];
-float g_fJumpJssAvg[MAXPLAYERS + 1];
+float g_fAvgDiffFromPerf[MAXPLAYERS + 1];
 float g_fYawDifference[MAXPLAYERS + 1];
 float g_fLastVel[MAXPLAYERS + 1][3];
+float g_fTotalNormalDelta[MAXPLAYERS + 1];
+float g_fTotalPerfectDelta[MAXPLAYERS + 1];
 float g_fTickrate = 0.01;
 
 GlobalForward JumpStatsForward;
@@ -130,6 +132,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			g_fSpeedLoss[client] = 0.0;
 			g_fTraveledDistance[client] = NULL_VECTOR;
 			g_iCmdNum[client] = 0;
+			g_fTotalNormalDelta[client] = 0.0;
+			g_fTotalPerfectDelta[client] = 0.0;
 		}
 
 		if ((buttons & IN_JUMP) > 0 && g_iTicksOnGround[client] == 1)
@@ -146,17 +150,22 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	if(g_iTicksOnGround[client] == 0)
 	{
-		float velocity = GetClientVelocity(client);
-		float AngDiff = NormalizeAngle(g_fLastAngles[client][YAW] - angles[YAW]);
-		float PerfAngle = PerfStrafeAngle(velocity);
-		float Percentage = FloatAbs(AngDiff) / PerfAngle;
-		
-		//jss based on current tick input, run order influenced
-		g_fJumpJssAvg[client] += Percentage;
-		g_iJssEntryNum[client]++;
-
-		//calcs are wrong onpost if this isnt cached now
 		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
+		float lowvel[3];
+		lowvel[0] = g_fRunCmdVelVec[client][0];
+		lowvel[1] = g_fRunCmdVelVec[client][1];
+		float velocity = GetVectorLength(lowvel);
+		float AngDiff = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
+		float PerfAngle = RadToDeg(ArcTangent(30 / velocity));
+		float Percentage = FloatAbs(AngDiff) / PerfAngle;
+
+		//jss based on current tick input, run order influenced
+		g_fAvgDiffFromPerf[client] += Percentage;
+		g_iAvgTicksNum[client]++;
+		if(!(flags & FL_ONGROUND)) {
+			g_fTotalNormalDelta[client] += FloatAbs(AngDiff);
+			g_fTotalPerfectDelta[client] += FloatAbs( RadToDeg( ArcSine( 30 / GetVectorLength(g_fRunCmdVelVec[client] ) ) ) ); //lower than trainer perf ang calc
+		}
 		g_fRunCmdSpeed[client] = velocity;
 	}
 	return Plugin_Continue;
@@ -307,6 +316,10 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 		g_fOldSpeed[client] = GetVectorLength(velocity);
 		g_fTrajectory[client] = 0.0;
 		g_fTraveledDistance[client] = NULL_VECTOR;
+		g_fAvgDiffFromPerf[client] = 0.0;
+		g_iAvgTicksNum[client] = 0;
+		g_fTotalNormalDelta[client] = 0.0;
+		g_fTotalPerfectDelta[client] = 0.0;
 	}
 
 	g_iCmdNum[client]++;
@@ -375,9 +388,12 @@ void StartJumpForward(int target) {
 		Call_PushFloat(100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		Call_PushFloat(efficiency);
 		Call_PushFloat(-1.0);
-		Call_PushFloat(g_fJumpJssAvg[target] / g_iJssEntryNum[target]);
+		float jss = g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target];
+		PrintToChat(target, "stat norm %f perf %f", g_fTotalNormalDelta[target], g_fTotalPerfectDelta[target]);
+		Call_PushFloat(jss);
+		//Call_PushFloat(g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target]);
 		Call_Finish();
-		PrintToChat(target, "jump %i sp %i s# %i hd %f gn %f sc %f ef %f jss %f", g_iJump[target], speed, g_iStrafeCount[target], origin[2] - g_fOldHeight[target], coeffsum, (100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]), efficiency, g_fJumpJssAvg[target] / g_iJssEntryNum[target]);
+		PrintToChat(target, "jump %i sp %i s# %i hd %.2f gn %.2f sc %.2f ef %.2f jss %.2f", g_iJump[target], speed, g_iStrafeCount[target], origin[2] - g_fOldHeight[target], coeffsum, (100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]), efficiency, jss);
 	}
 }
 
@@ -390,19 +406,6 @@ void StartStrafeForward(int client) {
 	Call_PushCell(view_as<int>(g_bNoPress[client]));
 	Call_Finish();
 	PrintToChat(client, "of %i ov %i np %i", (g_iKeyTick[client] - g_iTurnTick[client]), g_bOverlap[client], g_bNoPress[client]);
-}
-
-float GetClientVelocity(int client)
-{
-	float vVel[3];
-	vVel[0] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[0]");
-	vVel[1] = GetEntPropFloat(client, Prop_Send, "m_vecVelocity[1]");
-	return GetVectorLength(vVel);
-}
-
-float PerfStrafeAngle(float speed)
-{
-	return RadToDeg(ArcTangent(30 / speed));
 }
 
 float NormalizeAngle(float angle)
