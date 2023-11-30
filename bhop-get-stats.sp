@@ -30,8 +30,6 @@ int g_iTouchTicks[MAXPLAYERS + 1];
 int g_iStrafeTick[MAXPLAYERS + 1];
 int g_iSyncedTick[MAXPLAYERS + 1];
 int g_iJump[MAXPLAYERS + 1];
-int g_iOldSSJTarget[MAXPLAYERS + 1];
-int g_iButtonCache[MAXPLAYERS + 1];
 int g_iStrafeCount[MAXPLAYERS + 1];
 int g_iTurnTick[MAXPLAYERS + 1];
 int g_iKeyTick[MAXPLAYERS + 1];
@@ -40,20 +38,18 @@ int g_iCmdNum[MAXPLAYERS + 1];
 int g_iAvgTicksNum[MAXPLAYERS + 1];
 
 float g_fOldHeight[MAXPLAYERS + 1];
-float g_fOldSpeed[MAXPLAYERS + 1];
 float g_fRawGain[MAXPLAYERS + 1];
 float g_fTrajectory[MAXPLAYERS + 1];
 float g_fTraveledDistance[MAXPLAYERS + 1][3];
-float g_fSpeedLoss[MAXPLAYERS + 1];
-float g_fOldVelocity[MAXPLAYERS + 1];
 float g_fRunCmdVelVec[MAXPLAYERS + 1][3];
-float g_fRunCmdSpeed[MAXPLAYERS + 1];
+float g_fLastRunCmdVelVec[MAXPLAYERS + 1][3]; //redo speedloss later
 float g_fLastAngles[MAXPLAYERS + 1][3];
 float g_fAvgDiffFromPerf[MAXPLAYERS + 1];
 float g_fYawDifference[MAXPLAYERS + 1];
 float g_fLastVel[MAXPLAYERS + 1][3];
-float g_fTotalNormalDelta[MAXPLAYERS + 1];
-float g_fTotalPerfectDelta[MAXPLAYERS + 1];
+float g_fLastJumpPosition[MAXPLAYERS + 1][3];
+float g_fLastVeer[MAXPLAYERS + 1];
+float g_fTickJss[MAXPLAYERS + 1];
 float g_fTickrate = 0.01;
 
 GlobalForward JumpStatsForward;
@@ -66,8 +62,10 @@ public void OnPluginStart()
 	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
 	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
 	//yawing not done
+	//add airpath, veer, jumpoff angle on j1
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
+	CreateNative("BhopStat_GetJss", Native_GetJss);
 
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -85,12 +83,10 @@ public void OnClientPutInServer(int client)
 	g_iSyncedTick[client] = 0;
 	g_fRawGain[client] = 0.0;
 	g_fOldHeight[client] = 0.0;
-	g_fOldSpeed[client] = 0.0;
 	g_fTrajectory[client] = 0.0;
 	g_fTraveledDistance[client] = NULL_VECTOR;
 	g_iTicksOnGround[client] = 0;
 	g_iStrafeCount[client] = 0;
-	g_iOldSSJTarget[client] = 0;
 	g_iCmdNum[client] = 0;
 	SDKHook(client, SDKHook_Touch, OnTouch);
 }
@@ -129,16 +125,19 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			g_fRawGain[client] = 0.0;
 			g_fTrajectory[client] = 0.0;
 			g_iStrafeCount[client] = 0;
-			g_fSpeedLoss[client] = 0.0;
 			g_fTraveledDistance[client] = NULL_VECTOR;
 			g_iCmdNum[client] = 0;
-			g_fTotalNormalDelta[client] = 0.0;
-			g_fTotalPerfectDelta[client] = 0.0;
 		}
 
 		if ((buttons & IN_JUMP) > 0 && g_iTicksOnGround[client] == 1)
 		{
 			g_iTicksOnGround[client] = 0;
+			float currpos[3];
+			GetClientAbsOrigin(client, currpos); //player landed, mustve jumped right?, calc veer
+			float xAxisVeer = FloatAbs(currpos[0] - g_fLastJumpPosition[client][0]);
+			float yAxisVeer = FloatAbs(currpos[1] - g_fLastJumpPosition[client][1]);
+			g_fLastVeer[client] = xAxisVeer >= yAxisVeer ? yAxisVeer:xAxisVeer; //something about this wrong, kinda close to distbug but not fully
+			//PrintToChat(client, "veer %f", g_fLastVeer[client]);
 		}
 	} else {
 		g_iTicksOnGround[client] = 0;
@@ -150,23 +149,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	if(g_iTicksOnGround[client] == 0)
 	{
+		g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
 		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
-		float lowvel[3];
-		lowvel[0] = g_fRunCmdVelVec[client][0];
-		lowvel[1] = g_fRunCmdVelVec[client][1];
-		float velocity = GetVectorLength(lowvel);
-		float AngDiff = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
-		float PerfAngle = RadToDeg(ArcTangent(30 / velocity));
-		float Percentage = FloatAbs(AngDiff) / PerfAngle;
-
-		//jss based on current tick input, run order influenced
-		g_fAvgDiffFromPerf[client] += Percentage;
-		g_iAvgTicksNum[client]++;
-		if(!(flags & FL_ONGROUND)) {
-			g_fTotalNormalDelta[client] += FloatAbs(AngDiff);
-			g_fTotalPerfectDelta[client] += FloatAbs( RadToDeg( ArcSine( 30 / GetVectorLength(g_fRunCmdVelVec[client] ) ) ) ); //lower than trainer perf ang calc
-		}
-		g_fRunCmdSpeed[client] = velocity;
 	}
 	return Plugin_Continue;
 }
@@ -174,21 +158,42 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3])
 {
-	float speed = g_fRunCmdSpeed[client];
-
-	if(g_fOldVelocity[client] > speed)
-	{
-		g_fSpeedLoss[client] += (FloatAbs(speed - g_fOldVelocity[client]));
-	}
 
 	if(g_iTicksOnGround[client] == 0)
 	{
+
+		if(!(GetEntityFlags(client) & FL_ONGROUND)) {
+			float vel_yaw = ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]) * 180.0 / FLOAT_PI;
+			float delta_opt = -NormalizeAngle(angles[1] - vel_yaw);
+
+			if (GetRunCmdVelocity(client, true) == 0.0)
+				delta_opt = 90.0;
+
+			if (vel[0] != 0.0 && vel[1] == 0.0)
+			{
+				float sign = vel[0] > 0.0 ? -1.0 : 1.0;
+				delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (90.0 * sign)));
+			}
+			if (vel[0] != 0.0 && vel[1] != 0.0)
+			{
+				float sign = vel[1] > 0.0 ? -1.0 : 1.0;
+				if (vel[0] < 0.0)
+					sign = -sign;
+				delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (45.0 * sign)));
+			}
+			float perfyaw = NormalizeAngle(angles[1] + delta_opt);
+			float newangdiff = FloatAbs(NormalizeAngle(perfyaw - g_fLastAngles[client][1]));
+			float AngDiff = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
+			g_fAvgDiffFromPerf[client] += (FloatAbs(AngDiff) / newangdiff);
+			g_fTickJss[client] = (FloatAbs(AngDiff) / newangdiff);
+			g_iAvgTicksNum[client]++;
+		}
 		//offset shit
 		if(g_iCmdNum[client] >= 1) {
 			int ilvel, icvel;
-			ilvel = RoundToFloor(g_fLastVel[SIDEMOVE][client]) / 10;
+			ilvel = RoundToFloor(g_fLastVel[client][SIDEMOVE]) / 10;
 			icvel = RoundToFloor(vel[1]) / 10;
-			if(ilvel * icvel < 0 || (g_fLastVel[SIDEMOVE][client] == 0 && vel[1] != 0)) { //-40 * 40 = -1600 < 0
+			if(ilvel * icvel < 0 || (g_fLastVel[client][SIDEMOVE] == 0 && vel[1] != 0)) { //-40 * 40 = -1600 < 0
 				g_iKeyTick[client] = g_iCmdNum[client];
 				g_iStrafeCount[client]++;
 			}
@@ -295,31 +300,22 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 		g_iTouchTicks[client] = 0;
 	}
 
-	g_iButtonCache[client] = buttons;
-	g_fOldVelocity[client] = speed;
-
 	//run order RunCmd -> Jump Hook -> PostCmd | if you compare runcmd and postcmd gain calcs runcmd has 1 extra raw gain tick if you dont wait till here to finalize
 	if(g_bJumpedThisTick[client]) {
+		GetClientAbsOrigin(client, g_fLastJumpPosition[client]);
 		g_bJumpedThisTick[client] = false;
 		StartJumpForward(client);
-		float velocity[3];
-		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", velocity);
-		velocity[2] = 0.0;
 		float origin[3];
 		GetClientAbsOrigin(client, origin);
 		g_fRawGain[client] = 0.0;
 		g_iStrafeTick[client] = 0;
 		g_iSyncedTick[client] = 0;
 		g_iStrafeCount[client] = 0;
-		g_fSpeedLoss[client] = 0.0;
 		g_fOldHeight[client] = origin[2];
-		g_fOldSpeed[client] = GetVectorLength(velocity);
 		g_fTrajectory[client] = 0.0;
 		g_fTraveledDistance[client] = NULL_VECTOR;
 		g_fAvgDiffFromPerf[client] = 0.0;
 		g_iAvgTicksNum[client] = 0;
-		g_fTotalNormalDelta[client] = 0.0;
-		g_fTotalPerfectDelta[client] = 0.0;
 	}
 
 	g_iCmdNum[client]++;
@@ -344,13 +340,14 @@ void StartJumpForward(int target) {
 		Call_PushCell(g_iJump[target]);
 		Call_PushCell(speed);
 		Call_PushCell(-1);
-		Call_PushCell(-1);
+		Call_PushFloat(-1.0);
+		Call_PushFloat(-1.0);
 		Call_PushFloat(-1.0);
 		Call_PushFloat(-1.0);
 		Call_PushFloat(-1.0);
 		Call_PushFloat(-1.0);
 		Call_Finish();
-		PrintToChat(target, "jump %i sp %i", g_iJump[target], speed);
+		//PrintToChat(target, "jump %i sp %i", g_iJump[target], speed);
 	}
 	else
 	{
@@ -388,12 +385,9 @@ void StartJumpForward(int target) {
 		Call_PushFloat(100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		Call_PushFloat(efficiency);
 		Call_PushFloat(-1.0);
-		float jss = g_fTotalNormalDelta[target] / g_fTotalPerfectDelta[target];
-		PrintToChat(target, "stat norm %f perf %f", g_fTotalNormalDelta[target], g_fTotalPerfectDelta[target]);
-		Call_PushFloat(jss);
-		//Call_PushFloat(g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target]);
+		Call_PushFloat(g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target]);
 		Call_Finish();
-		PrintToChat(target, "jump %i sp %i s# %i hd %.2f gn %.2f sc %.2f ef %.2f jss %.2f", g_iJump[target], speed, g_iStrafeCount[target], origin[2] - g_fOldHeight[target], coeffsum, (100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]), efficiency, jss);
+		//PrintToChat(target, "jump %i sp %i s# %i hd %.2f gn %.2f sc %.2f ef %.2f jss %.2f", g_iJump[target], speed, g_iStrafeCount[target], origin[2] - g_fOldHeight[target], coeffsum, (100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]), efficiency, g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target]);
 	}
 }
 
@@ -405,13 +399,29 @@ void StartStrafeForward(int client) {
 	Call_PushCell(view_as<int>(g_bOverlap[client]));
 	Call_PushCell(view_as<int>(g_bNoPress[client]));
 	Call_Finish();
-	PrintToChat(client, "of %i ov %i np %i", (g_iKeyTick[client] - g_iTurnTick[client]), g_bOverlap[client], g_bNoPress[client]);
+	//PrintToChat(client, "of %i ov %i np %i", (g_iKeyTick[client] - g_iTurnTick[client]), g_bOverlap[client], g_bNoPress[client]);
 }
 
-float NormalizeAngle(float angle)
+public int Native_GetJss(Handle handler, int numParams)
 {
-	float newAngle = angle;
-	while (newAngle <= -180.0) newAngle += 360.0;
-	while (newAngle > 180.0) newAngle -= 360.0;
-	return newAngle;
+	return view_as<int>(g_fTickJss[GetNativeCell(1)]);
+}
+
+float NormalizeAngle(float ang)
+{
+	while (ang > 180.0) ang -= 360.0;
+	while (ang < -180.0) ang += 360.0; 
+	return ang;
+}
+
+float GetRunCmdVelocity(int client, bool twodimensions) {
+	float vel[3];
+	for(int i = 0; i < 3; i ++) {
+		vel[i] = g_fRunCmdVelVec[client][i];
+	}
+	if(twodimensions) {
+		vel[2] = 0.0;
+		return GetVectorLength(vel);
+	}
+	return GetVectorLength(vel);
 }
