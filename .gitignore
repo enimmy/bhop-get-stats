@@ -1,2 +1,3 @@
 
 *.inc
+!include/bhop-get-stats.inc
