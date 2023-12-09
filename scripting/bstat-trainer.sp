@@ -170,7 +170,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 
 	bool update, full;
 	g_fPercents[client] += (BhopStat_GetJss(client));
-	float AveragePercentage = g_fPercents[client] / ((g_iCmdNum[client]-1));
+	float AveragePercentage = g_fPercents[client] / g_iCmdNum[client];
 	if (g_iCmdNum[client] % NUMBER_TICK_INTERVAL == 0)
 	{
 		g_fLastAverage[client] = AveragePercentage;
