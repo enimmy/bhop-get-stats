@@ -7,7 +7,10 @@ In response, I've fixed the main plugins it broke, I can fix others if found as 
 
 Dependencies:
 All plugins depend on bhop-get-stats
+
 Trainer/Jhud dynamic channels
+
+https://github.com/Vauff/DynamicChannels
 
 Changelog:
 
