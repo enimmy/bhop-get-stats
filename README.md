@@ -30,6 +30,7 @@ JHUD:
 
 TRAINER:
 - Mostly the same, just using the more accurate JSS calculation
+- changed some of the color logic (the plugin REALLY DISLIKES you going over 100%, if its too much lmk please)
 - The HUD is displayed in a new way which should look a bit smoother (and not break as many other huds)
 - The update rate on the actual bar slider is now divorced from the number, they are both still accurate, but players who like using the bar now get updates more often while number users can still use their number without it being too fastj
 - Plugin should display the specced players trainer stats to the spectator, if enabled
