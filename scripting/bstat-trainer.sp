@@ -188,7 +188,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 			{
 				continue;
 			}
-			if(i == client || (GetHUDTarget(i) == client && IsPlayerAlive(i))) {
+			if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
 				WriteTrainer(i, AveragePercentage, full);
 			}
 		}
