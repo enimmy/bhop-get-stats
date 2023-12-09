@@ -9,7 +9,7 @@ public Plugin myinfo =
 {
 	name = "bhop get stats",
 	//I put peoples names on here who I got code from or help, if you don't want to be listed on here contact me. Just trying to show appreciation
-	author = "Nimmy / Alkatraz, Nairda (ssj code) / Oblivious , Xutax(perf angle calc) / xWidoW (help with colors)",
+	author = "Nimmy / Alkatraz, Nairda (ssj code) / Oblivious , Xutax(perf angle calc)",
 	description = "central plugin to call bhop stats",
 	version = "1.0",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
