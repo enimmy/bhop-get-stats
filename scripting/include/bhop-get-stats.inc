@@ -3,6 +3,24 @@
 #endif
 #define _bhopgetstats_included
 
+public SharedPlugin __pl_bhopgetstats = 
+{
+    name = "bhop-get-stats",
+    file = "bhop-get-stats.smx",
+#if defined REQUIRE_PLUGIN
+    required = 1,
+#else
+    required = 0,
+#endif
+};
+
+#if !defined REQUIRE_PLUGIN
+public void __pl_myfile_SetNTVOptional()
+{
+    MarkNativeAsOptional("BhopStat_GetJss");
+}
+#endif
+
 /**
  * Called after jump event and strafe statistics have been calculated.
  *
