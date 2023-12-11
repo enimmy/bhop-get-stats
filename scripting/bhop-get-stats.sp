@@ -66,7 +66,6 @@ public void OnPluginStart()
 	//add airpath, veer, jumpoff angle on j1
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
-	CreateNative("BhopStat_GetJss", Native_GetJss);
 
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -75,6 +74,13 @@ public void OnPluginStart()
 			OnClientPutInServer(i);
 		}
 	}
+}
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	CreateNative("BhopStat_GetJss", Native_GetJss);
+	RegPluginLibrary("bhop-get-stats");
+	return APLRes_Success;
 }
 
 public void OnClientPutInServer(int client)
