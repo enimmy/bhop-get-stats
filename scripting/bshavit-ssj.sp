@@ -46,7 +46,7 @@ bool g_bStrafeCount[MAXPLAYERS + 1];
 
 int g_iUsageMode[MAXPLAYERS + 1];
 
-char g_sGainColors[4][12];
+char g_sGainColors[5][12];
 
 float g_fLastJumpTime[MAXPLAYERS + 1];
 
@@ -66,10 +66,11 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-	g_sGainColors[0] = "\x07f51302"; //(gain / 10 ) - 5 -> bound check 0 <= x <= 3
+	g_sGainColors[0] = "\x07f51302"; //(gain / 10 ) - 5 -> bound check 0 <= x <= 4
 	g_sGainColors[1] ="\x07fae71b";
 	g_sGainColors[2] ="\x0707fa14";
 	g_sGainColors[3] ="\x0707c9fa";
+	g_sGainColors[4] ="\x07ffffff";
 
 	RegConsoleCmd("sm_ssj", Command_SSJ, "Open the Speed @ Sixth Jump menu.");
 
@@ -409,9 +410,9 @@ void PrepareMessage(int client, int target, int jump, int speed, int strafecount
 		{
 			if(g_bGainColors[client]) {
 				int idx = ColorBoundsCheck(RoundToFloor((gain / 10) - 5));
-				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.2f%%", sMessage, gS_ChatStrings.sText, g_sGainColors[idx], gain);
+				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, gS_ChatStrings.sText, g_sGainColors[idx], gain);
 			} else {
-				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.2f%%", sMessage, gS_ChatStrings.sText, gS_ChatStrings.sVariable, gain);
+				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, gS_ChatStrings.sText, gS_ChatStrings.sVariable, gain);
 			}
 		}
 
@@ -477,8 +478,8 @@ int ColorBoundsCheck(int idx) {
 	if(idx < 0) {
 		idx = 0;
 	}
-	if(idx > 3) {
-		idx = 3;
+	if(idx > 4) {
+		idx = 4;
 	}
 	return idx;
 }
