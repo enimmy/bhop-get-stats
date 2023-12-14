@@ -26,7 +26,7 @@ public Plugin myinfo =
 	name = "Bhop Strafe Trainer",
 	author = "Nimmy / PaxPlay",
 	description = "Bhop Strafe Trainer",
-	version = "1.0",
+	version = "1.1",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 };
 
@@ -112,27 +112,27 @@ void GetPercentageColor(float percentage, int &r, int &g, int &b)
 		r = 228;
 		g = 23;
 		b = 2;
-	} else if(percentage >= 0.95) {
+	} else if(percentage >= 0.9) {
 		// White
 		r = 255;
 		g = 255;
 		b = 255;
-	}else if(percentage >= 0.9) {
+	}else if(percentage >= 0.8) {
 		// Lightblue
 		r = 0;
 		g = 255;
 		b = 255;
-	} else if(percentage >= 0.85) {
+	} else if(percentage >= 0.75) {
 		// Light Green
 		r = 101;
 		g = 255;
 		b = 77;
-	} else if(percentage >= 0.8) {
+	} else if(percentage >= 0.65) {
 		// Dark Green
 		r = 27;
 		g = 210;
 		b = 0;
-	} else if(percentage >= 0.7) {
+	} else if(percentage >= 0.6) {
 		// Yellow
 		r = 255;
 		g = 255;
