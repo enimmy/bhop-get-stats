@@ -66,7 +66,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-	g_sGainColors[0] = "\x07f51302"; //(gain / 10 ) - 5 -> bound check 0 <= x <= 4
+	g_sGainColors[0] = "\x07f51302";
 	g_sGainColors[1] ="\x07fae71b";
 	g_sGainColors[2] ="\x0707fa14";
 	g_sGainColors[3] ="\x0707c9fa";
@@ -140,20 +140,20 @@ public void OnClientCookiesCached(int client)
 
 	if(StringToInt(sCookie) == 0)
 	{
-		SetCookie(client, g_hCookieEnabled, true);
-		SetCookie(client, g_hCookieUsageMode, 6);
-		SetCookie(client, g_hCookieUsageRepeat, false);
-		SetCookie(client, g_hCookieCurrentSpeed, true);
-		SetCookie(client, g_hCookieFirstJump, true);
-		SetCookie(client, g_hCookieHeightDiff, false);
-		SetCookie(client, g_hCookieGainStats, true);
-		SetCookie(client, g_hCookieGainColors, true);
-		SetCookie(client, g_hCookieEfficiency, false);
-		SetCookie(client, g_hCookieTime, false);
-		SetCookie(client, g_hCookieDeltaTime, false);
-		SetCookie(client, g_hCookieStrafeCount, false);
-		SetCookie(client, g_hCookieStrafeSync, false);
-		SetCookie(client, g_hCookieDefaultsSet, true);
+		Bstat_SetCookie(client, g_hCookieEnabled, true);
+		Bstat_SetCookie(client, g_hCookieUsageMode, 6);
+		Bstat_SetCookie(client, g_hCookieUsageRepeat, false);
+		Bstat_SetCookie(client, g_hCookieCurrentSpeed, true);
+		Bstat_SetCookie(client, g_hCookieFirstJump, true);
+		Bstat_SetCookie(client, g_hCookieHeightDiff, false);
+		Bstat_SetCookie(client, g_hCookieGainStats, true);
+		Bstat_SetCookie(client, g_hCookieGainColors, true);
+		Bstat_SetCookie(client, g_hCookieEfficiency, false);
+		Bstat_SetCookie(client, g_hCookieTime, false);
+		Bstat_SetCookie(client, g_hCookieDeltaTime, false);
+		Bstat_SetCookie(client, g_hCookieStrafeCount, false);
+		Bstat_SetCookie(client, g_hCookieStrafeSync, false);
+		Bstat_SetCookie(client, g_hCookieDefaultsSet, true);
 	}
 
 	GetClientCookie(client, g_hCookieEnabled, sCookie, 8);
@@ -194,28 +194,6 @@ public void OnClientCookiesCached(int client)
 
 	GetClientCookie(client, g_hCookieStrafeSync, sCookie, 8);
 	g_bStrafeSync[client] = view_as<bool>(StringToInt(sCookie));
-}
-
-int GetHUDTarget(int client)
-{
-	int target = client;
-
-	if(IsValidClient(client))
-	{
-		int iObserverMode = GetEntProp(client, Prop_Send, "m_iObserverMode");
-
-		if(iObserverMode >= 3 && iObserverMode <= 5)
-		{
-			int iTarget = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
-
-			if(IsValidClient(iTarget))
-			{
-				target = iTarget;
-			}
-		}
-	}
-
-	return target;
 }
 
 public Action Command_SSJ(int client, int args)
@@ -268,79 +246,79 @@ public int SSJ_MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			case 0:
 			{
 				g_bEnabled[param1] = !g_bEnabled[param1];
-				SetCookie(param1, g_hCookieEnabled, g_bEnabled[param1]);
+				Bstat_SetCookie(param1, g_hCookieEnabled, g_bEnabled[param1]);
 			}
 
 			case 1:
 			{
 				g_iUsageMode[param1] = (g_iUsageMode[param1] % 9) + 1;
-				SetCookie(param1, g_hCookieUsageMode, g_iUsageMode[param1]);
+				Bstat_SetCookie(param1, g_hCookieUsageMode, g_iUsageMode[param1]);
 			}
 
 			case 2:
 			{
 				g_bUsageRepeat[param1] = !g_bUsageRepeat[param1];
-				SetCookie(param1, g_hCookieUsageRepeat, g_bUsageRepeat[param1]);
+				Bstat_SetCookie(param1, g_hCookieUsageRepeat, g_bUsageRepeat[param1]);
 			}
 
 			case 3:
 			{
 				g_bCurrentSpeed[param1] = !g_bCurrentSpeed[param1];
-				SetCookie(param1, g_hCookieCurrentSpeed, g_bCurrentSpeed[param1]);
+				Bstat_SetCookie(param1, g_hCookieCurrentSpeed, g_bCurrentSpeed[param1]);
 			}
 
 			case 4:
 			{
 				g_bFirstJump[param1] = !g_bFirstJump[param1];
-				SetCookie(param1, g_hCookieFirstJump, g_bFirstJump[param1]);
+				Bstat_SetCookie(param1, g_hCookieFirstJump, g_bFirstJump[param1]);
 			}
 
 			case 5:
 			{
 				g_bHeightDiff[param1] = !g_bHeightDiff[param1];
-				SetCookie(param1, g_hCookieHeightDiff, g_bHeightDiff[param1]);
+				Bstat_SetCookie(param1, g_hCookieHeightDiff, g_bHeightDiff[param1]);
 			}
 
 			case 6:
 			{
 				g_bGainStats[param1] = !g_bGainStats[param1];
-				SetCookie(param1, g_hCookieGainStats, g_bGainStats[param1]);
+				Bstat_SetCookie(param1, g_hCookieGainStats, g_bGainStats[param1]);
 			}
 
 			case 7:
 			{
 				g_bGainColors[param1] = !g_bGainColors[param1];
-				SetCookie(param1, g_hCookieGainColors, g_bGainColors[param1]);
+				Bstat_SetCookie(param1, g_hCookieGainColors, g_bGainColors[param1]);
 			}
 
 			case 8:
 			{
 				g_bEfficiency[param1] = !g_bEfficiency[param1];
-				SetCookie(param1, g_hCookieEfficiency, g_bEfficiency[param1]);
+				Bstat_SetCookie(param1, g_hCookieEfficiency, g_bEfficiency[param1]);
 			}
 
 			case 9:
 			{
 				g_bTime[param1] = !g_bTime[param1];
-				SetCookie(param1, g_hCookieTime, g_bTime[param1]);
+				Bstat_SetCookie(param1, g_hCookieTime, g_bTime[param1]);
 			}
 
 			case 10:
 			{
 				g_bDeltaTime[param1] = !g_bDeltaTime[param1];
-				SetCookie(param1, g_hCookieDeltaTime, g_bDeltaTime[param1]);
+				Bstat_SetCookie(param1, g_hCookieDeltaTime, g_bDeltaTime[param1]);
 			}
 
 			case 11:
 			{
 				g_bStrafeCount[param1] = !g_bStrafeCount[param1];
-				SetCookie(param1, g_hCookieStrafeCount, g_bStrafeCount[param1]);
+				Bstat_SetCookie(param1, g_hCookieStrafeCount, g_bStrafeCount[param1]);
 			}
 
 			case 12:
 			{
 				g_bStrafeSync[param1] = !g_bStrafeSync[param1];
-				SetCookie(param1, g_hCookieStrafeSync, g_bStrafeSync[param1]);
+				Bstat_SetCookie(param1, g_hCookieStrafeSync, g_bStrafeSync[param1]);
 			}
 
 		}
@@ -356,17 +334,22 @@ public int SSJ_MenuHandler(Menu menu, MenuAction action, int param1, int param2)
 	return 0;
 }
 
-//bool SSJ_PrintStats(int client, int target)
+
 public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
 {
-	float time = Shavit_GetClientTime(client);
+	float time = 0.0;
+	if(g_bShavit) {
+		time = Shavit_GetClientTime(client);
+	}
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if(!g_bEnabled[i] || !IsValidClient(i) || GetHUDTarget(i) != client)
+		if(!g_bEnabled[i] || !IsValidClient(i))
 		{
 			continue;
 		}
-		PrepareMessage(i, client, jump, speed, strafecount, heightdelta, gain, sync, eff);
+		if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
+			PrepareMessage(i, client, jump, speed, strafecount, heightdelta, gain, sync, eff);
+		}
 	}
 	g_fLastJumpTime[client] = time;
 	return;
@@ -405,11 +388,14 @@ void PrepareMessage(int client, int target, int jump, int speed, int strafecount
 
 	if(jump > 1)
 	{
-		float time = Shavit_GetClientTime(client);
+		float time = 0.0;
+		if(g_bShavit) {
+			time = Shavit_GetClientTime(client);
+		}
 		if(g_bGainStats[client])
 		{
 			if(g_bGainColors[client]) {
-				int idx = ColorBoundsCheck(RoundToFloor((gain / 10) - 5));
+				int idx = Jhud_GetJhudSettingsIdx(gain);
 				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, gS_ChatStrings.sText, g_sGainColors[idx], gain);
 			} else {
 				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, gS_ChatStrings.sText, gS_ChatStrings.sVariable, gain);
@@ -464,22 +450,4 @@ void PrintToClient(int client, const char[] message, any...)
 		PrintToChat(client, "%s%s%s%s", (gEV_Type == Engine_CSGO) ? " ":"", gS_ChatStrings.sPrefix, gS_ChatStrings.sText, buffer);
 		//no clue why but this space thing is important, if you remove it and use this on css all colors break lol
 	}
-}
-
-void SetCookie(int client, Handle hCookie, int n)
-{
-	char sCookie[8];
-	IntToString(n, sCookie, 8);
-
-	SetClientCookie(client, hCookie, sCookie);
-}
-
-int ColorBoundsCheck(int idx) {
-	if(idx < 0) {
-		idx = 0;
-	}
-	if(idx > 4) {
-		idx = 4;
-	}
-	return idx;
 }
