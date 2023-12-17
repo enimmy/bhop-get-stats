@@ -97,24 +97,24 @@ int colors[][3] = { //general colors
 	{238, 0, 255}
 };
 
-int g_iJhudSpeedValues[][3] = { //jhud colors based on speeds for first 6 or first 16
-	{},  				// null
-	{280, 282, 287},  	// 1
-	{366, 370, 375},  	// 2
-	{438, 442, 450},  	// 3
-	{500, 505, 515},  	// 4
-	{555, 560, 570},  	// 5
-	{605, 610, 620},  	// 6
-	{655, 665, 675},  	// 7
-	{700, 710, 725}, 	// 8
-	{740, 750, 765},  	// 9
-	{780, 790, 805},  	// 10
-	{810, 820, 840},  	// 11
-	{850, 860, 875},  	// 12
-	{880, 900, 900},  	// 13
-	{910, 920, 935},  	// 14
-	{945, 955, 965},  	// 15
-	{970, 980, 1000} 	// 16
+int g_iJhudSpeedValues[][4] = { //jhud colors based on speeds for first 6 or first 16
+	{},  				    // null
+	{280, 282, 287, 289},  	// 1
+	{366, 370, 375, 380},  	// 2
+	{438, 442, 450, 455},  	// 3
+	{500, 505, 515, 525},  	// 4
+	{555, 560, 570, 580},  	// 5
+	{605, 610, 620, 633},  	// 6
+	{655, 665, 675, 680},  	// 7
+	{700, 710, 725, 730}, 	// 8
+	{740, 750, 765, 770},  	// 9
+	{780, 790, 805, 810},  	// 10
+	{810, 820, 840, 850},  	// 11
+	{850, 860, 875, 885},  	// 12
+	{880, 900, 900, 920},  	// 13
+	{910, 920, 935, 955},  	// 14
+	{945, 955, 965, 990},  	// 15
+	{970, 980, 1000, 1020} 	// 16
 };
 
 /**
@@ -189,8 +189,10 @@ stock int Jhud_GetJhudSettingsIdx(float gain, int jump = 0, int speed = 0, bool 
 		else if(speed >= g_iJhudSpeedValues[jump][1] && speed < g_iJhudSpeedValues[jump][2]) {
 			return GainMeh;
 		}
-		else {
+		else if(speed >= g_iJhudSpeedValues[jump][2] && speed < g_iJhudSpeedValues[jump][3]){
 			return GainGood;
+		} else {
+			return GainReallyGood;
 		}
 	} else {
 		if(gain < 60) {
