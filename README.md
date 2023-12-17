@@ -12,7 +12,9 @@ SSJ - Drop in replacement for SSJ
 
 Get Stats - Supports both of the above plugins, reducing redundant calculations
 
-# Usage:
+# Usage/Directions:
+
+Press the green "Code" button at the top, and download zip. Extract zip, then drag the plugins folder into ```cstrike/addons/sourcemod.```
 
   MasterHud (Open Menu):
   ```
