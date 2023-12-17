@@ -5,7 +5,9 @@ Central plugin for calling bhop statistic forwards and base plugins for displayi
 All of these plugins were created to be used in tandem with my sync style, https://github.com/Nimmy2222/shavit-syncstyle. This style breaks probably every other SSJ/Jhud/Trainer, so you will need these. I also just wanted to make it easier for other people to make changes to these types of plugins in the future. Now devs will not have to worry about making mistakes with calculations, and can easily make changes they like.
 
 MasterHud - Drop in replacement for Jhud, Trainer, and Offsets
+
 SSJ - Drop in replacement for SSJ
+
 Get Stats - Supports both of the above plugins, reducing redundant calculations
 
 Usage:
