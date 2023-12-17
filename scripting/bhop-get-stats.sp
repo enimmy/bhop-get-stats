@@ -11,7 +11,7 @@ public Plugin myinfo =
 	//I put peoples names on here who I got code from or help, if you don't want to be listed on here contact me. Just trying to show appreciation
 	author = "Nimmy / Alkatraz, Nairda (ssj code) / Oblivious , Xutax(perf angle calc)",
 	description = "central plugin to call bhop stats",
-	version = "1.0",
+	version = "1.1",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 
@@ -168,33 +168,32 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 
 	if(g_iTicksOnGround[client] == 0)
 	{
+		g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
 
-		if(!(GetEntityFlags(client) & FL_ONGROUND)) {
-			float vel_yaw = ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]) * 180.0 / FLOAT_PI;
-			float delta_opt = -NormalizeAngle(angles[1] - vel_yaw);
+		float vel_yaw = ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]) * 180.0 / FLOAT_PI;
+		float delta_opt = -NormalizeAngle(angles[1] - vel_yaw);
 
-			if (GetRunCmdVelocity(client, true) == 0.0)
-				delta_opt = 90.0;
+		if (GetRunCmdVelocity(client, true) == 0.0)
+			delta_opt = 90.0;
 
-			if (vel[0] != 0.0 && vel[1] == 0.0)
-			{
-				float sign = vel[0] > 0.0 ? -1.0 : 1.0;
-				delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (90.0 * sign)));
-			}
-			if (vel[0] != 0.0 && vel[1] != 0.0)
-			{
-				float sign = vel[1] > 0.0 ? -1.0 : 1.0;
-				if (vel[0] < 0.0)
-					sign = -sign;
-				delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (45.0 * sign)));
-			}
-			float perfyaw = NormalizeAngle(angles[1] + delta_opt);
-			float newangdiff = FloatAbs(NormalizeAngle(perfyaw - g_fLastAngles[client][1]));
-			float AngDiff = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
-			g_fAvgDiffFromPerf[client] += (FloatAbs(AngDiff) / newangdiff);
-			g_fTickJss[client] = (FloatAbs(AngDiff) / newangdiff);
-			g_iAvgTicksNum[client]++;
+		if (vel[0] != 0.0 && vel[1] == 0.0)
+		{
+			float sign = vel[0] > 0.0 ? -1.0 : 1.0;
+			delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (90.0 * sign)));
 		}
+		if (vel[0] != 0.0 && vel[1] != 0.0)
+		{
+			float sign = vel[1] > 0.0 ? -1.0 : 1.0;
+			if (vel[0] < 0.0)
+				sign = -sign;
+			delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (45.0 * sign)));
+		}
+		float perfyaw = NormalizeAngle(angles[1] + delta_opt);
+		float newangdiff = FloatAbs(NormalizeAngle(perfyaw - g_fLastAngles[client][1]));
+		g_fAvgDiffFromPerf[client] += (FloatAbs(g_fYawDifference[client]) / newangdiff);
+		g_fTickJss[client] = (FloatAbs(g_fYawDifference[client]) / newangdiff);
+		g_iAvgTicksNum[client]++;
+
 		//offset shit
 		if(g_iCmdNum[client] >= 1) {
 			int ilvel, icvel;
@@ -206,8 +205,6 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 			}
 		}
 
-		//need to use post yaw difference to properly display autostrafed syncs can maybe change this on request
-		g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
 		if(g_fYawDifference[client] > 0) {
 			if(g_iTurnDir[client] == RIGHT && g_iCmdNum[client] > 1)
 			{
@@ -326,10 +323,8 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	}
 
 	g_iCmdNum[client]++;
-	for(int i = 0; i < 3; i++) {
-		g_fLastAngles[client][i] = angles[i];
-		g_fLastVel[client][i] = vel[i];
-	}
+	g_fLastAngles[client] = angles;
+	g_fLastVel[client] = vel;
 	return;
 }
 
@@ -394,7 +389,6 @@ void StartJumpForward(int target) {
 		Call_PushFloat(-1.0);
 		Call_PushFloat(g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target]);
 		Call_Finish();
-		//PrintToChat(target, "jump %i sp %i s# %i hd %.2f gn %.2f sc %.2f ef %.2f jss %.2f", g_iJump[target], speed, g_iStrafeCount[target], origin[2] - g_fOldHeight[target], coeffsum, (100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]), efficiency, g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target]);
 	}
 }
 
@@ -423,9 +417,7 @@ float NormalizeAngle(float ang)
 
 float GetRunCmdVelocity(int client, bool twodimensions) {
 	float vel[3];
-	for(int i = 0; i < 3; i ++) {
-		vel[i] = g_fRunCmdVelVec[client][i];
-	}
+	vel = g_fRunCmdVelVec[client];
 	if(twodimensions) {
 		vel[2] = 0.0;
 		return GetVectorLength(vel);
