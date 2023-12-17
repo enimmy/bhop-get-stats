@@ -211,7 +211,7 @@ public void OnPlayerRunCmdPost(int client, int buttons)
 }
 
 void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, float jss) {
-	jss = jss * 100;
+	int ijss = RoundToFloor(jss * 100);
 	
 	char sMessage[256];
 
@@ -222,7 +222,7 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	Format(sMessage, sizeof(sMessage), "%i: %i", jump, speed);
 	if(jump > 1) {
 		if(g_iSettings[client][Bools] & JHUD_JSS == JHUD_JSS) {
-			Format(sMessage, sizeof(sMessage), "%s (%.0f%%%%)", sMessage, jss);
+			Format(sMessage, sizeof(sMessage), "%s (%i%)", sMessage, ijss);
 		}
 		Format(sMessage, sizeof(sMessage), "%s\n%.2f%%", sMessage, gain);
 		if(g_iSettings[client][Bools] & JHUD_SYNC == JHUD_SYNC) {
