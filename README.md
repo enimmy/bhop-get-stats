@@ -34,7 +34,7 @@ Get Stats - Supports both of the above plugins, reducing redundant calculations
 * (MasterHud -> [Dynamic Channels](https://github.com/Vauff/DynamicChannels))
 
 # Changelog:
-	* SSJ:
+* SSJ:
 	* removed some characters/decimal points to add more options (approaching the character limit)
 	* added colors onto the gain field (optional)
 	* fixed many bugs from base version
