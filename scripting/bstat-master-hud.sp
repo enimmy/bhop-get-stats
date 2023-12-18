@@ -222,14 +222,14 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	Format(sMessage, sizeof(sMessage), "%i: %i", jump, speed);
 	if(jump > 1) {
 		if(g_iSettings[client][Bools] & JHUD_JSS == JHUD_JSS) {
-			Format(sMessage, sizeof(sMessage), "%s (%i%)", sMessage, ijss);
+			Format(sMessage, sizeof(sMessage), "%s (%iPCT)", sMessage, ijss);
 		}
-		Format(sMessage, sizeof(sMessage), "%s\n%.2f%%", sMessage, gain);
+		Format(sMessage, sizeof(sMessage), "%s\n%.2f", sMessage, gain);
 		if(g_iSettings[client][Bools] & JHUD_SYNC == JHUD_SYNC) {
-			Format(sMessage, sizeof(sMessage), "%s %.2f%%", sMessage, sync);
+			Format(sMessage, sizeof(sMessage), "%s %.2fPCT", sMessage, sync);
 		}
 	}
-	
+	ReplaceString(sMessage, sizeof(sMessage), "PCT", "%%", true);
 	SetHudTextParams(-1.0, g_iJhudPositions[g_iSettings[client][Position]], 1.0, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0);
 	ShowHudText(client, GetDynamicChannel(1), sMessage);
 }
