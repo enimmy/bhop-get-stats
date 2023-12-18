@@ -22,8 +22,9 @@ public void __pl_myfile_SetNTVOptional()
 #endif
 
 #define JHUD_SETTINGS_NUMBER 7
-#define JHUD_SETTINGS_COLOR_START_IDX 2
-#define JHUD_SETTINGS_COLOR_END_IDX 6
+#define JHUD_SETTINGS_COLOR_START_IDX 0
+#define JHUD_SETTINGS_COLOR_END_IDX 4
+#define JHUD_SETTINGS_COLORS_NUMBER 9
 
 #define JHUD_ENABLED	1 << 0
 #define JHUD_JSS 		1 << 1

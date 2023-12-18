@@ -103,8 +103,8 @@ public void OnClientCookiesCached(int client) {
 		SetDefaults(client);
 		return;
 	}
-	for(int i = 2; i < JHUD_SETTINGS_NUMBER; i++) {
-		if(g_iSettings[client][i] > 8 || g_iSettings[client][i] < 0) {
+	for(int i = JHUD_SETTINGS_COLOR_START_IDX; i < JHUD_SETTINGS_COLOR_END_IDX; i++) {
+		if(g_iSettings[client][i] >= JHUD_SETTINGS_COLORS_NUMBER  || g_iSettings[client][i] < 0) {
 			SetDefaults(client);
 			return;
 		}
