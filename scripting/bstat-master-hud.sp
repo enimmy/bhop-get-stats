@@ -232,11 +232,11 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 				int idx;
 				char sMessage[256];
 				Format(sMessage, sizeof(sMessage), "%i", speed);
-				if(g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop) {
-					float coeffsum = g_fRawGain[client];
-					coeffsum /= SPEED_UPDATE_INTERVAL;
-					coeffsum *= 100.0;
-					coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+				float coeffsum = g_fRawGain[client];
+				coeffsum /= SPEED_UPDATE_INTERVAL;
+				coeffsum *= 100.0;
+				coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+				if(g_iSettings[i][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop) {
 					idx = Bstat_GetGainColorIdx(coeffsum);
 				} else {
 					if(speed > g_iLastSpeedometerVel[client]) {
@@ -247,8 +247,14 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 						idx = GainReallyBad;
 					}
 				}
-				SetHudTextParams(-1.0, -1.0, 0.2, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.0);
-				ShowHudText(i, GetDynamicChannel(4), sMessage); //SPEEDOMETER
+				if(g_iSettings[i][Bools] & SPEEDOMETER_SMALL_TEXT) {
+					Format(sMessage, sizeof(sMessage), "%s (%.2fPCT)", sMessage, coeffsum);
+					ReplaceString(sMessage, sizeof(sMessage), "PCT", "%%");
+					PrintCenterText(i, sMessage);
+				} else {
+					SetHudTextParams(-1.0, -1.0, 0.2, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.0);
+					ShowHudText(i, GetDynamicChannel(4), sMessage); //SPEEDOMETER
+				}
 			}
 		}
 		g_fRawGain[client] = 0.0;
