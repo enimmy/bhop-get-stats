@@ -14,27 +14,59 @@ public SharedPlugin __pl_bhopgetstats =
 #endif
 };
 
-#if !defined REQUIRE_PLUGIN
-public void __pl_myfile_SetNTVOptional()
-{
-    MarkNativeAsOptional("BhopStat_GetJss");
-}
-#endif
+/**
+ * Called after jump event and strafe statistics have been calculated.
+ *
+ * @param client					Client index
+ * @param jump						jump number (resets groundticks > 10, nothing to do with timer zones)
+ * @param speed					    Current speed
+ * @param strafecount               number of strafes in the jump
+ * @param heightdelta				Height change since last jump
+ * @param gain						avg gain of jump
+ * @param sync                      strafe sync of jump
+ * @param eff                       strafe efficency of jump
+ * @param yawwing					% of jump player was turnbinding
+ * @param jss						average strafe speed of the players jump compared to perfect
+ * @noreturn
+ */
+forward void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss);
+
+/**
+ * @param client					client index
+ * @param offset					keypress tick - turn tick
+ * @param overlap					if the player overlapped their keys during this strafe
+ * @param nopress					if the player wasnt holding one of their strafe keys during this strafe
+ * @noreturn
+ */
+forward void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress);
+
+/** not called unless calculated (in air/bhopping)
+ * @param client					client index
+ * @param gain						gain this tick
+ * @param jss						jss this tick
+ * @noreturn
+ */
+forward void BhopStat_TickForward(int client, int speed, bool inBhop, float gain, float jss);
+
 
 #define JHUD_SETTINGS_NUMBER 7
 #define JHUD_SETTINGS_COLOR_START_IDX 0
 #define JHUD_SETTINGS_COLOR_END_IDX 4
 #define JHUD_SETTINGS_COLORS_NUMBER 9
 
-#define JHUD_ENABLED	1 << 0
-#define JHUD_JSS 		1 << 1
-#define JHUD_SYNC 		1 << 2
+#define JHUD_ENABLED 1 << 0
+#define JHUD_JSS 1 << 1
+#define JHUD_SYNC 1 << 2
 #define JHUD_EXTRASPEED 1 << 3
 #define TRAINER_ENABLED 1 << 4
 #define OFFSETS_ENABLED 1 << 5
+#define SPEEDOMETER_ENABLED 1 << 6
+#define SPEEDOMETER_SMALL_TEXT 1 << 7
+#define SPEEDOMETER_GAIN_COLOR 1 << 8
 
 #define TRAINER_FULLUPDATE_TICK_INTERVAL 13
 #define TRAINER_TICK_INTERVAL 5
+#define SPEED_UPDATE_INTERVAL 10
 
 enum //indexes of jhud positions
 {
@@ -117,37 +149,6 @@ int g_iJhudSpeedValues[][4] = { //jhud colors based on speeds for first 6 or fir
 	{945, 955, 965, 990},  	// 15
 	{970, 980, 1000, 1020} 	// 16
 };
-
-/**
- * Called after jump event and strafe statistics have been calculated.
- *
- * @param client					Client index
- * @param jump						jump number (resets groundticks > 10, nothing to do with timer zones)
- * @param speed					    Current speed
- * @param strafecount               number of strafes in the jump
- * @param heightdelta				Height change since last jump
- * @param gain						avg gain of jump
- * @param sync                      strafe sync of jump
- * @param eff                       strafe efficency of jump
- * @param yawwing					% of jump player was turnbinding
- * @param jss						average strafe speed of the players jump compared to perfect
- * @noreturn
- */
-forward void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss);
-
-/**
- * @param client					client index
- * @param offset					keypress tick - turn tick
- * @param overlap					if the player overlapped their keys during this strafe
- * @param nopress					if the player wasnt holding one of their strafe keys during this strafe
- */
-forward void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress);
-
-/**
- * returns a float comparing how close the clients angle difference to the perfect one for speed gain
- * updated runcmdPOST, updated when in air or groundticks == 1 && buttons injump
- */
-native float BhopStat_GetJss(int client);
 
 //returns a string with the | in the middle for trainer
 stock void Trainer_VisualisationString(char[] buffer, int maxlength, float percentage) {
@@ -244,6 +245,24 @@ stock int Offset_GetColorIdx(int offset, bool overlap, bool nopress) {
     } else {
 		return Red;
     }
+}
+
+stock int Speed_GetGainColorIdx(float gain) {
+	if(gain < 60) {
+		return GainReallyBad;
+	}
+	else if(gain >= 60 && gain < 70) {
+		return GainBad;
+	}
+	else if(gain >= 70 && gain < 80) {
+		return GainMeh;
+	}
+	else if (gain >= 80 && gain < 90) {
+		return GainGood;
+	}
+	else {
+		return GainReallyGood;
+	}
 }
 
 stock int GetHUDTarget(int client, int fallback = -1) {

@@ -20,6 +20,7 @@ public Plugin myinfo =
 #define SIDEMOVE 1
 #define LEFT 0
 #define RIGHT 1
+//#define DEBUG
 
 bool g_bTouchesWall[MAXPLAYERS + 1];
 bool g_bJumpedThisTick[MAXPLAYERS + 1];
@@ -40,6 +41,7 @@ int g_iAvgTicksNum[MAXPLAYERS + 1];
 
 float g_fOldHeight[MAXPLAYERS + 1];
 float g_fRawGain[MAXPLAYERS + 1];
+float g_fTickGain[MAXPLAYERS + 1];
 float g_fTrajectory[MAXPLAYERS + 1];
 float g_fTraveledDistance[MAXPLAYERS + 1][3];
 float g_fRunCmdVelVec[MAXPLAYERS + 1][3];
@@ -55,17 +57,23 @@ float g_fTickrate = 0.01;
 
 GlobalForward JumpStatsForward;
 GlobalForward StrafeStatsForward;
+GlobalForward TickStatsForward;
 
 public void OnPluginStart()
 {
 	HookEvent("player_jump", Player_Jump);
 	g_fTickrate = GetTickInterval();
+
 	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
 	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
 	//yawing not done
 	//add airpath, veer, jumpoff angle on j1
+	
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
+
+	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float);
+	//int client, int speed, float gain, float jss);
 
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -78,7 +86,6 @@ public void OnPluginStart()
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	CreateNative("BhopStat_GetJss", Native_GetJss);
 	RegPluginLibrary("bhop-get-stats");
 	return APLRes_Success;
 }
@@ -193,6 +200,11 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 		g_fAvgDiffFromPerf[client] += (FloatAbs(g_fYawDifference[client]) / newangdiff);
 		g_fTickJss[client] = (FloatAbs(g_fYawDifference[client]) / newangdiff);
 		g_iAvgTicksNum[client]++;
+		PrintDebugMsg(client, "Tick Jss: %f", g_fTickJss[client]);
+		if(g_iAvgTicksNum[client])
+		{
+			PrintDebugMsg(client, "Jss: %f", g_fAvgDiffFromPerf[client] / g_iAvgTicksNum[client]);
+		}
 
 		//offset shit
 		if(g_iCmdNum[client] >= 1) {
@@ -292,8 +304,15 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 				gaincoeff = FloatAbs(gaincoeff);
 			}
 			g_fRawGain[client] += gaincoeff;
+			g_fTickGain[client] = gaincoeff;
+			
+			PrintDebugMsg(client, "Tick Gain: %f", g_fTickGain[client]);
+			if(g_iStrafeTick[client]) {
+				PrintDebugMsg(client, "Gain: %f", g_fRawGain[client] / g_fRawGain[client]);
+			}
 		}
 	}
+	StartTickForward(client);
 
 	if(g_bTouchesWall[client])
 	{
@@ -403,9 +422,15 @@ void StartStrafeForward(int client) {
 	//PrintToChat(client, "of %i ov %i np %i", (g_iKeyTick[client] - g_iTurnTick[client]), g_bOverlap[client], g_bNoPress[client]);
 }
 
-public int Native_GetJss(Handle handler, int numParams)
-{
-	return view_as<int>(g_fTickJss[GetNativeCell(1)]);
+//int client, int speed, float gain, float jss
+void StartTickForward(int client) {
+	Call_StartForward(TickStatsForward);
+	Call_PushCell(client);
+	Call_PushCell(RoundToFloor(GetRunCmdVelocity(client, true)));
+	Call_PushCell(view_as<int>((g_iTicksOnGround[client] == 0)));
+	Call_PushFloat(g_fTickGain[client]);
+	Call_PushFloat(g_fTickJss[client]);
+	Call_Finish();
 }
 
 float NormalizeAngle(float ang)
@@ -423,4 +448,13 @@ float GetRunCmdVelocity(int client, bool twodimensions) {
 		return GetVectorLength(vel);
 	}
 	return GetVectorLength(vel);
+}
+
+void PrintDebugMsg(int client, const char[] msg, any...)
+{
+	#if defined DEBUG
+	char buffer[300];
+	VFormat(buffer, sizeof(buffer), msg, 3);
+	PrintToConsole(client, "BStat-Debug: %s", buffer);
+	#endif
 }

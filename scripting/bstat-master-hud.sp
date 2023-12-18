@@ -11,9 +11,17 @@ public Plugin myinfo =
 	name = "Bhop Huds", 
 	author = "Nimmy",
 	description = "all kinds of stuff", 
-	version = "1.0", 
+	version = "2.0", 
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
+
+//Dynamic Channel Notes - CSS
+// Trainer 0 (here)
+// Jhud 1 (here)
+// Offset 2 (here)
+// Widow Bash 3 (xWidows bash, just displays devs and stuff)
+// Speedometer 4 (here)
+// Shavit-Hud Top Left 5 (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
 
 //jhud
 Cookie g_hSettings[JHUD_SETTINGS_NUMBER];
@@ -21,23 +29,31 @@ int g_iSettings[MAXPLAYERS + 1][JHUD_SETTINGS_NUMBER];
 int g_iEditGain[MAXPLAYERS + 1] = {2, ...};
 
 //trainer
-float g_fPercents[MAXPLAYERS + 1];
+#define FullPercent 0
+#define BarPercent 1
+
+float g_fTrainerPercents[MAXPLAYERS + 1][2];
 float g_fLastAverage[MAXPLAYERS + 1];
-int g_iCmdNum[MAXPLAYERS + 1];
-int g_iGroundTicks[MAXPLAYERS + 1];
 
 //offsets
 int g_iLastOffset[MAXPLAYERS + 1];
 int g_iRepeatedOffsets[MAXPLAYERS + 1];
+
+//speedometer
+int g_iLastSpeedometerVel[MAXPLAYERS + 1];
+float g_fRawGain[MAXPLAYERS + 1];
+
+//general
+int g_iCmdNum[MAXPLAYERS + 1];
 
 //vars
 ConVar g_hOverrideJhud;
 ConVar g_hOverrideTrainer;
 
 public void OnPluginStart() {
-	RegConsoleCmd("sm_bhud", Command_JHUD, "Opens the bhud main menu");
-	RegConsoleCmd("sm_offsets", Command_JHUD, "Opens the bhud main menu");
-	RegConsoleCmd("sm_offset", Command_JHUD, "Opens the bhud main menu");
+	RegConsoleCmd("sm_bhud", Command_Bhud, "Opens the bhud main menu");
+	RegConsoleCmd("sm_offsets", Command_Bhud, "Opens the bhud main menu");
+	RegConsoleCmd("sm_offset", Command_Bhud, "Opens the bhud main menu");
 	
 	RegConsoleCmd("sm_strafetrainer", Command_CheckTrainerOverride, "Opens the bhud main menu");
 	RegConsoleCmd("sm_trainer", Command_CheckTrainerOverride, "Opens the bhud main menu");
@@ -62,7 +78,7 @@ public void OnPluginStart() {
 	AutoExecConfig();
 }
 
-public Action Command_JHUD(int client, any args) {
+public Action Command_Bhud(int client, any args) {
 	if(!Bstat_IsValidClient(client))
 	{
 		return Plugin_Handled;
@@ -73,7 +89,7 @@ public Action Command_JHUD(int client, any args) {
 
 public Action Command_CheckJhudOverride(int client, any args) {
 	if(g_hOverrideJhud.IntValue) {
-		Command_JHUD(client, 0);
+		Command_Bhud(client, 0);
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -81,7 +97,7 @@ public Action Command_CheckJhudOverride(int client, any args) {
 
 public Action Command_CheckTrainerOverride(int client, any args) {
 	if(g_hOverrideTrainer.IntValue) {
-		Command_JHUD(client, 0);
+		Command_Bhud(client, 0);
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -157,56 +173,82 @@ public void BhopStat_StrafeForward(int client, int offset, bool overlap, bool no
 	g_iLastOffset[client] = offset;
 }
 
-public void OnPlayerRunCmdPost(int client, int buttons)
-{
-	if ((GetEntityMoveType(client) == MOVETYPE_NOCLIP) || (GetEntityMoveType(client) == MOVETYPE_LADDER))
-		return;
-	
-	if(GetEntityFlags(client) & FL_ONGROUND == FL_ONGROUND) {
-		g_iGroundTicks[client]++;
-		if ((buttons & IN_JUMP) > 0 && g_iGroundTicks[client] == 1) {
-			g_iGroundTicks[client] = 0;
-		}
+public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain, float jss) {
+	if(!inbhop) {
+		g_iCmdNum[client] = 0;
+		g_fRawGain[client] = 0.0;
+		g_fTrainerPercents[client][FullPercent] = 0.0;
+		g_fTrainerPercents[client][BarPercent] = 0.0;
 	} else {
-		g_iGroundTicks[client] = 0;
-	}
+		g_fTrainerPercents[client][FullPercent] += jss;
+		g_fTrainerPercents[client][BarPercent] += jss;
+		g_fRawGain[client] += gain;
+		g_iCmdNum[client]++;
 
-	if(g_iGroundTicks[client] > 10) {
-		g_iCmdNum[client] = 1;
-		g_fPercents[client] = 0.0;
-		return;
-	}
-	if(g_iGroundTicks[client] >= 1) {
-		return;
-	}
+		if(g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0) {
+			float AveragePercentage;
+			bool fullUpdate = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0);
 
-	g_fPercents[client] += (BhopStat_GetJss(client));
-	float AveragePercentage = g_fPercents[client] / g_iCmdNum[client];
-	if (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0)
-	{
-		g_fLastAverage[client] = AveragePercentage;
-		g_fPercents[client] = 0.0;
-		g_iCmdNum[client] = 1;
-	}
-
-	if(g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0) {
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if(!Bstat_IsValidClient(i) || !(g_iSettings[client][Bools] & TRAINER_ENABLED))
-			{
-				continue;
+			if (fullUpdate) {
+				AveragePercentage = g_fTrainerPercents[client][FullPercent] / TRAINER_FULLUPDATE_TICK_INTERVAL;
+				g_fTrainerPercents[client][FullPercent] = 0.0;
+				g_fLastAverage[client] = AveragePercentage;
 			}
-			if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
-				int idx = Trainer_GetColorIdx(AveragePercentage);
-				char sMessage[256];
-				Trainer_GetTrainerString(sMessage, g_fLastAverage[client], AveragePercentage);
-				SetHudTextParams(-1.0, 0.2, 0.1, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.1);
-				ShowHudText(i, GetDynamicChannel(0), sMessage);
+
+			if (g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0) {
+				if(!fullUpdate) {
+					AveragePercentage = g_fTrainerPercents[client][BarPercent] / TRAINER_TICK_INTERVAL;
+				}
+				g_fTrainerPercents[client][BarPercent] = 0.0;
+			}
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if(!Bstat_IsValidClient(i) || !(g_iSettings[client][Bools] & TRAINER_ENABLED))
+				{
+					continue;
+				}
+				if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
+					int idx = Trainer_GetColorIdx(AveragePercentage);
+					char sMessage[256];
+					Trainer_GetTrainerString(sMessage, g_fLastAverage[client], AveragePercentage);
+					SetHudTextParams(-1.0, 0.2, 0.1, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.1);
+					ShowHudText(i, GetDynamicChannel(0), sMessage);
+				}
 			}
 		}
+
+		if(g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0) {
+			for (int i = 1; i <= MaxClients; i++) {
+				if(!Bstat_IsValidClient(i) || !(g_iSettings[client][Bools] & SPEEDOMETER_ENABLED)) {
+					continue;
+				}
+				if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
+					int idx;
+					char sMessage[256];
+					Format(sMessage, sizeof(sMessage), "%i", speed);
+					if(g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR) {
+						float coeffsum = g_fRawGain[client];
+						coeffsum /= SPEED_UPDATE_INTERVAL;
+						coeffsum *= 100.0;
+						coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+						idx = Speed_GetGainColorIdx(coeffsum);
+					} else {
+						if(speed > g_iLastSpeedometerVel[client]) {
+							idx = GainReallyGood;
+						} else if (speed == g_iLastSpeedometerVel[client]) {
+							idx = GainGood;
+						} else {
+							idx = GainReallyBad;
+						}
+					}
+					SetHudTextParams(-1.0, -1.0, 0.1, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.1);
+					ShowHudText(i, GetDynamicChannel(4), sMessage);
+				}
+			}
+			g_fRawGain[client] = 0.0;
+			g_iLastSpeedometerVel[client] = speed;
+		}
 	}
-	
-	g_iCmdNum[client]++;
 	return;
 }
 
@@ -256,7 +298,9 @@ void ShowBHUDMenu(int client)
 	AddMenuItem(menu, "enJhud", (g_iSettings[client][Bools] & JHUD_ENABLED) ? "[x] Jhud":"[ ] Jhud");
 	AddMenuItem(menu, "enTrainer", (g_iSettings[client][Bools] & TRAINER_ENABLED) ? "[x] Trainer":"[ ] Trainer");
 	AddMenuItem(menu, "enOffset", (g_iSettings[client][Bools] & OFFSETS_ENABLED) ? "[x] Offsets":"[ ] Offsets");
+	AddMenuItem(menu, "enSpeed", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Speedometer":"[ ] Speedometer");
 	AddMenuItem(menu, "jhudSettings", "JHUD Settings");
+	AddMenuItem(menu, "speedSettings", "Speedometer Settings");
 	AddMenuItem(menu, "reset", "Reset Settings");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -271,26 +315,34 @@ public int BHUD_Select(Menu menu, MenuAction action, int client, int option)
 		if(StrEqual(info, "enJhud"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_ENABLED;
-			Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		}
 		else if(StrEqual(info, "enTrainer"))
 		{
 			g_iSettings[client][Bools] ^= TRAINER_ENABLED;
-			Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		}
 		else if(StrEqual(info, "enOffset"))
 		{
 			g_iSettings[client][Bools] ^= OFFSETS_ENABLED;
-			Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
+		}
+		else if(StrEqual(info, "enSpeed"))
+		{
+			g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
 		}
 		else if(StrEqual(info, "jhudSettings"))
 		{
 			ShowJhudSettingsMenu(client);
 			return 0;
-		} else if(StrEqual(info, "reset"))
+		} 
+		else if(StrEqual(info, "speedSettings"))
+		{
+			ShowSpeedSettingsMenu(client);
+			return 0;
+		}
+		else if(StrEqual(info, "reset"))
 		{
 			SetDefaults(client);
 		}
+		Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowBHUDMenu(client);
 	}
 	else if(action == MenuAction_End)
@@ -301,7 +353,7 @@ public int BHUD_Select(Menu menu, MenuAction action, int client, int option)
 }
 
 void ShowJhudSettingsMenu(int client) {
-	Menu menu = CreateMenu(JHUD_Select);
+	Menu menu = CreateMenu(Jhud_SettingSelect);
 	SetMenuTitle(menu, "JHUD SETTINGS\n \n");
 	AddMenuItem(menu, "strafespeed", (g_iSettings[client][Bools] & JHUD_JSS) ? "[x] Jss":"[ ] Jss");
 	AddMenuItem(menu, "sync", (g_iSettings[client][Bools] & JHUD_SYNC) ? "[x] Sync":"[ ] Sync");
@@ -324,7 +376,16 @@ void ShowJhudSettingsMenu(int client) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public int JHUD_Select(Menu menu, MenuAction action, int client, int option)
+void ShowSpeedSettingsMenu(int client) {
+	Menu menu = CreateMenu(Speedometer_SettingSelect);
+	SetMenuTitle(menu, "SPEED SETTINGS\n \n");
+	AddMenuItem(menu, "speedSmallText", (g_iSettings[client][Bools] & SPEEDOMETER_SMALL_TEXT) ? "[x] Small Text":"[ ] Small Text");
+	AddMenuItem(menu, "speedGainColor", (g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR) ? "[x] Gain Based Color":"[ ] Gain Based Color");
+	AddMenuItem(menu, "back", "Back");
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+public int Jhud_SettingSelect(Menu menu, MenuAction action, int client, int option)
 {
 	if(action == MenuAction_Select)
 	{
@@ -334,7 +395,6 @@ public int JHUD_Select(Menu menu, MenuAction action, int client, int option)
 		if(StrEqual(info, "strafespeed"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_JSS;
-			Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		}
 		else if(StrEqual(info, "cyclepos"))
 		{
@@ -351,12 +411,10 @@ public int JHUD_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "extraspeeds"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_EXTRASPEED;
-			Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		}
 		else if(StrEqual(info, "sync"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_SYNC;
-			Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		}
 		else if(StrEqual(info, "editcolors"))
 		{
@@ -368,7 +426,38 @@ public int JHUD_Select(Menu menu, MenuAction action, int client, int option)
 			ShowBHUDMenu(client);
 			return 0;
 		}
+		Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowJhudSettingsMenu(client);
+	}
+	else if(action == MenuAction_End)
+	{
+		delete menu;
+	}
+	return 0;
+}
+
+public int Speedometer_SettingSelect(Menu menu, MenuAction action, int client, int option)
+{
+	if(action == MenuAction_Select)
+	{
+		char info[32];
+		GetMenuItem(menu, option, info, sizeof(info));
+		
+		if(StrEqual(info, "speedSmallText"))
+		{
+			g_iSettings[client][Bools] ^= SPEEDOMETER_SMALL_TEXT;
+		}
+		else if(StrEqual(info, "speedGainColor"))
+		{
+			g_iSettings[client][Bools] ^= SPEEDOMETER_GAIN_COLOR;
+		}
+ 		else if(StrEqual(info, "back"))
+		{
+			ShowBHUDMenu(client);
+			return 0;
+		}
+		Bstat_SetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
+		ShowSpeedSettingsMenu(client);
 	}
 	else if(action == MenuAction_End)
 	{
@@ -421,7 +510,6 @@ public int Colors_Callback(Menu menu, MenuAction action, int client, int option)
 				g_iSettings[client][editing] = 0;
 			}
 			Bstat_SetCookie(client, g_hSettings[g_iEditGain[client]], g_iSettings[client][editing]);
-			PrintToChat(client, "Setting %i to %i", g_iEditGain[client], g_iSettings[client][editing]);
 		} else if(StrEqual(info, "back"))
 		{
 			ShowJhudSettingsMenu(client);
