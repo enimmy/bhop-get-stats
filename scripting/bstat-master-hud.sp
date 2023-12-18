@@ -208,7 +208,7 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 					continue;
 				}
 				if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
-					int idx = Trainer_GetColorIdx(AveragePercentage);
+					int idx = Bstat_GetGainColorIdx(AveragePercentage * 100);
 					char sMessage[256];
 					Trainer_GetTrainerString(sMessage, g_fLastAverage[client], AveragePercentage);
 					SetHudTextParams(-1.0, 0.2, 0.1, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.1);
@@ -231,7 +231,7 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 						coeffsum /= SPEED_UPDATE_INTERVAL;
 						coeffsum *= 100.0;
 						coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
-						idx = Speed_GetGainColorIdx(coeffsum);
+						idx = Bstat_GetGainColorIdx(coeffsum);
 					} else {
 						if(speed > g_iLastSpeedometerVel[client]) {
 							idx = GainReallyGood;
@@ -257,7 +257,12 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	
 	char sMessage[256];
 
-	int settingIdx = Jhud_GetJhudSettingsIdx(gain, jump, speed, view_as<bool>(g_iSettings[client][Bools] & JHUD_EXTRASPEED), false);
+	int settingIdx;
+	if((jump <= 6 || jump == 16) || (g_iSettings[client][Bools] & JHUD_EXTRASPEED && jump <= 16)) {
+		settingIdx = Bstat_GetSpeedColorIdx(jump, speed);
+	} else {
+		settingIdx = Bstat_GetGainColorIdx(gain);
+	}
 	int rgb[3];
 	rgb = colors[g_iSettings[client][settingIdx]];
 

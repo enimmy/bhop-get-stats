@@ -179,59 +179,6 @@ stock void Trainer_GetTrainerString(char sMessage[256], float number, float aver
 	Format(sMessage, sizeof(sMessage), "%s\n══════^══════", sMessage);
 }
 
-//gets an index for Jhud based on either gain or speed, returns location of setting to get instead of color
-stock int Jhud_GetJhudSettingsIdx(float gain, int jump = 0, int speed = 0, bool extraSpeed = false, bool ignoreSpeed = true) {
-	if(!(ignoreSpeed) && ((jump <= 6 || jump == 16) || (extraSpeed && jump <= 16))) {
-		if(speed < g_iJhudSpeedValues[jump][0]) {
-			return GainReallyBad;
-		}
-		else if(speed >= g_iJhudSpeedValues[jump][0] && speed < g_iJhudSpeedValues[jump][1]) {
-			return GainBad;
-		}
-		else if(speed >= g_iJhudSpeedValues[jump][1] && speed < g_iJhudSpeedValues[jump][2]) {
-			return GainMeh;
-		}
-		else if(speed >= g_iJhudSpeedValues[jump][2] && speed < g_iJhudSpeedValues[jump][3]){
-			return GainGood;
-		} else {
-			return GainReallyGood;
-		}
-	} else {
-		if(gain < 60) {
-			return GainReallyBad;
-		}
-		else if(gain >= 60 && gain < 70) {
-			return GainBad;
-		}
-		else if(gain >= 70 && gain < 80) {
-			return GainMeh;
-		}
-		else if (gain >= 80 && gain < 90) {
-			return GainGood;
-		}
-		else {
-			return GainReallyGood;
-		}
-	}
-}
-
-//jss colors trainer
-stock int Trainer_GetColorIdx(float percentage) {
-	if(percentage > 1.0) {
-		return Red;
-	} else if(percentage >= 0.9) {
-		return White;
-	}else if(percentage >= 0.8) {
-		return Cyan;
-	} else if(percentage >= 0.75) {
-		return Green;
-	} else if(percentage >= 0.65) {
-		return Orange;
-	} else {
-		return Red;
-	}
-}
-
 stock int Offset_GetColorIdx(int offset, bool overlap, bool nopress) {
     if(overlap || nopress || offset > 0) {
         return Red;
@@ -247,21 +194,37 @@ stock int Offset_GetColorIdx(int offset, bool overlap, bool nopress) {
     }
 }
 
-stock int Speed_GetGainColorIdx(float gain) {
-	if(gain < 60) {
+stock int Bstat_GetGainColorIdx(float gain) {
+	if(gain > 100) {
+		return GainReallyBad;
+	} else if(gain >= 90) {
+		return GainReallyGood;
+	} else if (gain >= 80) {
+		return GainGood;
+	} else if(gain >= 70) {
+		return GainMeh;
+	} else if(gain >= 60) {
+		return GainBad;
+	} else {
 		return GainReallyBad;
 	}
-	else if(gain >= 60 && gain < 70) {
-		return GainBad;
+}
+
+stock int Bstat_GetSpeedColorIdx(int jump, int speed) {
+	if(jump < 0 || jump > 16) {
+		return -1;
 	}
-	else if(gain >= 70 && gain < 80) {
-		return GainMeh;
-	}
-	else if (gain >= 80 && gain < 90) {
-		return GainGood;
-	}
-	else {
+
+	if(speed >= g_iJhudSpeedValues[jump][3]) {
 		return GainReallyGood;
+	} else if(speed > g_iJhudSpeedValues[jump][2]) {
+		return GainGood;
+	}  else if(speed > g_iJhudSpeedValues[jump][1]) {
+		return GainMeh;
+	}  else if(speed > g_iJhudSpeedValues[jump][0]) {
+		return GainBad;
+	} else {
+		return GainReallyBad;
 	}
 }
 

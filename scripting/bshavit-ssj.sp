@@ -395,7 +395,7 @@ void PrepareMessage(int client, int target, int jump, int speed, int strafecount
 		if(g_bGainStats[client])
 		{
 			if(g_bGainColors[client]) {
-				int idx = Jhud_GetJhudSettingsIdx(gain);
+				int idx = Bstat_GetGainColorIdx(gain);
 				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, gS_ChatStrings.sText, g_sGainColors[idx], gain);
 			} else {
 				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, gS_ChatStrings.sText, gS_ChatStrings.sVariable, gain);
