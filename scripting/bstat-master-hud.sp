@@ -174,18 +174,23 @@ public void BhopStat_StrafeForward(int client, int offset, bool overlap, bool no
 }
 
 public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain, float jss) {
+	g_iCmdNum[client]++;
+	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
+	bool trainer = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0);
+	
 	if(!inbhop) {
-		g_iCmdNum[client] = 0;
-		g_fRawGain[client] = 0.0;
 		g_fTrainerPercents[client][FullPercent] = 0.0;
 		g_fTrainerPercents[client][BarPercent] = 0.0;
+		g_fRawGain[client] = 0.0;
+		if(speedometer) {
+			g_iCmdNum[client] = 0;
+		}
 	} else {
 		g_fTrainerPercents[client][FullPercent] += jss;
 		g_fTrainerPercents[client][BarPercent] += jss;
 		g_fRawGain[client] += gain;
-		g_iCmdNum[client]++;
 
-		if(g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0) {
+		if(trainer) {
 			float AveragePercentage;
 			bool fullUpdate = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0);
 
@@ -211,44 +216,45 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 					int idx = Bstat_GetGainColorIdx(AveragePercentage * 100);
 					char sMessage[256];
 					Trainer_GetTrainerString(sMessage, g_fLastAverage[client], AveragePercentage);
-					SetHudTextParams(-1.0, 0.2, 0.1, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.1);
-					ShowHudText(i, GetDynamicChannel(0), sMessage);
+					SetHudTextParams(-1.0, 0.2, 0.1, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.0);
+					ShowHudText(i, GetDynamicChannel(0), sMessage); //TRAINER
 				}
 			}
-		}
-
-		if(g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0) {
-			for (int i = 1; i <= MaxClients; i++) {
-				if(!Bstat_IsValidClient(i) || !(g_iSettings[client][Bools] & SPEEDOMETER_ENABLED)) {
-					continue;
-				}
-				if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
-					int idx;
-					char sMessage[256];
-					Format(sMessage, sizeof(sMessage), "%i", speed);
-					if(g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR) {
-						float coeffsum = g_fRawGain[client];
-						coeffsum /= SPEED_UPDATE_INTERVAL;
-						coeffsum *= 100.0;
-						coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
-						idx = Bstat_GetGainColorIdx(coeffsum);
-					} else {
-						if(speed > g_iLastSpeedometerVel[client]) {
-							idx = GainReallyGood;
-						} else if (speed == g_iLastSpeedometerVel[client]) {
-							idx = GainGood;
-						} else {
-							idx = GainReallyBad;
-						}
-					}
-					SetHudTextParams(-1.0, -1.0, 0.1, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.1);
-					ShowHudText(i, GetDynamicChannel(4), sMessage);
-				}
-			}
-			g_fRawGain[client] = 0.0;
-			g_iLastSpeedometerVel[client] = speed;
 		}
 	}
+
+	if(speedometer) {
+		for (int i = 1; i <= MaxClients; i++) {
+			if(!Bstat_IsValidClient(i) || !(g_iSettings[i][Bools] & SPEEDOMETER_ENABLED)) {
+				continue;
+			}
+			if((i == client && IsPlayerAlive(i)) || (GetHUDTarget(i) == client && !IsPlayerAlive(i))) {
+				int idx;
+				char sMessage[256];
+				Format(sMessage, sizeof(sMessage), "%i", speed);
+				if(g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop) {
+					float coeffsum = g_fRawGain[client];
+					coeffsum /= SPEED_UPDATE_INTERVAL;
+					coeffsum *= 100.0;
+					coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+					idx = Bstat_GetGainColorIdx(coeffsum);
+				} else {
+					if(speed > g_iLastSpeedometerVel[client]) {
+						idx = GainReallyGood;
+					} else if (speed == g_iLastSpeedometerVel[client]) {
+						idx = GainGood;
+					} else {
+						idx = GainReallyBad;
+					}
+				}
+				SetHudTextParams(-1.0, -1.0, 0.2, colors[idx][0], colors[idx][1], colors[idx][2], 255, 0, 0.0, 0.0, 0.0);
+				ShowHudText(i, GetDynamicChannel(4), sMessage); //SPEEDOMETER
+			}
+		}
+		g_fRawGain[client] = 0.0;
+		g_iLastSpeedometerVel[client] = speed;
+	}
+
 	return;
 }
 
@@ -277,13 +283,12 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 		}
 	}
 	ReplaceString(sMessage, sizeof(sMessage), "PCT", "%%", true);
-	SetHudTextParams(-1.0, g_iJhudPositions[g_iSettings[client][Position]], 1.0, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0);
-	ShowHudText(client, GetDynamicChannel(1), sMessage);
+	SetHudTextParams(-1.0, g_iJhudPositions[g_iSettings[client][Position]], 1.0, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0, 0.0);
+	ShowHudText(client, GetDynamicChannel(1), sMessage); //JHUD
 }
 
 public void Offset_DrawOffset(int client, int offset, bool overlap, bool nopress) {
 	int colorIdx = Offset_GetColorIdx(offset, overlap, nopress);
-	SetHudTextParams(-1.0, 0.35, 0.5, colors[colorIdx][0], colors[colorIdx][1], colors[colorIdx][2], 255, 0, 0.0, 0.0, 0.1);
 
 	char msg[256];
 	Format(msg, 256, "%d (%i)", offset, g_iRepeatedOffsets[client]);
@@ -293,7 +298,8 @@ public void Offset_DrawOffset(int client, int offset, bool overlap, bool nopress
 	if(nopress) {
 		Format(msg, 256, "%s No Press", msg);
 	}
-	ShowHudText(client, GetDynamicChannel(2), msg);
+	SetHudTextParams(-1.0, 0.35, 0.5, colors[colorIdx][0], colors[colorIdx][1], colors[colorIdx][2], 255, 0, 0.0, 0.0, 0.0);
+	ShowHudText(client, GetDynamicChannel(2), msg); //OFFSET
 }
 
 void ShowBHUDMenu(int client)

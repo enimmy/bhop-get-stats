@@ -160,12 +160,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	if(movetype == MOVETYPE_NONE || movetype == MOVETYPE_NOCLIP || movetype == MOVETYPE_LADDER || GetEntProp(client, Prop_Data, "m_nWaterLevel") >= 2) {
 		g_iTicksOnGround[client] = BHOP_FRAMES + 1; //lol
 	}
-
-	if(g_iTicksOnGround[client] == 0)
-	{
-		g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
-		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
-	}
+	g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
+	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
 	return Plugin_Continue;
 }
 
