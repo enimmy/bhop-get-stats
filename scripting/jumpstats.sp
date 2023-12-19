@@ -15,6 +15,9 @@
 #include <jumpstat/ssj.sp>
 #include <jumpstat/trainer.sp>
 
+#undef REQUIRE_PLUGIN
+#include <shavit>
+
 #pragma semicolon 1
 #pragma newdecls required
 

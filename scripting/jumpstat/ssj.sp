@@ -1,6 +1,3 @@
-#undef REQUIRE_PLUGIN
-#include <shavit>
-
 float g_fLastJumpTime[MAXPLAYERS + 1];
 bool g_bShavit = false;
 chatstrings_t g_sChatStrings;
