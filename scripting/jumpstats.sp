@@ -37,6 +37,12 @@
 #define TRAINER_TICK_INTERVAL 5
 #define SPEED_UPDATE_INTERVAL 10
 
+#define COLOR_BINARY_MIN_INT 0 //unused for now
+#define COLOR_BINARY_MAX_INT 15
+#define COLOR_BINARY_MASK 15
+#define COLOR_BINARY_MASKF 15.0
+#define COLOR_BINARY_BITS 4
+
 #define POSITION_MIN_INT 0
 #define POSITION_MAX_INT 255
 #define POS_BINARY_MASK 255
@@ -65,6 +71,7 @@ public Plugin myinfo =
 // 0000 0000 0000 0000 0000 0000 0000 0000 g_iSettngs[Position_X]
 // SPX       SPY       OX        OY
 //
+
 //Dynamic Channel Notes - CSS
 // Trainer 0 (here)
 // Jhud 1 (here)
@@ -266,32 +273,24 @@ public void OnClientCookiesCached(int client) {
 }
 
 void SetDefaults(int client) {
-	SetCookie(client, g_hSettings[Bools], 23);
 
-	// 0000 0000 0000 0000 0000 0000 0000 0000 (-1s)
-	// SX        OPX       TX        JX
-	// 
-	// 0000 0000 0101 1001 0011 0011 1001 1001 speed -1 offsets .35 trainer .2 jhud .6
-	// SY        OY        TY        JY
-	SetCookie(client, g_hSettings[Positions_X], 0); 
-	SetCookie(client, g_hSettings[Positions_Y], 5845913);
-	SetCookie(client, g_hSettings[Usage], 1);
-	SetCookie(client, g_hSettings[GainReallyBad], Red);
-	SetCookie(client, g_hSettings[GainBad], Orange);
-	SetCookie(client, g_hSettings[GainMeh], Green);
-	SetCookie(client, g_hSettings[GainGood], Cyan);
-	SetCookie(client, g_hSettings[GainReallyGood], White);
-
-	g_iSettings[client][Bools] = 23;
-	g_iSettings[client][Positions_X] = 0;
-	g_iSettings[client][Positions_Y] = 5845913;
-	g_iSettings[client][Usage] = 1;
+	g_iSettings[client][Bools] = 203079; //0000 0000 0000 0011 0001 1001 0100 0111
+	g_iSettings[client][Positions_X] = 0; //all center
+	g_iSettings[client][Positions_Y] = 5845913; //0000 0000 0101 1001 0011 0011 1001 1001 speed -1 offsets .35 trainer .2 jhud .6
+	g_iSettings[client][Usage] = 6;
 	g_iSettings[client][GainReallyBad] = Red;
 	g_iSettings[client][GainBad] = Orange;
 	g_iSettings[client][GainMeh] = Green;
 	g_iSettings[client][GainGood] = Cyan;
 	g_iSettings[client][GainReallyGood] = White;
 	PushPosCache(client);
+	SaveAllCookies(client);
+}
+
+void SaveAllCookies(int client) {
+	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++) {
+		SetCookie(client, g_hSettings[i], g_iSettings[client][i]);
+	}
 }
 
 public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss) {
