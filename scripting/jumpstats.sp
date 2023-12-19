@@ -208,7 +208,6 @@ public Action Command_Js(int client, any args)
 	{
 		return Plugin_Handled;
 	}
-	
 	ShowJsMenu(client);
 	return Plugin_Handled;
 }
@@ -422,8 +421,10 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 			}
 			for (int i = 1; i <= MaxClients; i++) 
 			{
-				if(!Bstat_IsValidClient(i) || !(g_iSettings[client][Bools] & TRAINER_ENABLED)) 
+				if(!Bstat_IsValidClient(i) || !(g_iSettings[client][Bools] & TRAINER_ENABLED))
+				{
 					continue;
+				}
 
 				if((i == client && IsPlayerAlive(i)) || (Bstat_GetHUDTarget(i) == client && !IsPlayerAlive(i))) 
 				{
@@ -595,7 +596,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 {
 	if(g_iSettings[client][Bools] & SSJ_REPEAT) 
 	{
-		if(jump % g_iSettings[client][Usage] != 0)\
+		if(jump % g_iSettings[client][Usage] != 0)
 		{
 			return;
 		}
@@ -747,9 +748,11 @@ void ShowSSJMenu(int client)
 	SetMenuTitle(menu, "Chat Jump Stats \n \n");
 	AddMenuItem(menu, "enSsj", (g_iSettings[client][Bools] & SSJ_ENABLED) ? "[x] Enabled":"[ ] Enabled");
 	AddMenuItem(menu, "enRepeat", (g_iSettings[client][Bools] & SSJ_REPEAT) ? "[x] Repeat":"[ ] Repeat");
+	
 	char sMessage[256];
 	Format(sMessage, sizeof(sMessage), "Usage: %i",g_iSettings[client][Usage]);
 	AddMenuItem(menu, "enUsage", sMessage);
+	
 	AddMenuItem(menu, "enGain", (g_iSettings[client][Bools] & SSJ_GAIN) ? "[x] Gain":"[ ] Gain");
 	AddMenuItem(menu, "enGainColor", (g_iSettings[client][Bools] & SSJ_GAIN_COLOR) ? "[x] Gain Colors":"[ ] Gain Color");
 	AddMenuItem(menu, "enSync", (g_iSettings[client][Bools] & SSJ_SYNC) ? "[x] Sync":"[ ] Sync");
