@@ -3,14 +3,14 @@
 #define TRAINER_FULLUPDATE_TICK_INTERVAL 13
 #define TRAINER_TICK_INTERVAL 5
 
-float g_fTrainerPercents[MAXPLAYERS + 1][2];
-float g_fLastAverage[MAXPLAYERS + 1];
-int g_iCmdNumTrain[MAXPLAYERS + 1];
+static float g_fTrainerPercents[MAXPLAYERS + 1][2];
+static float g_fLastAverage[MAXPLAYERS + 1];
+static int g_iCmdNum[MAXPLAYERS + 1];
 
 public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float jss)
 {
-	g_iCmdNumTrain[client]++;
-	bool trainer = (g_iCmdNumTrain[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNumTrain[client] % TRAINER_TICK_INTERVAL == 0);
+	g_iCmdNum[client]++;
+	bool trainer = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0);
 
 	if(!inbhop)
 	{
@@ -25,7 +25,7 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 		if(trainer)
 		{
 			float AveragePercentage;
-			bool fullUpdate = (g_iCmdNumTrain[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0);
+			bool fullUpdate = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0);
 
 			if (fullUpdate)
 			{
@@ -34,7 +34,7 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 				g_fLastAverage[client] = AveragePercentage;
 			}
 
-			if (g_iCmdNumTrain[client] % TRAINER_TICK_INTERVAL == 0)
+			if (g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0)
 			{
 				if(!fullUpdate)
 				{

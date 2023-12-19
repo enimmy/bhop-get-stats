@@ -1,8 +1,8 @@
-ConVar g_hOverrideJhud;
-ConVar g_hOverrideTrainer;
-ConVar g_hOverrideOffset;
-ConVar g_hOverrideSpeed;
-ConVar g_hOverrideSsj;
+static ConVar g_hOverrideJhud;
+static ConVar g_hOverrideTrainer;
+static ConVar g_hOverrideOffset;
+static ConVar g_hOverrideSpeed;
+static ConVar g_hOverrideSsj;
 
 void Commands_Start()
 {

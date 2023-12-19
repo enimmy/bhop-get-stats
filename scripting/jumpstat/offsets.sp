@@ -1,5 +1,5 @@
-int g_iLastOffset[MAXPLAYERS + 1];
-int g_iRepeatedOffsets[MAXPLAYERS + 1];
+static int g_iLastOffset[MAXPLAYERS + 1];
+static int g_iRepeatedOffsets[MAXPLAYERS + 1];
 
 public void Offset_Process(int client, int offset, bool overlap, bool nopress)
 {

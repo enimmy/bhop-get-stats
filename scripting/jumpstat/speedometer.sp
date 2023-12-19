@@ -1,20 +1,20 @@
 #define SPEED_UPDATE_INTERVAL 10
 
-int g_iLastSpeedometerVel[MAXPLAYERS + 1];
-float g_fRawGain[MAXPLAYERS + 1];
-int g_iCmdNumSpeed[MAXPLAYERS + 1];
+static int g_iLastSpeedometerVel[MAXPLAYERS + 1];
+static float g_fRawGain[MAXPLAYERS + 1];
+static int g_iCmdNum[MAXPLAYERS + 1];
 
 void Speedometer_Tick(int client, int speed, bool inbhop, float gain)
 {
-	g_iCmdNumSpeed[client]++;
-	bool speedometer = (g_iCmdNumSpeed[client] % SPEED_UPDATE_INTERVAL == 0);
+	g_iCmdNum[client]++;
+	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
 
 	if(!inbhop)
 	{
 		g_fRawGain[client] = 0.0;
 		if(speedometer)
 		{
-			g_iCmdNumSpeed[client] = 0;
+			g_iCmdNum[client] = 0;
 		}
 	}
 	else

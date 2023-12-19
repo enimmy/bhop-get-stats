@@ -1,7 +1,6 @@
-int g_iEditGain[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which gain catergory (50-, 50-60, etc) the player wants to edit the color of
-int g_iEditHud[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which hud (jhud, offset, etc) the player wants to edit the position of
-
-bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", see OnPlayerRunCmd
+static int g_iEditGain[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which gain catergory (50-, 50-60, etc) the player wants to edit the color of
+static int g_iEditHud[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which hud (jhud, offset, etc) the player wants to edit the position of
+static bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", see OnPlayerRunCmd
 
 void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 	if(!g_bEditing[client])
