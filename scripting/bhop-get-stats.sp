@@ -68,7 +68,7 @@ public void OnPluginStart()
 	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
 	//yawing not done
 	//add airpath, veer, jumpoff angle on j1
-	
+
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
 
@@ -301,7 +301,7 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 			}
 			g_fRawGain[client] += gaincoeff;
 			g_fTickGain[client] = gaincoeff;
-			
+
 			PrintDebugMsg(client, "Tick Gain: %f", g_fTickGain[client]);
 			if(g_iStrafeTick[client]) {
 				PrintDebugMsg(client, "Gain: %f", g_fRawGain[client] / g_fRawGain[client]);
@@ -349,7 +349,7 @@ void StartJumpForward(int target) {
 	GetEntPropVector(target, Prop_Data, "m_vecAbsVelocity", velocity);
 	velocity[2] = 0.0;
 	int speed = RoundToFloor(GetVectorLength(velocity));
-	
+
 	if(g_iJump[target] == 1) //probs a better way to do this idk
 	{
 		Call_StartForward(JumpStatsForward);
@@ -442,7 +442,7 @@ float GetRunCmdVelocity(int client, bool twodimensions) {
 float NormalizeAngle(float ang)
 {
 	while (ang > 180.0) ang -= 360.0;
-	while (ang < -180.0) ang += 360.0; 
+	while (ang < -180.0) ang += 360.0;
 	return ang;
 }
 
