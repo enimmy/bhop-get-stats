@@ -53,12 +53,12 @@
 #define X_DIM 0
 #define Y_DIM 1
 
-public Plugin myinfo = 
+public Plugin myinfo =
 {
 	name = "bgs-jumpstats",
 	author = "Nimmy",
-	description = "all kinds of stuff", 
-	version = "3.0", 
+	description = "all kinds of stuff",
+	version = "3.0",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 
@@ -67,7 +67,7 @@ public Plugin myinfo =
 //
 // 0000 0000 0000 0000 0000 0000 0000 0000 g_iSettngs[Position_Y]
 // TX        TY        JX        JY
-// 
+//
 // 0000 0000 0000 0000 0000 0000 0000 0000 g_iSettngs[Position_X]
 // SPX       SPY       OX        OY
 //
@@ -130,7 +130,7 @@ chatstrings_t g_sChatStrings;
 float g_fLastJumpTime[MAXPLAYERS + 1];
 EngineVersion gEV_Type = Engine_Unknown;
 
-public void OnPluginStart() 
+public void OnPluginStart()
 {
 	RegConsoleCmd("sm_js", Command_Js, "Opens the bhud main menu");
 	RegConsoleCmd("sm_strafetrainer", Command_CheckTrainerOverride, "Opens the bhud main menu");
@@ -158,16 +158,16 @@ public void OnPluginStart()
 	g_hSettings[Positions_X] 	= RegClientCookie("js-hud-positions-x", "", CookieAccess_Protected);
 	g_hSettings[Positions_Y] 	= RegClientCookie("js-hud-positions-y", "", CookieAccess_Protected);
 
-	for(int i = 1; i <= MaxClients; i++) 
+	for(int i = 1; i <= MaxClients; i++)
 	{
-		if(AreClientCookiesCached(i)) 
+		if(AreClientCookiesCached(i))
 		{
 			OnClientCookiesCached(i);
 		}
 	}
 
 	g_bShavit = LibraryExists("shavit");
-	if(g_bLate && g_bShavit) 
+	if(g_bLate && g_bShavit)
 	{
 		Shavit_OnChatConfigLoaded();
 	}
@@ -177,22 +177,22 @@ public void OnPluginStart()
 
 public void OnLibraryAdded(const char[] name)
 {
-	if(StrEqual(name, "shavit")) 
+	if(StrEqual(name, "shavit"))
 	{
 		g_bShavit = true;
 		Shavit_OnChatConfigLoaded();
 	}
 }
 
-public void OnLibraryRemoved(const char[] name) 
+public void OnLibraryRemoved(const char[] name)
 {
-	if(StrEqual(name, "shavit")) 
+	if(StrEqual(name, "shavit"))
 	{
 		g_bShavit = false;
 	}
 }
 
-public void Shavit_OnChatConfigLoaded() 
+public void Shavit_OnChatConfigLoaded()
 {
 	Shavit_GetChatStrings(sMessagePrefix, g_sChatStrings.sPrefix, sizeof(chatstrings_t::sPrefix));
 	Shavit_GetChatStrings(sMessageText, g_sChatStrings.sText, sizeof(chatstrings_t::sText));
@@ -202,9 +202,9 @@ public void Shavit_OnChatConfigLoaded()
 	Shavit_GetChatStrings(sMessageStyle, g_sChatStrings.sStyle, sizeof(chatstrings_t::sStyle));
 }
 
-public Action Command_Js(int client, any args) 
+public Action Command_Js(int client, any args)
 {
-	if(!Bstat_IsValidClient(client)) 
+	if(!Bstat_IsValidClient(client))
 	{
 		return Plugin_Handled;
 	}
@@ -212,9 +212,9 @@ public Action Command_Js(int client, any args)
 	return Plugin_Handled;
 }
 
-public Action Command_CheckJhudOverride(int client, any args) 
+public Action Command_CheckJhudOverride(int client, any args)
 {
-	if(g_hOverrideJhud.IntValue) 
+	if(g_hOverrideJhud.IntValue)
 	{
 		Command_Js(client, 0);
 		return Plugin_Handled;
@@ -222,9 +222,9 @@ public Action Command_CheckJhudOverride(int client, any args)
 	return Plugin_Continue;
 }
 
-public Action Command_CheckTrainerOverride(int client, any args) 
+public Action Command_CheckTrainerOverride(int client, any args)
 {
-	if(g_hOverrideTrainer.IntValue) 
+	if(g_hOverrideTrainer.IntValue)
 	{
 		Command_Js(client, 0);
 		return Plugin_Handled;
@@ -232,9 +232,9 @@ public Action Command_CheckTrainerOverride(int client, any args)
 	return Plugin_Continue;
 }
 
-public Action Command_CheckSpeedOverride(int client, any args) 
+public Action Command_CheckSpeedOverride(int client, any args)
 {
-	if(g_hOverrideSpeed.IntValue) 
+	if(g_hOverrideSpeed.IntValue)
 	{
 		Command_Js(client, 0);
 		return Plugin_Handled;
@@ -242,9 +242,9 @@ public Action Command_CheckSpeedOverride(int client, any args)
 	return Plugin_Continue;
 }
 
-public Action Command_CheckOffsetOverride(int client, any args) 
+public Action Command_CheckOffsetOverride(int client, any args)
 {
-	if(g_hOverrideOffset.IntValue) 
+	if(g_hOverrideOffset.IntValue)
 	{
 		Command_Js(client, 0);
 		return Plugin_Handled;
@@ -252,9 +252,9 @@ public Action Command_CheckOffsetOverride(int client, any args)
 	return Plugin_Continue;
 }
 
-public Action Command_CheckSsjOverride(int client, any args) 
+public Action Command_CheckSsjOverride(int client, any args)
 {
-	if(g_hOverrideSsj.IntValue) 
+	if(g_hOverrideSsj.IntValue)
 	{
 		Command_Js(client, 0);
 		return Plugin_Handled;
@@ -264,7 +264,7 @@ public Action Command_CheckSsjOverride(int client, any args)
 
 public void PushPosCache(int client)
 {
-	for(int i = 0; i < 4; i++) 
+	for(int i = 0; i < 4; i++)
 	{
 		g_fCacheHudPositions[client][i][X_DIM] = Bstat_GetAdjustedHudCoordinate(Bstat_GetIntSubValue(g_iSettings[client][Positions_X], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF, POS_COORD_BIAS);
 		g_fCacheHudPositions[client][i][Y_DIM] = Bstat_GetAdjustedHudCoordinate(Bstat_GetIntSubValue(g_iSettings[client][Positions_Y], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF, POS_COORD_BIAS);
@@ -276,10 +276,10 @@ public void OnClientCookiesCached(int client)
 {
 	char strCookie[8];
 
-	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++) 
+	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++)
 	{
 		GetClientCookie(client, g_hSettings[i], strCookie, sizeof(strCookie));
-		if(strCookie[0] == '\0') 
+		if(strCookie[0] == '\0')
 		{
 			SetDefaults(client);
 			return;
@@ -287,9 +287,9 @@ public void OnClientCookiesCached(int client)
 		g_iSettings[client][i] = StringToInt(strCookie);
 	}
 
-	for(int i = COLOR_SETTINGS_START_IDX; i < COLOR_SETTINGS_END_IDX; i++) 
+	for(int i = COLOR_SETTINGS_START_IDX; i < COLOR_SETTINGS_END_IDX; i++)
 	{
-		if(g_iSettings[client][i] >= COLORS_NUMBER  || g_iSettings[client][i] < 0) 
+		if(g_iSettings[client][i] >= COLORS_NUMBER  || g_iSettings[client][i] < 0)
 		{
 			SetDefaults(client);
 			return;
@@ -299,7 +299,7 @@ public void OnClientCookiesCached(int client)
 	g_bEditing[client] = false;
 }
 
-void SetDefaults(int client) 
+void SetDefaults(int client)
 {
 	g_iSettings[client][Bools] = 203079; //0000 0000 0000 0011 0001 1001 0100 0111
 	g_iSettings[client][Positions_X] = 0; //all center
@@ -314,36 +314,36 @@ void SetDefaults(int client)
 	SaveAllCookies(client);
 }
 
-void SaveAllCookies(int client) 
+void SaveAllCookies(int client)
 {
-	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++) 
+	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++)
 	{
 		SetCookie(client, g_hSettings[i], g_iSettings[client][i]);
 	}
 }
 
-public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss) 
+public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
 {
-	
+
 	float time = 0.0;
-	if(g_bShavit) 
+	if(g_bShavit)
 	{
 		time = Shavit_GetClientTime(client);
 	}
 
-	for(int i = 1; i < MaxClients; i++) 
+	for(int i = 1; i < MaxClients; i++)
 	{
-		if((!(g_iSettings[i][Bools] & JHUD_ENABLED) && !(g_iSettings[i][Bools] & SSJ_ENABLED)) || !Bstat_IsValidClient(i)) 
+		if((!(g_iSettings[i][Bools] & JHUD_ENABLED) && !(g_iSettings[i][Bools] & SSJ_ENABLED)) || !Bstat_IsValidClient(i))
 		{
 			continue;
 		}
-		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && Bstat_GetHUDTarget(i) == client)) 
+		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && Bstat_GetHUDTarget(i) == client))
 		{
-			if(g_iSettings[i][Bools] & JHUD_ENABLED) 
+			if(g_iSettings[i][Bools] & JHUD_ENABLED)
 			{
 				JHUD_DrawStats(i, jump, speed, gain, sync, jss);
 			}
-			if(g_iSettings[i][Bools] & SSJ_ENABLED) 
+			if(g_iSettings[i][Bools] & SSJ_ENABLED)
 			{
 				SSJ_WriteMessage(i, client, jump, speed, strafecount, heightdelta, gain, sync, eff);
 			}
@@ -352,17 +352,17 @@ public void BhopStat_JumpForward(int client, int jump, int speed, int strafecoun
 	g_fLastJumpTime[client] = time;
 }
 
-public void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress) 
+public void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress)
 {
-	if(g_iLastOffset[client] == offset) 
+	if(g_iLastOffset[client] == offset)
 	{
 		g_iRepeatedOffsets[client]++;
-	} 
-	else 
+	}
+	else
 	{
 		g_iRepeatedOffsets[client] = 0;
 	}
-	for(int i = 1; i < MaxClients; i++) 
+	for(int i = 1; i < MaxClients; i++)
 	{
 		if(!(g_iSettings[i][Bools] & OFFSETS_ENABLED) || !Bstat_IsValidClient(i))
 		{
@@ -377,56 +377,56 @@ public void BhopStat_StrafeForward(int client, int offset, bool overlap, bool no
 	g_iLastOffset[client] = offset;
 }
 
-public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain, float jss) 
+public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain, float jss)
 {
 	g_iCmdNum[client]++;
 	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
 	bool trainer = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0);
-	
-	if(!inbhop) 
+
+	if(!inbhop)
 	{
 		g_fTrainerPercents[client][FullPercent] = 0.0;
 		g_fTrainerPercents[client][BarPercent] = 0.0;
 		g_fRawGain[client] = 0.0;
-		if(speedometer) 
+		if(speedometer)
 		{
 			g_iCmdNum[client] = 0;
 		}
 	}
-	else 
+	else
 	{
 		g_fTrainerPercents[client][FullPercent] += jss;
 		g_fTrainerPercents[client][BarPercent] += jss;
 		g_fRawGain[client] += gain;
 
-		if(trainer) 
+		if(trainer)
 		{
 			float AveragePercentage;
 			bool fullUpdate = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0);
 
-			if (fullUpdate) 
+			if (fullUpdate)
 			{
 				AveragePercentage = g_fTrainerPercents[client][FullPercent] / TRAINER_FULLUPDATE_TICK_INTERVAL;
 				g_fTrainerPercents[client][FullPercent] = 0.0;
 				g_fLastAverage[client] = AveragePercentage;
 			}
 
-			if (g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0) 
+			if (g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0)
 			{
-				if(!fullUpdate) 
+				if(!fullUpdate)
 				{
 					AveragePercentage = g_fTrainerPercents[client][BarPercent] / TRAINER_TICK_INTERVAL;
 				}
 				g_fTrainerPercents[client][BarPercent] = 0.0;
 			}
-			for (int i = 1; i <= MaxClients; i++) 
+			for (int i = 1; i <= MaxClients; i++)
 			{
 				if(!Bstat_IsValidClient(i) || !(g_iSettings[client][Bools] & TRAINER_ENABLED))
 				{
 					continue;
 				}
 
-				if((i == client && IsPlayerAlive(i)) || (Bstat_GetHUDTarget(i) == client && !IsPlayerAlive(i))) 
+				if((i == client && IsPlayerAlive(i)) || (Bstat_GetHUDTarget(i) == client && !IsPlayerAlive(i)))
 				{
 					char sMessage[256];
 					Trainer_GetTrainerString(sMessage, g_fLastAverage[client], AveragePercentage);
@@ -441,14 +441,14 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 	}
 
 	if(speedometer) {
-		for (int i = 1; i <= MaxClients; i++) 
+		for (int i = 1; i <= MaxClients; i++)
 		{
 			if(!Bstat_IsValidClient(i) || !(g_iSettings[i][Bools] & SPEEDOMETER_ENABLED))
 			{
 				continue;
 			}
 
-			if((i == client && IsPlayerAlive(i)) || (Bstat_GetHUDTarget(i) == client && !IsPlayerAlive(i))) 
+			if((i == client && IsPlayerAlive(i)) || (Bstat_GetHUDTarget(i) == client && !IsPlayerAlive(i)))
 			{
 				int idx;
 				char sMessage[256];
@@ -457,21 +457,21 @@ public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain,
 				coeffsum /= SPEED_UPDATE_INTERVAL;
 				coeffsum *= 100.0;
 				coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
-				if(g_iSettings[i][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop) 
+				if(g_iSettings[i][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop)
 				{
 					idx = Bstat_GetGainColorIdx(coeffsum);
-				} 
-				else 
+				}
+				else
 				{
-					if(speed > g_iLastSpeedometerVel[client]) 
+					if(speed > g_iLastSpeedometerVel[client])
 					{
 						idx = GainReallyGood;
-					} 
-					else if (speed == g_iLastSpeedometerVel[client]) 
+					}
+					else if (speed == g_iLastSpeedometerVel[client])
 					{
 						idx = GainGood;
-					} 
-					else 
+					}
+					else
 					{
 						idx = GainReallyBad;
 					}
@@ -492,33 +492,33 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 	{
 		return Plugin_Continue;
 	}
-	
+
 	bool edit = true;
 	bool up = false;
 	int editDim;
-	if(buttons & IN_MOVERIGHT) 
+	if(buttons & IN_MOVERIGHT)
 	{
 		editDim = Positions_X;
-	} 
-	else if(buttons & IN_MOVELEFT) 
+	}
+	else if(buttons & IN_MOVELEFT)
 	{
 		editDim = Positions_X;
 		up = true;
-	} 
-	else if(buttons & IN_FORWARD) 
+	}
+	else if(buttons & IN_FORWARD)
 	{
 		up = true;
 		editDim = Positions_Y;
-	} 
-	else if(buttons & IN_BACK) 
+	}
+	else if(buttons & IN_BACK)
 	{
 		editDim = Positions_Y;
-	} 
-	else 
+	}
+	else
 	{
 		edit = false;
 	}
-	if(edit) 
+	if(edit)
 	{
 		EditHudPosition(client, editDim, up);
 	}
@@ -526,7 +526,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 	return Plugin_Continue;
 }
 
-public void EditHudPosition(int client, int editDim, bool up) 
+public void EditHudPosition(int client, int editDim, bool up)
 {
 	int get4;
 	if(up)
@@ -537,7 +537,7 @@ public void EditHudPosition(int client, int editDim, bool up)
 	{
 		get4 = Bstat_GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK) + 1;
 	}
-	
+
 	if(get4 < POSITION_MIN_INT)
 	{
 		get4 = POSITION_MAX_INT;
@@ -554,10 +554,10 @@ public void EditHudPosition(int client, int editDim, bool up)
 	ShowHudText(client, GetDynamicChannel(0), g_sHudStrs[g_iEditHud[client]]);
 }
 
-void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, float jss) 
+void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, float jss)
 {
 	int ijss = RoundToFloor(jss * 100);
-	
+
 	char sMessage[256];
 
 	int settingIdx;
@@ -574,7 +574,7 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	rgb = g_iBstatColors[g_iSettings[client][settingIdx]];
 
 	Format(sMessage, sizeof(sMessage), "%i: %i", jump, speed);
-	if(jump > 1) 
+	if(jump > 1)
 	{
 		if(g_iSettings[client][Bools] & JHUD_JSS == JHUD_JSS)
 		{
@@ -592,15 +592,15 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	ShowHudText(client, GetDynamicChannel(1), sMessage); //JHUD
 }
 
-void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff) 
+void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff)
 {
-	if(g_iSettings[client][Bools] & SSJ_REPEAT) 
+	if(g_iSettings[client][Bools] & SSJ_REPEAT)
 	{
 		if(jump % g_iSettings[client][Usage] != 0)
 		{
 			return;
 		}
-	} 
+	}
 	else if(jump != g_iSettings[client][Usage])
 	{
 		return;
@@ -610,7 +610,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 	FormatEx(sMessage, sizeof(sMessage), "J: %s%i", g_sChatStrings.sVariable, jump);
 	Format(sMessage, sizeof(sMessage), "%s %s| S: %s%i", sMessage, g_sChatStrings.sText, g_sChatStrings.sVariable, speed);
 
-	if(jump > 1) 
+	if(jump > 1)
 	{
 		float time = 0.0;
 		if(g_bShavit)
@@ -618,14 +618,14 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 			time = Shavit_GetClientTime(client);
 		}
 
-		if(g_iSettings[client][Bools] & SSJ_GAIN) 
+		if(g_iSettings[client][Bools] & SSJ_GAIN)
 		{
-			if(g_iSettings[client][Bools] & SSJ_GAIN_COLOR) 
+			if(g_iSettings[client][Bools] & SSJ_GAIN_COLOR)
 			{
 				int idx = Bstat_GetGainColorIdx(gain);
 				int settingsIdx = g_iSettings[client][idx];
 				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, g_sChatStrings.sText, g_sBstatColorsHex[settingsIdx], gain);
-			} 
+			}
 			else
 			{
 				Format(sMessage, sizeof(sMessage), "%s %s| G: %s%.1f%%", sMessage, g_sChatStrings.sText, g_sChatStrings.sVariable, gain);
@@ -663,7 +663,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 		}
 	}
 
-	if(g_bShavit) 
+	if(g_bShavit)
 	{
 		Shavit_StopChatSound();
 		Shavit_PrintToChat(client, "%s", sMessage); // Thank you, GAMMACASE
@@ -675,7 +675,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 	}
 }
 
-public void Offset_DrawOffset(int client, int offset, bool overlap, bool nopress) 
+public void Offset_DrawOffset(int client, int offset, bool overlap, bool nopress)
 {
 	char msg[256];
 	Format(msg, 256, "%d (%i)", offset, g_iRepeatedOffsets[client]);
@@ -712,7 +712,7 @@ public int Js_Select(Menu menu, MenuAction action, int client, int option)
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-		
+
 		if(StrEqual(info, "chat"))
 		{
 			ShowSSJMenu(client);
@@ -748,11 +748,11 @@ void ShowSSJMenu(int client)
 	SetMenuTitle(menu, "Chat Jump Stats \n \n");
 	AddMenuItem(menu, "enSsj", (g_iSettings[client][Bools] & SSJ_ENABLED) ? "[x] Enabled":"[ ] Enabled");
 	AddMenuItem(menu, "enRepeat", (g_iSettings[client][Bools] & SSJ_REPEAT) ? "[x] Repeat":"[ ] Repeat");
-	
+
 	char sMessage[256];
 	Format(sMessage, sizeof(sMessage), "Usage: %i",g_iSettings[client][Usage]);
 	AddMenuItem(menu, "enUsage", sMessage);
-	
+
 	AddMenuItem(menu, "enGain", (g_iSettings[client][Bools] & SSJ_GAIN) ? "[x] Gain":"[ ] Gain");
 	AddMenuItem(menu, "enGainColor", (g_iSettings[client][Bools] & SSJ_GAIN_COLOR) ? "[x] Gain Colors":"[ ] Gain Color");
 	AddMenuItem(menu, "enSync", (g_iSettings[client][Bools] & SSJ_SYNC) ? "[x] Sync":"[ ] Sync");
@@ -770,7 +770,7 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-		
+
 		if(StrEqual(info, "enSsj"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_ENABLED;
@@ -794,7 +794,7 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "enGainColor"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_GAIN_COLOR;
-		} 
+		}
 		else if(StrEqual(info, "enSync"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_SYNC;
@@ -855,7 +855,7 @@ public int BHUD_Select(Menu menu, MenuAction action, int client, int option)
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-		
+
 		if(StrEqual(info, "enJhud"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_ENABLED;
@@ -876,7 +876,7 @@ public int BHUD_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			ShowJhudSettingsMenu(client);
 			return 0;
-		} 
+		}
 		else if(StrEqual(info, "speedSettings"))
 		{
 			ShowSpeedSettingsMenu(client);
@@ -902,29 +902,29 @@ public int BHUD_Select(Menu menu, MenuAction action, int client, int option)
 	return 0;
 }
 
-void ShowColorsMenu(int client) 
+void ShowColorsMenu(int client)
 {
 	Menu menu = new Menu(Colors_Callback);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Colors Settings");
 
 	int editing = g_iEditGain[client];
-	if(editing == GainReallyBad) 
+	if(editing == GainReallyBad)
 	{
 		AddMenuItem(menu, "editing", "< Very Bad >");
-	} 
-	else if (editing == GainBad) 
+	}
+	else if (editing == GainBad)
 	{
 		AddMenuItem(menu, "editing", "< Bad >");
-	} 
-	else if (editing == GainMeh) 
+	}
+	else if (editing == GainMeh)
 	{
 		AddMenuItem(menu, "editing", "< Gain: Okay >");
-	} 
-	else if (editing == GainGood) 
+	}
+	else if (editing == GainGood)
 	{
 		AddMenuItem(menu, "editing", "< Gain: Good >");
-	} 
+	}
 	else if (editing == GainReallyGood)
 	{
 		AddMenuItem(menu, "editing", "< Very Good >");
@@ -934,13 +934,13 @@ void ShowColorsMenu(int client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public int Colors_Callback(Menu menu, MenuAction action, int client, int option) 
+public int Colors_Callback(Menu menu, MenuAction action, int client, int option)
 {
 	if(action == MenuAction_Select)
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-		
+
 		if(StrEqual(info, "editing"))
 		{
 			g_iEditGain[client]++;
@@ -975,7 +975,7 @@ public int Colors_Callback(Menu menu, MenuAction action, int client, int option)
 	return 0;
 }
 
-void ShowJhudSettingsMenu(int client) 
+void ShowJhudSettingsMenu(int client)
 {
 	Menu menu = new Menu(Jhud_SettingSelect);
 	menu.ExitBackButton = true;
@@ -986,7 +986,7 @@ void ShowJhudSettingsMenu(int client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-void ShowSpeedSettingsMenu(int client) 
+void ShowSpeedSettingsMenu(int client)
 {
 	Menu menu = new Menu(Speedometer_SettingSelect);
 	menu.ExitBackButton = true;
@@ -995,7 +995,7 @@ void ShowSpeedSettingsMenu(int client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-void ShowPosEditMenu(int client) 
+void ShowPosEditMenu(int client)
 {
 	Menu menu = new Menu(Pos_Edit_Handler);
 	menu.ExitBackButton = true;
@@ -1017,7 +1017,7 @@ public int Pos_Edit_Handler(Menu menu, MenuAction action, int client, int option
 		if(StrEqual(info, "editingHud"))
 		{
 			g_iEditHud[client]++;
-			if(g_iEditHud[client] >= 4) 
+			if(g_iEditHud[client] >= 4)
 			{
 				g_iEditHud[client] = 0;
 			}
@@ -1028,7 +1028,7 @@ public int Pos_Edit_Handler(Menu menu, MenuAction action, int client, int option
 			Bstat_SetIntSubValue(g_iSettings[client][Positions_Y], 0, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
 			PushPosCache(client);
 		}
-		else if(StrEqual(info, "editMode")) 
+		else if(StrEqual(info, "editMode"))
 		{
 			g_bEditing[client] = !g_bEditing[client];
 		}
@@ -1056,7 +1056,7 @@ public int Jhud_SettingSelect(Menu menu, MenuAction action, int client, int opti
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-		
+
 		if(StrEqual(info, "strafespeed"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_JSS;
@@ -1090,7 +1090,7 @@ public int Speedometer_SettingSelect(Menu menu, MenuAction action, int client, i
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-		
+
 		if(StrEqual(info, "speedGainColor"))
 		{
 			g_iSettings[client][Bools] ^= SPEEDOMETER_GAIN_COLOR;
@@ -1110,7 +1110,7 @@ public int Speedometer_SettingSelect(Menu menu, MenuAction action, int client, i
 	return 0;
 }
 
-void SetCookie(int client, Cookie hCookie, int n) 
+void SetCookie(int client, Cookie hCookie, int n)
 {
 	char strCookie[64];
 	IntToString(n, strCookie, sizeof(strCookie));
