@@ -429,13 +429,6 @@ void StartTickForward(int client) {
 	Call_Finish();
 }
 
-float NormalizeAngle(float ang)
-{
-	while (ang > 180.0) ang -= 360.0;
-	while (ang < -180.0) ang += 360.0; 
-	return ang;
-}
-
 float GetRunCmdVelocity(int client, bool twodimensions) {
 	float vel[3];
 	vel = g_fRunCmdVelVec[client];
@@ -444,6 +437,13 @@ float GetRunCmdVelocity(int client, bool twodimensions) {
 		return GetVectorLength(vel);
 	}
 	return GetVectorLength(vel);
+}
+
+float NormalizeAngle(float ang)
+{
+	while (ang > 180.0) ang -= 360.0;
+	while (ang < -180.0) ang += 360.0; 
+	return ang;
 }
 
 void PrintDebugMsg(int client, const char[] msg, any...)

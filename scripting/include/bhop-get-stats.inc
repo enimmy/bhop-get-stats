@@ -48,50 +48,28 @@ forward void BhopStat_StrafeForward(int client, int offset, bool overlap, bool n
  */
 forward void BhopStat_TickForward(int client, int speed, bool inBhop, float gain, float jss);
 
+// 0000 0000 0000 0000 0000 0000 0000 0000
+// SX        OPX       TX        JX
+// 
+// 0000 0000 0000 0000 0000 0000 0000 0000
+// SY        OY        TY        JY
 
-#define JHUD_SETTINGS_NUMBER 7
-#define JHUD_SETTINGS_COLOR_START_IDX 0
-#define JHUD_SETTINGS_COLOR_END_IDX 4
-#define JHUD_SETTINGS_COLORS_NUMBER 9
-
-#define JHUD_ENABLED 1 << 0
-#define JHUD_JSS 1 << 1
-#define JHUD_SYNC 1 << 2
-#define JHUD_EXTRASPEED 1 << 3
-#define TRAINER_ENABLED 1 << 4
-#define OFFSETS_ENABLED 1 << 5
-#define SPEEDOMETER_ENABLED 1 << 6
-#define SPEEDOMETER_SMALL_TEXT 1 << 7
-#define SPEEDOMETER_GAIN_COLOR 1 << 8
-
-#define TRAINER_FULLUPDATE_TICK_INTERVAL 13
-#define TRAINER_TICK_INTERVAL 5
-#define SPEED_UPDATE_INTERVAL 10
-
-enum //indexes of jhud positions
+enum //indexes of binary position locations
 {
-	Center,
-	Top,
-	Bottom
+	Jhud,
+	Trainer,
+	Offset,
+	Speed
 };
 
-float g_iJhudPositions[3] = { //Jhud positions
-	-1.0,
-	0.4,
-	-0.4
+char g_sHudStrs[][] = {
+	"Jhud",
+	"Trainer",
+	"Offset",
+	"Speed"
 };
 
-enum //indexes of settings masterhud
-{
-	GainReallyBad, //Red
-	GainBad, //Orange
-	GainMeh, //Green
-	GainGood, //Cyan
-	GainReallyGood, //White
-	Bools,
-	Position
-}
-
+#define COLORS_NUMBER 9
 
 enum //enum for colors same indexes as colors below
 {
@@ -106,7 +84,7 @@ enum //enum for colors same indexes as colors below
 	Pink
 };
 
-char colorStrs[][] = { //strings for colors at same indexes as colors below
+char g_sBstatColorStrs[][] = { //strings for colors at same indexes as colors below
 	"Red",
 	"Orange",
 	"Green",
@@ -118,7 +96,19 @@ char colorStrs[][] = { //strings for colors at same indexes as colors below
 	"Pink"
 };
 
-int colors[][3] = { //general colors
+char g_sBstatColorsHex[][] = {
+	"\x07ff0000",
+	"\x07ffa500",
+	"\x0700ff00",
+	"\x0700ffff",
+	"\x07ffffff",
+	"\x07ffff00",
+	"\x070000ff",
+	"\x07800080",
+	"\x07ee00ff"
+};
+
+int g_iBstatColors[][] = { //general colors
 	{255, 0, 0},
 	{255, 165, 0},
 	{0, 255, 0},
@@ -130,7 +120,7 @@ int colors[][3] = { //general colors
 	{238, 0, 255}
 };
 
-int g_iJhudSpeedValues[][4] = { //jhud colors based on speeds for first 6 or first 16
+int g_iJhudSpeedValues[][] = { //jhud colors based on speeds for first 6 or first 16
 	{},  				    // null
 	{280, 282, 287, 289},  	// 1
 	{366, 370, 375, 380},  	// 2
@@ -169,7 +159,7 @@ stock void Trainer_VisualisationString(char[] buffer, int maxlength, float perce
 	}
 }
 
-//writes to trainer, number and average are different. number is on top, average is the | in the middle. they update at different rates
+//sMessage, number and average are different. number is on top, average is the | in the middle. they update at different rates
 stock void Trainer_GetTrainerString(char sMessage[256], float number, float average) {
 	char sVisualisation[32];
 	Trainer_VisualisationString(sVisualisation, sizeof(sVisualisation), average);
@@ -181,17 +171,19 @@ stock void Trainer_GetTrainerString(char sMessage[256], float number, float aver
 
 stock int Offset_GetColorIdx(int offset, bool overlap, bool nopress) {
     if(overlap || nopress || offset > 0) {
-        return Red;
+        return GainReallyBad;
     }
     if(offset == 0) {
-		return Cyan;
+		return GainGood;
     } else if(offset == -1) {
-		return White;
+		return GainReallyGood;
     } else if(offset == -2) {
-		return Green;
-    } else {
-		return Red;
-    }
+		return GainMeh;
+	} else if(offset == -3) {
+		return GainBad;
+	} else {
+		return GainReallyBad;
+	}
 }
 
 stock int Bstat_GetGainColorIdx(float gain) {
@@ -228,7 +220,7 @@ stock int Bstat_GetSpeedColorIdx(int jump, int speed) {
 	}
 }
 
-stock int GetHUDTarget(int client, int fallback = -1) {
+stock int Bstat_GetHUDTarget(int client, int fallback = -1) {
 	int target = fallback;
 	if(IsClientObserver(client)) {
 		int iObserverMode = GetEntProp(client, Prop_Send, "m_iObserverMode");
@@ -246,8 +238,35 @@ stock bool Bstat_IsValidClient(int client, bool bAlive = false) {
 	return (client >= 1 && client <= MaxClients && IsClientInGame(client) && !IsClientSourceTV(client) && (!bAlive || IsPlayerAlive(client)));
 }
 
-stock void Bstat_SetCookie(int client, Cookie hCookie, int n) {
-	char strCookie[64];
-	IntToString(n, strCookie, sizeof(strCookie));
-	SetClientCookie(client, hCookie, strCookie);
+stock int Bstat_GetIntSubValue(int num, int position, int binaryShift, int binaryMask) {
+	return (num >> position * binaryShift) & binaryMask;
+}
+
+stock void Bstat_SetIntSubValue(int &editNum, int insertVal, int position, int binaryShift, int binaryMask) {
+	editNum = (editNum & ~(binaryMask << (position * binaryShift))) | ((insertVal & binaryMask) << (position * binaryShift));
+}
+
+stock float Bstat_GetAdjustedHudCoordinate(int value, float scaler, float bias) {
+	if(value < 0 || value > RoundToFloor(scaler)) {
+		return -1.0;
+	}
+	float adjVal = (value / scaler) - bias; //255 - 0.01
+	if(adjVal < 0.0) {
+		return -1.0;
+	}
+	return adjVal;
+}
+
+stock int Bstat_HudCoordinateToInt(float value, int scaler, int min, int max) {
+	if(value != -1.0 && (value < 0 || value > 1.0)) {
+		return 0;
+	}
+	int adjVal = RoundToFloor(value * scaler);
+	if(adjVal > max) {
+		adjVal = max;
+	}
+	if(adjVal < min) {
+		adjVal = min;
+	}
+	return adjVal;
 }
