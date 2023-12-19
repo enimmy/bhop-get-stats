@@ -7,8 +7,6 @@
 #include <jumpstat/colors.sp>
 #include <jumpstat/settings.sp>
 #include <jumpstat/util.sp>
-
-#include <jumpstat/editing.sp>
 #include <jumpstat/commands.sp>
 #include <jumpstat/jhud.sp>
 #include <jumpstat/menu.sp>
