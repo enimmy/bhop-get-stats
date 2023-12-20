@@ -109,21 +109,21 @@ public void PushPosCache(int client)
 	{
 		g_fCacheHudPositions[client][i][X_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_X], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF, POS_COORD_BIAS);
 		g_fCacheHudPositions[client][i][Y_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_Y], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF, POS_COORD_BIAS);
-		PrintToConsole(client, "Master-Hud: %s X,Y (%f, %f)", g_sHudStrs[i], g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM]);
+		//PrintToConsole(client, "Master-Hud: %s X,Y (%f, %f)", g_sHudStrs[i], g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM]);
 	}
 }
 
 public void OnClientCookiesCached(int client)
 {
 	char strCookie[8];
-
+	bool forceDefaults;
 	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++)
 	{
 		GetClientCookie(client, g_hSettings[i], strCookie, sizeof(strCookie));
 		if(strCookie[0] == '\0')
 		{
-			SetDefaults(client);
-			return;
+			forceDefaults = true;
+			break;
 		}
 		g_iSettings[client][i] = StringToInt(strCookie);
 	}
@@ -132,11 +132,19 @@ public void OnClientCookiesCached(int client)
 	{
 		if(g_iSettings[client][i] >= COLORS_NUMBER  || g_iSettings[client][i] < 0)
 		{
-			SetDefaults(client);
-			return;
+			forceDefaults = true;
+			break;
 		}
 	}
-	PushPosCache(client);
+
+	if(forceDefaults)
+	{
+		SetDefaults(client);
+	}
+	else
+	{
+		PushPosCache(client);
+	}
 }
 
 void SetDefaults(int client)
@@ -150,8 +158,8 @@ void SetDefaults(int client)
 	g_iSettings[client][GainMeh] = Green;
 	g_iSettings[client][GainGood] = Cyan;
 	g_iSettings[client][GainReallyGood] = White;
-	PushPosCache(client);
 	SaveAllCookies(client);
+	PushPosCache(client);
 }
 
 void SaveAllCookies(int client)
