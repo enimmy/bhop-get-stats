@@ -66,12 +66,20 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 		}
 	}
 
-	if(g_iCmdNum[client] % TEST_POS_UPDATE_INTERVAL == 0)
+	if(g_iCmdNum[client] % TEST_POS_UPDATE_INTERVAL == 0) //Other huds can interfere, so we need to at least give prio to editing hud
 	{
+		PushPosCache(client);
+
+		SetHudTextParams(g_fCacheHudPositions[client][g_iEditHud[client]][X_DIM], g_fCacheHudPositions[client][g_iEditHud[client]][Y_DIM], 1.0, g_iBstatColors[GainGood][0], g_iBstatColors[GainGood][1], g_iBstatColors[GainGood][2], 255, 0, 0.0, 0.0, 0.0);
+		ShowHudText(client, GetDynamicChannel(g_iEditHud[client]), g_sHudStrs[g_iEditHud[client]]);
+
 		for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)
 		{
-			SetHudTextParams(g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM], 1.0, g_iBstatColors[GainGood][0], g_iBstatColors[GainGood][1], g_iBstatColors[GainGood][2], 255, 0, 0.0, 0.0, 0.0);
-			ShowHudText(client, GetDynamicChannel(i), g_sHudStrs[i]);
+			if(i != g_iEditHud[client])
+			{
+				SetHudTextParams(g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM], 1.0, g_iBstatColors[GainGood][0], g_iBstatColors[GainGood][1], g_iBstatColors[GainGood][2], 255, 0, 0.0, 0.0, 0.0);
+				ShowHudText(client, GetDynamicChannel(i), g_sHudStrs[i]);
+			}
 		}
 	}
 	return;
@@ -95,7 +103,6 @@ void EditHudPosition(int client, int editDim, int val)
 	}
 
 	SetIntSubValue(g_iSettings[client][editDim], get4, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
-	PushPosCache(client);
 }
 
 void ShowJsMenu(int client)
