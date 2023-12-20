@@ -56,7 +56,7 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 				if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
 				{
 					char sMessage[256];
-					Trainer_GetTrainerString(sMessage, g_fLastAverage[client], AveragePercentage);
+					Trainer_GetTrainerString(client, sMessage, g_fLastAverage[client], AveragePercentage);
 
 					int idx = GetGainColorIdx(AveragePercentage * 100);
 					int settingsIdx = g_iSettings[client][idx];
@@ -89,11 +89,18 @@ void Trainer_VisualisationString(char[] buffer, int maxlength, float percentage)
 }
 
 //sMessage, number and average are different. number is on top, average is the | in the middle. they update at different rates
-void Trainer_GetTrainerString(char sMessage[256], float number, float average) {
+void Trainer_GetTrainerString(int client, char sMessage[256], float number, float average) {
 	char sVisualisation[32];
 	Trainer_VisualisationString(sVisualisation, sizeof(sVisualisation), average);
-	Format(sMessage, sizeof(sMessage), "%d\%", RoundFloat(number * 100));
-	Format(sMessage, sizeof(sMessage), "%s\n══════^══════", sMessage);
-	Format(sMessage, sizeof(sMessage), "%s\n %s ", sMessage, sVisualisation);
-	Format(sMessage, sizeof(sMessage), "%s\n══════^══════", sMessage);
+	if(g_fCacheHudPositions[client][Trainer][X_DIM] == -1.0)
+	{
+		Format(sMessage, sizeof(sMessage), "%i\n", RoundFloat(number * 100));
+	}
+	else
+	{
+		Format(sMessage, sizeof(sMessage), "              %i\n", RoundFloat(number * 100));
+	}
+	Format(sMessage, sizeof(sMessage), "%s══════^══════\n", sMessage);
+	Format(sMessage, sizeof(sMessage), "%s %s \n", sMessage, sVisualisation);
+	Format(sMessage, sizeof(sMessage), "%s══════^══════", sMessage);
 }

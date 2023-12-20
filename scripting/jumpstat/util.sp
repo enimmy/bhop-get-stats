@@ -1,4 +1,6 @@
 
+//#define DEBUG
+
 int BgsGetHUDTarget(int client, int fallback = -1) {
 	int target = fallback;
 	if(IsClientObserver(client)) {
@@ -22,6 +24,7 @@ void BgsSetCookie(int client, Cookie hCookie, int n)
 	char strCookie[64];
 	IntToString(n, strCookie, sizeof(strCookie));
 	SetClientCookie(client, hCookie, strCookie);
+	PrintDebugMsg(client, "Attempting to set cookie to %i", n);
 }
 
 int GetIntSubValue(int num, int position, int binaryShift, int binaryMask) {
@@ -55,4 +58,13 @@ int HudCoordinateToInt(float value, int scaler, int min, int max) {
 		adjVal = min;
 	}
 	return adjVal;
+}
+
+void PrintDebugMsg(int client, const char[] msg, any...)
+{
+	#if defined DEBUG
+	char buffer[300];
+	VFormat(buffer, sizeof(buffer), msg, 3);
+	PrintToConsole(client, "jumpstats: %s", buffer);
+	#endif
 }

@@ -109,13 +109,13 @@ public void PushPosCache(int client)
 	{
 		g_fCacheHudPositions[client][i][X_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_X], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF, POS_COORD_BIAS);
 		g_fCacheHudPositions[client][i][Y_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_Y], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF, POS_COORD_BIAS);
-		//PrintToConsole(client, "Master-Hud: %s X,Y (%f, %f)", g_sHudStrs[i], g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM]);
+		PrintDebugMsg(client, "Master-Hud: %s X,Y (%f, %f)", g_sHudStrs[i], g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM]);
 	}
 }
 
 public void OnClientCookiesCached(int client)
 {
-	char strCookie[8];
+	char strCookie[256];
 	bool forceDefaults;
 	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++)
 	{
