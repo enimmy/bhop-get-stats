@@ -509,8 +509,6 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_End)
 	{
-		g_bEditing[client] = false;
-		SaveAllCookies(client);
 		delete menu;
 	}
 	return 0;
