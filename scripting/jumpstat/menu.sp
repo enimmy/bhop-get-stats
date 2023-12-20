@@ -1,57 +1,78 @@
 static int g_iEditGain[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which gain catergory (50-, 50-60, etc) the player wants to edit the color of
 static int g_iEditHud[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which hud (jhud, offset, etc) the player wants to edit the position of
-static bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", see OnPlayerRunCmd
+bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", see OnPlayerRunCmd
+static bool g_bEditLastTick[MAXPLAYERS + 1];
+static int g_iCmdNum[MAXPLAYERS + 1];
+
+#define TEST_POS_UPDATE_INTERVAL 7
 
 void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 	if(!g_bEditing[client])
 	{
+		if(g_bEditLastTick[client])
+		{
+			g_bEditLastTick[client] = false;
+			SetEntProp(client, Prop_Data, "m_fFlags",  GetEntProp(client, Prop_Data, "m_fFlags") ^ FL_ATCONTROLS);
+			g_iCmdNum[client] = 0;
+		}
 		return;
 	}
+
+	g_iCmdNum[client]++;
+	g_bEditLastTick[client] = true;
+
 	SetEntProp(client, Prop_Data, "m_fFlags",  GetEntProp(client, Prop_Data, "m_fFlags") |  FL_ATCONTROLS );
+	SetEntityMoveType(client, MOVETYPE_NONE);
+
 	bool edit = true;
-	bool up = false;
-	int editDim;
 	if(buttons & IN_MOVERIGHT)
 	{
-		editDim = Positions_X;
+		EditHudPosition(client, Positions_X, 1);
 	}
 	else if(buttons & IN_MOVELEFT)
 	{
-		editDim = Positions_X;
-		up = true;
+		EditHudPosition(client, Positions_X, -1);
 	}
 	else if(buttons & IN_FORWARD)
 	{
-		up = true;
-		editDim = Positions_Y;
+		EditHudPosition(client, Positions_Y, 1);
 	}
 	else if(buttons & IN_BACK)
 	{
-		editDim = Positions_Y;
+		EditHudPosition(client, Positions_Y, -1);
 	}
 	else
 	{
 		edit = false;
 	}
-	if(edit)
+
+
+	if(!edit && (mouse[X_DIM] != 0 || mouse[Y_DIM] != 0))
 	{
-		EditHudPosition(client, editDim, up);
+		if(mouse[X_DIM] != 0)
+		{
+			EditHudPosition(client, Positions_X, mouse[X_DIM]);
+		}
+		if(mouse[Y_DIM] != 0)
+		{
+			EditHudPosition(client, Positions_Y, mouse[Y_DIM]);
+		}
 	}
-	SetEntityMoveType(client, MOVETYPE_NONE);
+
+	if(g_iCmdNum[client] % TEST_POS_UPDATE_INTERVAL == 0)
+	{
+		for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)
+		{
+			SetHudTextParams(g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM], 1.0, g_iBstatColors[GainGood][0], g_iBstatColors[GainGood][1], g_iBstatColors[GainGood][2], 255, 0, 0.0, 0.0, 0.0);
+			ShowHudText(client, GetDynamicChannel(i), g_sHudStrs[i]);
+		}
+	}
 	return;
 }
 
-void EditHudPosition(int client, int editDim, bool up)
+void EditHudPosition(int client, int editDim, int val)
 {
-	int get4;
-	if(up)
-	{
-		get4 = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK) - 1;
-	}
-	else
-	{
-		get4 = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK) + 1;
-	}
+	int get4 = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK) + val;
 
 	if(get4 < POSITION_MIN_INT)
 	{
@@ -65,8 +86,6 @@ void EditHudPosition(int client, int editDim, bool up)
 
 	SetIntSubValue(g_iSettings[client][editDim], get4, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
 	PushPosCache(client);
-	SetHudTextParams(g_fCacheHudPositions[client][g_iEditHud[client]][X_DIM], g_fCacheHudPositions[client][g_iEditHud[client]][Y_DIM], 1.0, g_iBstatColors[GainGood][0], g_iBstatColors[GainGood][1], g_iBstatColors[GainGood][2], 255, 0, 0.0, 0.0, 0.0);
-	ShowHudText(client, GetDynamicChannel(0), g_sHudStrs[g_iEditHud[client]]);
 }
 
 void ShowJsMenu(int client)
@@ -391,7 +410,7 @@ public int Pos_Edit_Handler(Menu menu, MenuAction action, int client, int option
 		if(StrEqual(info, "editingHud"))
 		{
 			g_iEditHud[client]++;
-			if(g_iEditHud[client] >= 4)
+			if(g_iEditHud[client] >= JUMPSTATS_HUD_NUMBER)
 			{
 				g_iEditHud[client] = 0;
 			}

@@ -9,6 +9,10 @@ static int g_iCmdNum[MAXPLAYERS + 1];
 
 public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float jss)
 {
+	if(g_bEditing[client])
+	{
+		return;
+	}
 	g_iCmdNum[client]++;
 	bool trainer = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0);
 

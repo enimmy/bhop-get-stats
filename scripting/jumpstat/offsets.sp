@@ -3,6 +3,10 @@ static int g_iRepeatedOffsets[MAXPLAYERS + 1];
 
 public void Offset_Process(int client, int offset, bool overlap, bool nopress)
 {
+	if(g_bEditing[client])
+	{
+		return;
+	}
 	if(g_iLastOffset[client] == offset)
 	{
 		g_iRepeatedOffsets[client]++;

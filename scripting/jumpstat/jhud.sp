@@ -1,5 +1,9 @@
 public void Jhud_Process(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
 {
+	if(g_bEditing[client])
+	{
+		return;
+	}
 	for(int i = 1; i < MaxClients; i++)
 	{
 		if(!(g_iSettings[i][Bools] & JHUD_ENABLED) || !BgsIsValidClient(i))

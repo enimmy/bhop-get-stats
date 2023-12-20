@@ -8,8 +8,8 @@
 #include <jumpstat/settings.sp>
 #include <jumpstat/util.sp>
 #include <jumpstat/commands.sp>
-#include <jumpstat/jhud.sp>
 #include <jumpstat/menu.sp>
+#include <jumpstat/jhud.sp>
 #include <jumpstat/offsets.sp>
 #include <jumpstat/speedometer.sp>
 #include <jumpstat/ssj.sp>
