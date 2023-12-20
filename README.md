@@ -6,54 +6,62 @@
 
 Central plugin for calling bhop statistic forwards and base plugins for displaying that information.
 
-All of these plugins were created to be used in tandem with my sync style, [sync style](https://github.com/Nimmy2222/shavit-syncstyle). This style breaks probably every other SSJ/Jhud/Trainer, so you will need these. I also just wanted to make it easier for other people to make changes to these types of plugins in the future. Now devs will not have to worry about making mistakes with calculations, and can easily make changes they like.
+These plugins were created to be used in tandem with my sync style, [sync style](https://github.com/Nimmy2222/shavit-syncstyle). This style breaks probably every other SSJ/Jhud/Trainer, so you will need these. I also just wanted to make it easier for other people to make changes to these types of plugins in the future. Now devs will not have to worry about making mistakes with calculations, and can easily make changes they like.
 
-MasterHud - Drop-in replacement for Jhud, Trainer, Offsets, and Speedometer. Most (if not all) of these HUDs are more full-featured and accurate on my versions.
+Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, and SSJ. Most (if not all) of these HUDs are more full-featured and accurate on my versions.
 
-SSJ - Drop-in replacement for SSJ
-
-Get Stats - Supports both of the above plugins, reducing redundant calculations
+Get Stats - Supports jump stats (and hopefully other devs plugins in the future), by reducing redundant calculations.
 
 # Usage/Directions:
 
 Press the green "Code" button at the top, and download zip. Extract zip, then drag the plugins folder into ```cstrike/addons/sourcemod.```
 
-  MasterHud (Open Menu):
+  JumpStats (Open Menu):
   ```
-    - /bhud /offsets /offset (in order to not override old commands if you want them)
-    - /jhud /trainer /strafetrainer (when overrides enabled by server admin)
-  ```
-  SSJ:
-  ```
-    - /ssj
+    - /js
+    - /jhud /trainer /strafetrainer /offsets /offset /ssj /speedometer (Enabled by default in CVARS, but disablable commands)
   ```
 
 # Cvars:
-* MasterHud: 
-   * bstat-master-override-jhud Default: 1 Override /jhud command? 0 (false) or 1 (true)
-   * bstat-master-override-trainer Default: 1 Override /strafetrainer commands? 0 (false) or 1 (true)
+* JumpStats:
+   * All enabled (1) default, 0 to disable
+   * js-override-jhud Override /jhud command
+   * js-override-trainer Override /strafetrainer /trainer
+   * js-override-offset Override /offset /offsets
+   * js-override-speed Override /speedometer /speed
+   * js-override-ssj Override /ssj
 
 # Dependencies:
-* (All Plugins -> bhop-get-stats.smx) (in this repo) the central plugin. You cannot just install master-hud/ssj by itself, you MUST HAVE bhop-get-stats.smx
-* (MasterHud -> [Dynamic Channels](https://github.com/Vauff/DynamicChannels))
+* (All Plugins -> bhop-get-stats.smx) (in this repo) the central plugin. You cannot just install jumpstats by itself, you MUST HAVE bhop-get-stats.smx
+* (JumpStats) -> [Dynamic Channels](https://github.com/Vauff/DynamicChannels)
+* (JumpStats) -> (OPTIONAL) [Shavit](https://github.com/shavitush/bhoptimer) For Time/Time Delta chat options
 
 # Changelog:
-* MASTERHUD
-	* All masterhud elements (jhud, trainer, offsets, speedometer) can be adjusted to be positioned pretty much anywhere on screen.
-	* Menus for all of these HUDs have been merged. (/bhud)
-   	* All huds should be properly displayed to spectators
+* JumpStats Overall
+	* All HUD elements (jhud, trainer, offsets, speedometer) can be adjusted to be positioned pretty much anywhere on the screen.
+	* Menus for all of these HUDs have been merged.
+   	* All HUDs should be properly displayed to spectators
+ 
+* JumpStats Colors
+	* All HUD element colors are changeable but have inherent links.
+   	* You can adjust colors by "action", so you can change the color of any "bad action"/"good action", and all HUDs will reflect that color.
+   	* The reasoning behind this, is doing it differently drastically ups code complexity/memory and I just don't see a need, this feature is already overkill.
+   	* Defaults:
+   		* 90+ Gain / High Speed SSJ / -1 Offset / 90-100 JSS: White
+   	 	* 80+ Gain / Decent Speed SSJ / 0 Offset / 80-90 JSS: Cyan
+   	  	* 70+ Gain / Meh Speed SSJ / -2 Offset / 70-89 JSS: Green
+   	  	* 60+ Gain / Bad Speed SSJ / -3 Offset / 60-70 JSS: Orange
+   	  	* Any gain lower than 60 / Terrible Speed SSJ / Any positive offset, or below -4 / Any JSS Above 100 or below 60: Red
 
 * SSJ:
 	* removed some characters/decimal points to add more options (approaching the character limit)
-	* added colors onto the gain field (optional)
-	* fixed many bugs from base version
+	* added optional colors onto the gain numbers
+	* fixed many bugs from the base version
 
 * JHUD:
 	* removed all constant speed settings (moved to speedometer)
 	* added sync into the logs
-	* added color options
 	* Uses a more accurate JSS calculation (old 103% is 100%, basically going over 100% now will lose you speed)
-	* added adjustable color for 90 gains and very high-speed first 6/16
 
 * TRAINER:
 	* Updated JSS calculation
