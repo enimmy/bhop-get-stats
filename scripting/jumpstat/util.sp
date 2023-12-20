@@ -1,5 +1,45 @@
 
 //#define DEBUG
+static bool lateLoad;
+static bool shavitLoaded;
+static EngineVersion engineVersion;
+chatstrings_t g_csChatStrings;
+
+void Init_Utils(bool late, bool shavit, EngineVersion engine)
+{
+	lateLoad = late;
+	shavitLoaded = shavit;
+	engineVersion = engine;
+	if(shavitLoaded)
+	{
+		Shavit_OnChatConfigLoaded();
+	}
+}
+
+bool BgsLateLoaded()
+{
+	return lateLoad;
+}
+
+bool BgsShavitLoaded()
+{
+	return shavitLoaded;
+}
+
+EngineVersion BgsGetEngineVersion()
+{
+	return engineVersion;
+}
+
+public void Shavit_OnChatConfigLoaded()
+{
+	Shavit_GetChatStrings(sMessagePrefix, g_csChatStrings.sPrefix, sizeof(chatstrings_t::sPrefix));
+	Shavit_GetChatStrings(sMessageText, g_csChatStrings.sText, sizeof(chatstrings_t::sText));
+	Shavit_GetChatStrings(sMessageWarning, g_csChatStrings.sWarning, sizeof(chatstrings_t::sWarning));
+	Shavit_GetChatStrings(sMessageVariable, g_csChatStrings.sVariable, sizeof(chatstrings_t::sVariable));
+	Shavit_GetChatStrings(sMessageVariable2, g_csChatStrings.sVariable2, sizeof(chatstrings_t::sVariable2));
+	Shavit_GetChatStrings(sMessageStyle, g_csChatStrings.sStyle, sizeof(chatstrings_t::sStyle));
+}
 
 int BgsGetHUDTarget(int client, int fallback = -1) {
 	int target = fallback;
