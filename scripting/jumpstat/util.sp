@@ -41,21 +41,25 @@ public void Shavit_OnChatConfigLoaded()
 	Shavit_GetChatStrings(sMessageStyle, g_csChatStrings.sStyle, sizeof(chatstrings_t::sStyle));
 }
 
-int BgsGetHUDTarget(int client, int fallback = -1) {
+int BgsGetHUDTarget(int client, int fallback = 0) {
 	int target = fallback;
-	if(IsClientObserver(client)) {
-		int iObserverMode = GetEntProp(client, Prop_Send, "m_iObserverMode");
-		if (iObserverMode >= 3 && iObserverMode <= 7) {
-			int iTarget = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
-			if (BgsIsValidClient(iTarget)) {
-				target = iTarget;
-			}
+	if(!IsClientObserver(client))
+	{
+		return target;
+	}
+	int iObserverMode = GetEntProp(client, Prop_Send, "m_iObserverMode");
+	if (iObserverMode >= 3 && iObserverMode <= 7)
+	{
+		int iTarget = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
+		if (BgsIsValidClient(iTarget)) {
+			target = iTarget;
 		}
 	}
 	return target;
 }
 
-bool BgsIsValidClient(int client, bool bAlive = false) {
+bool BgsIsValidClient(int client, bool bAlive = false)
+{
 	return (client >= 1 && client <= MaxClients && IsClientInGame(client) && !IsClientSourceTV(client) && (!bAlive || IsPlayerAlive(client)));
 }
 
@@ -67,34 +71,44 @@ void BgsSetCookie(int client, Cookie hCookie, int n)
 	PrintDebugMsg(client, "Attempting to set cookie to %i", n);
 }
 
-int GetIntSubValue(int num, int position, int binaryShift, int binaryMask) {
+int GetIntSubValue(int num, int position, int binaryShift, int binaryMask)
+{
 	return (num >> position * binaryShift) & binaryMask;
 }
 
-void SetIntSubValue(int &editNum, int insertVal, int position, int binaryShift, int binaryMask) {
+void SetIntSubValue(int &editNum, int insertVal, int position, int binaryShift, int binaryMask)
+{
 	editNum = (editNum & ~(binaryMask << (position * binaryShift))) | ((insertVal & binaryMask) << (position * binaryShift));
 }
 
-float GetAdjustedHudCoordinate(int value, float scaler, float bias) {
-	if(value < 0 || value > RoundToFloor(scaler)) {
+float GetAdjustedHudCoordinate(int value, float scaler)
+{
+	float rVal = -1.0;
+	if(value <= 0 || value > RoundToFloor(scaler))
+	{
+		return rVal;
+	}
+	rVal = value / scaler;
+	if(rVal <= 0.0 || rVal > 1.0)
+	{
 		return -1.0;
 	}
-	float adjVal = (value / scaler) - bias;
-	if(adjVal <= 0.0) {
-		return -1.0;
-	}
-	return adjVal;
+	return rVal;
 }
 
-int HudCoordinateToInt(float value, int scaler, int min, int max) {
-	if(value != -1.0 && (value < 0 || value > 1.0)) {
+int HudCoordinateToInt(float value, int scaler, int min, int max)
+{
+	if(value != -1.0 || value < 0 || value > 1.0)
+	{
 		return 0;
 	}
 	int adjVal = RoundToFloor(value * scaler);
-	if(adjVal > max) {
+	if(adjVal > max)
+	{
 		adjVal = max;
 	}
-	if(adjVal < min) {
+	if(adjVal < min)
+	{
 		adjVal = min;
 	}
 	return adjVal;
