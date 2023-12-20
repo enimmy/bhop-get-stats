@@ -36,8 +36,8 @@ float GetAdjustedHudCoordinate(int value, float scaler, float bias) {
 	if(value < 0 || value > RoundToFloor(scaler)) {
 		return -1.0;
 	}
-	float adjVal = (value / scaler) - bias; //255 - 0.01
-	if(adjVal < 0.0) {
+	float adjVal = (value / scaler) - bias;
+	if(adjVal <= 0.0) {
 		return -1.0;
 	}
 	return adjVal;

@@ -33,14 +33,14 @@
 #define POSITION_MAX_INT 255
 #define POS_BINARY_MASK 255
 #define POS_BINARY_MASKF 255.0
-#define POS_COORD_BIAS 0.01
+#define POS_COORD_BIAS 0.0
 #define POS_INT_BITS 8
 
 #define X_DIM 0
 #define Y_DIM 1
 
 //Position Notes float(0 - 1) int(0 - 255)
-// converted float = (int/255) - .01. Negative values return -1 (dead center)
+// converted float = (int/255). 0 values return -1 (dead center)
 //
 // 0000 0000 0000 0000 0000 0000 0000 0000 g_iSettngs[Position_Y]
 // TX        TY        JX        JY

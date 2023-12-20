@@ -1,6 +1,8 @@
 static int g_iEditGain[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which gain catergory (50-, 50-60, etc) the player wants to edit the color of
 static int g_iEditHud[MAXPLAYERS + 1]; //Cache for menu idx, keeps track of which hud (jhud, offset, etc) the player wants to edit the position of
 bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", see OnPlayerRunCmd
+static bool g_bXLocked[MAXPLAYERS + 1];
+static bool g_bYLocked[MAXPLAYERS + 1];
 static bool g_bEditLastTick[MAXPLAYERS + 1];
 static int g_iCmdNum[MAXPLAYERS + 1];
 
@@ -24,36 +26,41 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 	SetEntProp(client, Prop_Data, "m_fFlags",  GetEntProp(client, Prop_Data, "m_fFlags") |  FL_ATCONTROLS );
 	SetEntityMoveType(client, MOVETYPE_NONE);
 
-	bool edit = true;
-	if(buttons & IN_MOVERIGHT)
+	bool bXlock = view_as<bool>(buttons & IN_SPEED);
+	bool bYLock = view_as<bool>(buttons & IN_DUCK);
+
+	if(!bXlock && !g_bXLocked[client])
 	{
-		EditHudPosition(client, Positions_X, 1);
+		if(buttons & IN_MOVERIGHT && !g_bXLocked[client])
+		{
+			EditHudPosition(client, Positions_X, 1);
+		}
+		else if(buttons & IN_MOVELEFT && !g_bXLocked[client])
+		{
+			EditHudPosition(client, Positions_X, -1);
+		}
 	}
-	else if(buttons & IN_MOVELEFT)
+
+	if(!bYLock && !g_bYLocked[client])
 	{
-		EditHudPosition(client, Positions_X, -1);
-	}
-	else if(buttons & IN_FORWARD)
-	{
-		EditHudPosition(client, Positions_Y, 1);
-	}
-	else if(buttons & IN_BACK)
-	{
-		EditHudPosition(client, Positions_Y, -1);
-	}
-	else
-	{
-		edit = false;
+		if(buttons & IN_FORWARD && !g_bYLocked[client])
+		{
+			EditHudPosition(client, Positions_Y, -1);
+		}
+		else if(buttons & IN_BACK && !g_bYLocked[client])
+		{
+			EditHudPosition(client, Positions_Y, 1);
+		}
 	}
 
 
-	if(!edit && (mouse[X_DIM] != 0 || mouse[Y_DIM] != 0))
+	if(mouse[X_DIM] != 0 || mouse[Y_DIM] != 0)
 	{
-		if(mouse[X_DIM] != 0)
+		if(mouse[X_DIM] != 0 && !g_bXLocked[client] && !bXlock)
 		{
 			EditHudPosition(client, Positions_X, mouse[X_DIM]);
 		}
-		if(mouse[Y_DIM] != 0)
+		if(mouse[Y_DIM] != 0 && !g_bYLocked[client] && !bYLock)
 		{
 			EditHudPosition(client, Positions_Y, mouse[Y_DIM]);
 		}
@@ -72,16 +79,19 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 
 void EditHudPosition(int client, int editDim, int val)
 {
-	int get4 = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK) + val;
-
-	if(get4 < POSITION_MIN_INT)
+	int get4 = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
+	if(get4 == 0) //Position was dead center
 	{
-		get4 = POSITION_MAX_INT;
+		get4 = POS_BINARY_MASK / 2; //move to a pos close to center, but not dead center
+	}
+	else
+	{
+		get4 += val;
 	}
 
-	if(get4 > POSITION_MAX_INT || get4 < POSITION_MIN_INT)
+	if(get4 > POSITION_MAX_INT || get4 < (POSITION_MIN_INT + 1)) //Min reserved for dead center
 	{
-		get4 = POSITION_MIN_INT;
+		return;
 	}
 
 	SetIntSubValue(g_iSettings[client][editDim], get4, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
@@ -397,7 +407,17 @@ void ShowPosEditMenu(int client)
 	Format(sMessage, sizeof(sMessage), "Editing Hud: %s", g_sHudStrs[g_iEditHud[client]]);
 	AddMenuItem(menu, "editingHud", sMessage);
 	AddMenuItem(menu, "center", "Dead Center");
-	AddMenuItem(menu, "editMode", "Enter Edit Mode");
+
+	Format(sMessage, sizeof(sMessage), "Edit Mode: %s", g_bEditing[client] ? "On":"Off");
+	AddMenuItem(menu, "editMode", sMessage);
+	if(g_bEditing[client])
+	{
+		AddMenuItem(menu, "lockX", g_bXLocked[client] ? "[x] Lock X / Walk":"[ ] Lock X / Walk");
+		AddMenuItem(menu, "lockY", g_bYLocked[client] ? "[x] Lock Y / Duck":"[ ] Lock Y / Duck");
+		AddMenuItem(menu, "ignore", "Use WASD/Mouse to Adjust HUDs \n"
+								..."Disable JoyStick (joystick 0) if mouse isn't working. \n"
+								..."You can use menu to lock dimensions, or hold Walk/Duck", ITEMDRAW_DISABLED);
+	}
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -424,6 +444,14 @@ public int Pos_Edit_Handler(Menu menu, MenuAction action, int client, int option
 		else if(StrEqual(info, "editMode"))
 		{
 			g_bEditing[client] = !g_bEditing[client];
+		}
+		else if(StrEqual(info, "lockX"))
+		{
+			g_bXLocked[client] = !g_bXLocked[client];
+		}
+		else if(StrEqual(info, "lockY"))
+		{
+			g_bYLocked[client] = !g_bYLocked[client];
 		}
 		BgsSetCookie(client, g_hSettings[Positions_X], g_iSettings[client][Positions_X]);
 		BgsSetCookie(client, g_hSettings[Positions_Y], g_iSettings[client][Positions_Y]);
