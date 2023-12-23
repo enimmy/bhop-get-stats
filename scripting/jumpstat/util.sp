@@ -41,7 +41,8 @@ public void Shavit_OnChatConfigLoaded()
 	Shavit_GetChatStrings(sMessageStyle, g_csChatStrings.sStyle, sizeof(chatstrings_t::sStyle));
 }
 
-int BgsGetHUDTarget(int client, int fallback = 0) {
+int BgsGetHUDTarget(int client, int fallback = 0)
+{
 	int target = fallback;
 	if(!IsClientObserver(client))
 	{
@@ -88,6 +89,7 @@ float GetAdjustedHudCoordinate(int value, float scaler)
 	{
 		return rVal;
 	}
+
 	rVal = value / scaler;
 	if(rVal <= 0.0 || rVal > 1.0)
 	{
@@ -102,6 +104,7 @@ int HudCoordinateToInt(float value, int scaler, int min, int max)
 	{
 		return 0;
 	}
+	
 	int adjVal = RoundToFloor(value * scaler);
 	if(adjVal > max)
 	{

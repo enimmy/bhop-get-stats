@@ -2,8 +2,8 @@ static int g_iEditColor[MAXPLAYERS + 1]; //menu cache for which color type the p
 static int g_iEditHud[MAXPLAYERS + 1]; //menu cache for which hud the player wants to mess with
 static int g_iCmdNum[MAXPLAYERS + 1]; //counter for editmode onplayerruncmd
 
-static bool g_bXLocked[MAXPLAYERS + 1]; //bool for editmode, player locked X through the menu
-static bool g_bYLocked[MAXPLAYERS + 1]; //bool for editmode, player locked Y through the menu
+static bool g_xLocked[MAXPLAYERS + 1]; //bool for editmode, player locked X through the menu
+static bool g_yLocked[MAXPLAYERS + 1]; //bool for editmode, player locked Y through the menu
 static bool g_bEditLastTick[MAXPLAYERS + 1]; //player was editing, so if their g_bEditing is false they mustve just stopped. do stuff
 
 bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", see OnPlayerRunCmd
@@ -32,28 +32,28 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 	SetEntProp(client, Prop_Data, "m_fFlags",  GetEntProp(client, Prop_Data, "m_fFlags") |  FL_ATCONTROLS );
 	SetEntityMoveType(client, MOVETYPE_NONE);
 
-	bool bXlock = view_as<bool>(buttons & IN_SPEED);
-	bool bYLock = view_as<bool>(buttons & IN_DUCK);
+	bool xLock = view_as<bool>(buttons & IN_SPEED);
+	bool yLock = view_as<bool>(buttons & IN_DUCK);
 
-	if(!bXlock && !g_bXLocked[client])
+	if(!xLock && !g_xLocked[client])
 	{
-		if(buttons & IN_MOVERIGHT && !g_bXLocked[client])
+		if(buttons & IN_MOVERIGHT && !g_xLocked[client])
 		{
 			EditHudPosition(client, Positions_X, 1);
 		}
-		else if(buttons & IN_MOVELEFT && !g_bXLocked[client])
+		else if(buttons & IN_MOVELEFT && !g_xLocked[client])
 		{
 			EditHudPosition(client, Positions_X, -1);
 		}
 	}
 
-	if(!bYLock && !g_bYLocked[client])
+	if(!yLock && !g_yLocked[client])
 	{
-		if(buttons & IN_FORWARD && !g_bYLocked[client])
+		if(buttons & IN_FORWARD && !g_yLocked[client])
 		{
 			EditHudPosition(client, Positions_Y, -1);
 		}
-		else if(buttons & IN_BACK && !g_bYLocked[client])
+		else if(buttons & IN_BACK && !g_yLocked[client])
 		{
 			EditHudPosition(client, Positions_Y, 1);
 		}
@@ -62,11 +62,11 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 
 	if(mouse[X_DIM] != 0 || mouse[Y_DIM] != 0)
 	{
-		if(mouse[X_DIM] != 0 && !g_bXLocked[client] && !bXlock)
+		if(mouse[X_DIM] != 0 && !g_xLocked[client] && !xLock)
 		{
 			EditHudPosition(client, Positions_X, mouse[X_DIM]);
 		}
-		if(mouse[Y_DIM] != 0 && !g_bYLocked[client] && !bYLock)
+		if(mouse[Y_DIM] != 0 && !g_yLocked[client] && !yLock)
 		{
 			EditHudPosition(client, Positions_Y, mouse[Y_DIM]);
 		}
@@ -93,22 +93,22 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 
 void EditHudPosition(int client, int editDim, int val)
 {
-	int subInt = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
-	if(subInt == 0) //Position was dead center
+	int subValue = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
+	if(subValue == 0) //Position was dead center
 	{
-		subInt = POS_BINARY_MASK / 2; //move to a pos close to center, but not dead center
+		subValue = POS_BINARY_MASK / 2; //move to a pos close to center, but not dead center
 	}
 	else
 	{
-		subInt += val;
+		subValue += val;
 	}
 
-	if(subInt > POSITION_MAX_INT || subInt < (POSITION_MIN_INT + 1)) //Min reserved for dead center
+	if(subValue > POSITION_MAX_INT || subValue < (POSITION_MIN_INT + 1)) //Min reserved for dead center
 	{
 		return;
 	}
 
-	SetIntSubValue(g_iSettings[client][editDim], subInt, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
+	SetIntSubValue(g_iSettings[client][editDim], subValue, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
 }
 
 //Menus
@@ -119,6 +119,7 @@ void ShowJsMenu(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(Js_Select);
 	SetMenuTitle(menu, "JumpStats - Nimmy\n \n");
 	AddMenuItem(menu, "chat", "Chat");
@@ -134,15 +135,16 @@ void ShowSSJMenu(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(Ssj_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Chat Jump Stats \n \n");
 	AddMenuItem(menu, "enSsj", (g_iSettings[client][Bools] & SSJ_ENABLED) ? "[x] Enabled":"[ ] Enabled");
 	AddMenuItem(menu, "enRepeat", (g_iSettings[client][Bools] & SSJ_REPEAT) ? "[x] Repeat":"[ ] Repeat");
 
-	char sMessage[256];
-	Format(sMessage, sizeof(sMessage), "Usage: %i",g_iSettings[client][Usage]);
-	AddMenuItem(menu, "enUsage", sMessage);
+	char message[256];
+	Format(message, sizeof(message), "Usage: %i",g_iSettings[client][Usage]);
+	AddMenuItem(menu, "enUsage", message);
 
 	AddMenuItem(menu, "enGain", (g_iSettings[client][Bools] & SSJ_GAIN) ? "[x] Gain":"[ ] Gain");
 	AddMenuItem(menu, "enGainColor", (g_iSettings[client][Bools] & SSJ_GAIN_COLOR) ? "[x] Gain Colors":"[ ] Gain Color");
@@ -150,11 +152,13 @@ void ShowSSJMenu(int client)
 	AddMenuItem(menu, "enStrafes", (g_iSettings[client][Bools] & SSJ_STRAFES) ? "[x] Strafes":"[ ] Strafes");
 	AddMenuItem(menu, "enEff", (g_iSettings[client][Bools] & SSJ_EFFICIENCY) ? "[x] Efficiency":"[ ] Efficiency");
 	AddMenuItem(menu, "enHeight", (g_iSettings[client][Bools] & SSJ_HEIGHTDIFF) ? "[x] Height Difference":"[ ] Height Difference");
+
 	if(BgsShavitLoaded())
 	{
 		AddMenuItem(menu, "enTime", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME) ? "[x] Time":"[ ] Time");
 		AddMenuItem(menu, "enTimeDelta", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA) ? "[x] Time Difference":"[ ] Time Difference");
 	}
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -164,6 +168,7 @@ void ShowBHUDMenu(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(Hud_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "HUD Jump Stats\n \n");
@@ -171,10 +176,12 @@ void ShowBHUDMenu(int client)
 	AddMenuItem(menu, "enTrainer", (g_iSettings[client][Bools] & TRAINER_ENABLED) ? "[x] Trainer":"[ ] Trainer");
 	AddMenuItem(menu, "enOffset", (g_iSettings[client][Bools] & OFFSETS_ENABLED) ? "[x] Offsets":"[ ] Offsets");
 	AddMenuItem(menu, "enSpeed", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Speedometer":"[ ] Speedometer");
+
 	if(BgsShavitLoaded())
 	{
 		AddMenuItem(menu, "enFjt", (g_iSettings[client][Bools] & FJT_ENABLED) ? "[x] FJT":"[ ] FJT");
 	}
+
 	AddMenuItem(menu, "hudSettings", "All HUD Settings");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -185,6 +192,7 @@ void ShowHudSettingsOverview(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(Overview_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Settings Overview\n \n");
@@ -200,6 +208,7 @@ void ShowJhudSettingsMenu(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(Jhud_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Jhud Settings\n \n");
@@ -215,6 +224,7 @@ void ShowSpeedSettingsMenu(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(Speedometer_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Speed Settings\n \n");
@@ -228,26 +238,29 @@ void ShowPosEditMenu(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(PosEdit_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Position Editor\n \n");
-	char sMessage[256];
-	Format(sMessage, sizeof(sMessage), "%s", g_sHudStrs[g_iEditHud[client]]);
-	ReplaceString(sMessage, sizeof(sMessage), "\n", " / ");
-	Format(sMessage, sizeof(sMessage), "Editing Hud: %s", sMessage);
-	AddMenuItem(menu, "editingHud", sMessage);
+	char message[256];
+	Format(message, sizeof(message), "%s", g_sHudStrs[g_iEditHud[client]]);
+	ReplaceString(message, sizeof(message), "\n", " / ");
+	Format(message, sizeof(message), "Editing Hud: %s", message);
+	AddMenuItem(menu, "editingHud", message);
 	AddMenuItem(menu, "center", "Dead Center");
 
-	Format(sMessage, sizeof(sMessage), "Edit Mode: %s", g_bEditing[client] ? "On":"Off");
-	AddMenuItem(menu, "editMode", sMessage);
+	Format(message, sizeof(message), "Edit Mode: %s", g_bEditing[client] ? "On":"Off");
+	AddMenuItem(menu, "editMode", message);
+
 	if(g_bEditing[client])
 	{
-		AddMenuItem(menu, "lockX", g_bXLocked[client] ? "[x] Lock X / Walk":"[ ] Lock X / Walk");
-		AddMenuItem(menu, "lockY", g_bYLocked[client] ? "[x] Lock Y / Duck":"[ ] Lock Y / Duck");
+		AddMenuItem(menu, "lockX", g_xLocked[client] ? "[x] Lock X / Walk":"[ ] Lock X / Walk");
+		AddMenuItem(menu, "lockY", g_yLocked[client] ? "[x] Lock Y / Duck":"[ ] Lock Y / Duck");
 		AddMenuItem(menu, "ignore", "Use WASD/Mouse to Adjust HUDs \n"
 								..."Disable JoyStick (joystick 0) if mouse isn't working. \n"
 								..."You can use menu to lock dimensions, or hold Walk/Duck", ITEMDRAW_DISABLED);
 	}
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -257,6 +270,7 @@ void ShowColorsMenu(int client)
 	{
 		return;
 	}
+
 	Menu menu = new Menu(Colors_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Color Editor\n \n");
@@ -378,6 +392,7 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			g_iSettings[client][Bools] ^= SSJ_SHAVIT_TIME_DELTA;
 		}
+
 		BgsSetCookie(client, g_hSettings[Usage], g_iSettings[client][Usage]);
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowSSJMenu(client);
@@ -544,11 +559,11 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 		}
 		else if(StrEqual(info, "lockX"))
 		{
-			g_bXLocked[client] = !g_bXLocked[client];
+			g_xLocked[client] = !g_xLocked[client];
 		}
 		else if(StrEqual(info, "lockY"))
 		{
-			g_bYLocked[client] = !g_bYLocked[client];
+			g_yLocked[client] = !g_yLocked[client];
 		}
 		ShowPosEditMenu(client);
 	}

@@ -13,6 +13,7 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 	{
 		return;
 	}
+
 	g_iCmdNum[client]++;
 	bool trainer = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0);
 
@@ -46,6 +47,7 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 				}
 				g_fTrainerPercents[client][BarPercent] = 0.0;
 			}
+
 			for (int i = 1; i <= MaxClients; i++)
 			{
 				if(!IsValidClient(i) || !(g_iSettings[client][Bools] & TRAINER_ENABLED))
@@ -55,13 +57,13 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 
 				if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
 				{
-					char sMessage[256];
-					Trainer_GetTrainerString(client, sMessage, g_fLastAverage[client], AveragePercentage);
+					char message[256];
+					Trainer_GetTrainerString(client, message, g_fLastAverage[client], AveragePercentage);
 
 					int idx = GetGainColorIdx(AveragePercentage * 100);
 					int settingsIdx = g_iSettings[client][idx];
 					SetHudTextParams(g_fCacheHudPositions[client][Trainer][X_DIM], g_fCacheHudPositions[client][Trainer][Y_DIM], 0.1, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
-					ShowHudText(i, GetDynamicChannel(0), sMessage); //TRAINER
+					ShowHudText(i, GetDynamicChannel(0), message); //TRAINER
 				}
 			}
 		}
@@ -70,37 +72,43 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 }
 
 //returns a string with the | in the middle for trainer
-void Trainer_VisualisationString(char[] buffer, int maxlength, float percentage) {
-	if (0.5 <= percentage <= 1.5) {
+void Trainer_VisualisationString(char[] buffer, int maxlength, float percentage)
+{
+	if (0.5 <= percentage <= 1.5)
+	{
 		int Spaces = RoundFloat((percentage - 0.5) / 0.05);
-		for (int i = 0; i <= Spaces + 1; i++) {
+		for (int i = 0; i <= Spaces + 1; i++)
+		{
 			FormatEx(buffer, maxlength, "%s ", buffer);
 		}
 
 		FormatEx(buffer, maxlength, "%s|", buffer);
 
-		for (int i = 0; i <= (21 - Spaces); i++) {
+		for (int i = 0; i <= (21 - Spaces); i++)
+		{
 			FormatEx(buffer, maxlength, "%s ", buffer);
 		}
 	}
-	else {
+	else
+	{
 		Format(buffer, maxlength, "%s", percentage < 1.0 ? "|                   " : "                    |");
 	}
 }
 
-//sMessage, number and average are different. number is on top, average is the | in the middle. they update at different rates
-void Trainer_GetTrainerString(int client, char sMessage[256], float number, float average) {
+//message, number and average are different. number is on top, average is the | in the middle. they update at different rates
+void Trainer_GetTrainerString(int client, char message[256], float number, float average)
+{
 	char sVisualisation[32];
 	Trainer_VisualisationString(sVisualisation, sizeof(sVisualisation), average);
 	if(g_fCacheHudPositions[client][Trainer][X_DIM] == -1.0)
 	{
-		Format(sMessage, sizeof(sMessage), "%i\n", RoundFloat(number * 100));
+		Format(message, sizeof(message), "%i\n", RoundFloat(number * 100));
 	}
 	else
 	{
-		Format(sMessage, sizeof(sMessage), "              %i\n", RoundFloat(number * 100));
+		Format(message, sizeof(message), "              %i\n", RoundFloat(number * 100));
 	}
-	Format(sMessage, sizeof(sMessage), "%s══════^══════\n", sMessage);
-	Format(sMessage, sizeof(sMessage), "%s %s \n", sMessage, sVisualisation);
-	Format(sMessage, sizeof(sMessage), "%s══════^══════", sMessage);
+	Format(message, sizeof(message), "%s══════^══════\n", message);
+	Format(message, sizeof(message), "%s %s \n", message, sVisualisation);
+	Format(message, sizeof(message), "%s══════^══════", message);
 }

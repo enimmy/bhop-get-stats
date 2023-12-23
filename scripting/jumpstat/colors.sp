@@ -70,35 +70,56 @@ int g_iJhudSpeedValues[][] = { //jhud colors based on speeds for first 6 or firs
 };
 
 int GetGainColorIdx(float gain) {
-	if(gain > 100) {
+	if(gain > 100)
+	{
 		return GainReallyBad;
-	} else if(gain >= 90) {
+	}
+	else if(gain >= 90)
+	{
 		return GainReallyGood;
-	} else if (gain >= 80) {
+	}
+	else if (gain >= 80)
+	{
 		return GainGood;
-	} else if(gain >= 70) {
+	}
+	else if(gain >= 70)
+	{
 		return GainMeh;
-	} else if(gain >= 60) {
+	}
+	else if(gain >= 60)
+	{
 		return GainBad;
-	} else {
+	}
+	else
+	{
 		return GainReallyBad;
 	}
 }
 
 int GetSpeedColorIdx(int jump, int speed) {
-	if(jump < 0 || jump > 16) {
+	if(jump < 0 || jump > 16)
+	{
 		return -1;
 	}
 
-	if(speed >= g_iJhudSpeedValues[jump][3]) {
+	if(speed >= g_iJhudSpeedValues[jump][3])
+	{
 		return GainReallyGood;
-	} else if(speed > g_iJhudSpeedValues[jump][2]) {
+	}
+	else if(speed > g_iJhudSpeedValues[jump][2])
+	{
 		return GainGood;
-	}  else if(speed > g_iJhudSpeedValues[jump][1]) {
+	}
+	else if(speed > g_iJhudSpeedValues[jump][1])
+	{
 		return GainMeh;
-	}  else if(speed > g_iJhudSpeedValues[jump][0]) {
+	}
+	else if(speed > g_iJhudSpeedValues[jump][0])
+	{
 		return GainBad;
-	} else {
+	}
+	else
+	{
 		return GainReallyBad;
 	}
 }

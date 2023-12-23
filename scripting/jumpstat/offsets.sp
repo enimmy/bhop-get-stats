@@ -7,6 +7,7 @@ public void Offset_Process(int client, int offset, bool overlap, bool nopress)
 	{
 		return;
 	}
+
 	if(g_iLastOffset[client] == offset)
 	{
 		g_iRepeatedOffsets[client]++;
@@ -15,6 +16,7 @@ public void Offset_Process(int client, int offset, bool overlap, bool nopress)
 	{
 		g_iRepeatedOffsets[client] = 0;
 	}
+
 	for(int i = 1; i < MaxClients; i++)
 	{
 		if(!(g_iSettings[i][Bools] & OFFSETS_ENABLED) || !BgsIsValidClient(i))
@@ -32,37 +34,44 @@ public void Offset_Process(int client, int offset, bool overlap, bool nopress)
 
 public void Offset_DrawOffset(int client, int offset, bool overlap, bool nopress)
 {
-	char msg[256];
-	Format(msg, 256, "%d (%i)", offset, g_iRepeatedOffsets[client]);
+	char message[256];
+	Format(message, 256, "%d (%i)", offset, g_iRepeatedOffsets[client]);
 	if(overlap)
 	{
-		Format(msg, 256, "%s Overlap", msg);
+		Format(message, 256, "%s Overlap", message);
 	}
 
 	if(nopress)
 	{
-		Format(msg, 256, "%s No Press", msg);
+		Format(message, 256, "%s No Press", message);
 	}
 
 	int colorIdx = Offset_GetColorIdx(offset, overlap, nopress);
 	int settingsIdx = g_iSettings[client][colorIdx];
 	SetHudTextParams(g_fCacheHudPositions[client][Offset][X_DIM], g_fCacheHudPositions[client][Offset][Y_DIM], 0.5, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
-	ShowHudText(client, GetDynamicChannel(2), msg); //OFFSET
+	ShowHudText(client, GetDynamicChannel(2), message);
 }
 
 int Offset_GetColorIdx(int offset, bool overlap, bool nopress) {
-    if(overlap || nopress || offset > 0) {
+    if(overlap || nopress || offset > 0)
+	{
         return GainReallyBad;
     }
-    if(offset == 0) {
+
+    if(offset == 0)
+	{
 		return GainGood;
-    } else if(offset == -1) {
+    } else if(offset == -1)
+	{
 		return GainReallyGood;
-    } else if(offset == -2) {
+    } else if(offset == -2)
+	{
 		return GainMeh;
-	} else if(offset == -3) {
+	} else if(offset == -3)
+	{
 		return GainBad;
-	} else {
+	} else
+	{
 		return GainReallyBad;
 	}
 }

@@ -26,7 +26,8 @@ void Speedometer_Tick(int client, int speed, bool inbhop, float gain)
 		g_fRawGain[client] += gain;
 	}
 
-	if(speedometer) {
+	if(speedometer)
+	{
 		for (int i = 1; i <= MaxClients; i++)
 		{
 			if(!IsValidClient(i) || !(g_iSettings[i][Bools] & SPEEDOMETER_ENABLED))
@@ -62,11 +63,13 @@ void Speedometer_Tick(int client, int speed, bool inbhop, float gain)
 						idx = GainReallyBad;
 					}
 				}
+
 				int settingsIdx = g_iSettings[client][idx];
 				SetHudTextParams(g_fCacheHudPositions[client][Speed][X_DIM], g_fCacheHudPositions[client][Speed][Y_DIM], 0.2, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
 				ShowHudText(i, GetDynamicChannel(4), sMessage);
 			}
 		}
+
 		g_fRawGain[client] = 0.0;
 		g_iLastSpeedometerVel[client] = speed;
 	}

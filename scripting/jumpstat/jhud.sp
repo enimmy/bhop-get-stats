@@ -19,9 +19,7 @@ public void Jhud_Process(int client, int jump, int speed, int strafecount, float
 
 void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, float jss)
 {
-	int ijss = RoundToFloor(jss * 100);
-
-	char sMessage[256];
+	char message[256];
 
 	int settingIdx;
 	if((jump <= 6 || jump == 16) || (g_iSettings[client][Bools] & JHUD_EXTRASPEED && jump <= 16))
@@ -36,21 +34,21 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	int rgb[3];
 	rgb = g_iBstatColors[g_iSettings[client][settingIdx]];
 
-	Format(sMessage, sizeof(sMessage), "%i: %i", jump, speed);
+	Format(message, sizeof(message), "%i: %i", jump, speed);
 	if(jump > 1)
 	{
 		if(g_iSettings[client][Bools] & JHUD_JSS == JHUD_JSS)
 		{
-			Format(sMessage, sizeof(sMessage), "%s (%iPCT)", sMessage, ijss);
+			Format(message, sizeof(message), "%s (%iPCT)", message, RoundToFloor(jss * 100));
 		}
 
-		Format(sMessage, sizeof(sMessage), "%s\n%.2f", sMessage, gain);
+		Format(message, sizeof(message), "%s\n%.2f", message, gain);
 		if(g_iSettings[client][Bools] & JHUD_SYNC == JHUD_SYNC)
 		{
-			Format(sMessage, sizeof(sMessage), "%s %.2fPCT", sMessage, sync);
+			Format(message, sizeof(message), "%s %.2fPCT", message, sync);
 		}
 	}
-	ReplaceString(sMessage, sizeof(sMessage), "PCT", "%%", true);
+	ReplaceString(message, sizeof(message), "PCT", "%%", true);
 	SetHudTextParams(g_fCacheHudPositions[client][Jhud][X_DIM], g_fCacheHudPositions[client][Jhud][Y_DIM], 1.0, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0, 0.0);
-	ShowHudText(client, GetDynamicChannel(1), sMessage); //JHUD
+	ShowHudText(client, GetDynamicChannel(1), message); //JHUD
 }

@@ -116,17 +116,17 @@ public void PushPosCache(int client)
 
 public void OnClientCookiesCached(int client)
 {
-	char strCookie[256];
+	char cookie[256];
 	bool forceDefaults;
 	for(int i = 0; i < BHUD_SETTINGS_NUMBER; i++)
 	{
-		GetClientCookie(client, g_hSettings[i], strCookie, sizeof(strCookie));
-		if(strCookie[0] == '\0')
+		GetClientCookie(client, g_hSettings[i], cookie, sizeof(cookie));
+		if(cookie[0] == '\0')
 		{
 			forceDefaults = true;
 			break;
 		}
-		g_iSettings[client][i] = StringToInt(strCookie);
+		g_iSettings[client][i] = StringToInt(cookie);
 	}
 
 	for(int i = COLOR_SETTINGS_START_IDX; i < COLOR_SETTINGS_END_IDX; i++)
