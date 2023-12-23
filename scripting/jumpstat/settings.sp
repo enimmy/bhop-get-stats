@@ -48,6 +48,7 @@
 // 0000 0000 0000 0000 0000 0000 0000 0000 g_iSettngs[Position_X]
 // SPX       SPY       OX        OY
 //
+// FJT tied to Offset
 
 enum //indexes of binary position locations
 {

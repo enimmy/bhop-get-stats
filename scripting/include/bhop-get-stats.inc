@@ -25,7 +25,7 @@ public SharedPlugin __pl_bhopgetstats =
  * @param gain						avg gain of jump
  * @param sync                      strafe sync of jump
  * @param eff                       strafe efficency of jump
- * @param yawwing					% of jump player was turnbinding
+ * @param yawwing					% of jump player was turnbinding (unfinished)
  * @param jss						average strafe speed of the players jump compared to perfect
  * @noreturn
  */
@@ -40,10 +40,12 @@ forward void BhopStat_JumpForward(int client, int jump, int speed, int strafecou
  */
 forward void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress);
 
-/** not called unless calculated (in air/bhopping)
+/**
  * @param client					client index
- * @param gain						gain this tick
- * @param jss						jss this tick
+ * @param speed                     2d velocity
+ * @param inBhop                    if player is hoppin or not
+ * @param gain						gain
+ * @param jss						jss
  * @noreturn
  */
 forward void BhopStat_TickForward(int client, int speed, bool inBhop, float gain, float jss);
