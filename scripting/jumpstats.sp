@@ -14,6 +14,7 @@
 #include <jumpstat/speedometer.sp>
 #include <jumpstat/ssj.sp>
 #include <jumpstat/trainer.sp>
+#include <jumpstat/fjt.sp>
 
 #undef REQUIRE_PLUGIN
 #include <shavit>
@@ -26,17 +27,18 @@ public Plugin myinfo =
 	name = "bgs-jumpstats",
 	author = "Nimmy",
 	description = "all kinds of stuff",
-	version = "3.0",
+	version = "3.1",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 
-//Dynamic Channel Notes - CSS
+// Dev Notes - Channel Groups (0-5 Max)
 // Trainer 0 (here)
 // Jhud 1 (here)
 // Offset 2 (here)
-// Widow Bash 3 (xWidows bash, just displays devs and stuff) OTHER DEVS USE THIS ONE !!!!! WRITE THIS SOMEWHERE
+// FJT 3 (here) This is a very light HUD, only a very short time on first jump. use this channel for more stuff
 // Speedometer 4 (here)
 // Shavit-Hud Top Left 5 (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
+
 bool g_bLate = false;
 bool g_bShavit = false;
 
@@ -87,11 +89,17 @@ public void BhopStat_JumpForward(int client, int jump, int speed, int strafecoun
 {
 	Jhud_Process(client, jump, speed, strafecount, heightdelta, gain, sync, eff, yawwing, jss);
 	Ssj_Process(client, jump, speed, strafecount, heightdelta, gain, sync, eff, yawwing, jss);
+	Fjt_OnJump(client, jump);
 }
 
 public void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress)
 {
 	Offset_Process(client, offset, overlap, nopress);
+}
+
+public void Shavit_OnLeaveZone(int client, int type, int track, int id, int entity, int data)
+{
+	Fjt_Shavit_LeftZone(client, type);
 }
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])

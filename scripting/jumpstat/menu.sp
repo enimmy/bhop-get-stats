@@ -150,8 +150,11 @@ void ShowSSJMenu(int client)
 	AddMenuItem(menu, "enStrafes", (g_iSettings[client][Bools] & SSJ_STRAFES) ? "[x] Strafes":"[ ] Strafes");
 	AddMenuItem(menu, "enEff", (g_iSettings[client][Bools] & SSJ_EFFICIENCY) ? "[x] Efficiency":"[ ] Efficiency");
 	AddMenuItem(menu, "enHeight", (g_iSettings[client][Bools] & SSJ_HEIGHTDIFF) ? "[x] Height Difference":"[ ] Height Difference");
-	AddMenuItem(menu, "enTime", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME) ? "[x] Time":"[ ] Time");
-	AddMenuItem(menu, "enTimeDelta", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA) ? "[x] Time Difference":"[ ] Time Difference");
+	if(BgsShavitLoaded())
+	{
+		AddMenuItem(menu, "enTime", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME) ? "[x] Time":"[ ] Time");
+		AddMenuItem(menu, "enTimeDelta", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA) ? "[x] Time Difference":"[ ] Time Difference");
+	}
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -168,6 +171,23 @@ void ShowBHUDMenu(int client)
 	AddMenuItem(menu, "enTrainer", (g_iSettings[client][Bools] & TRAINER_ENABLED) ? "[x] Trainer":"[ ] Trainer");
 	AddMenuItem(menu, "enOffset", (g_iSettings[client][Bools] & OFFSETS_ENABLED) ? "[x] Offsets":"[ ] Offsets");
 	AddMenuItem(menu, "enSpeed", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Speedometer":"[ ] Speedometer");
+	if(BgsShavitLoaded())
+	{
+		AddMenuItem(menu, "enFjt", (g_iSettings[client][Bools] & FJT_ENABLED) ? "[x] FJT":"[ ] FJT");
+	}
+	AddMenuItem(menu, "hudSettings", "All HUD Settings");
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+void ShowHudSettingsOverview(int client)
+{
+	if(!BgsIsValidClient(client))
+	{
+		return;
+	}
+	Menu menu = new Menu(Overview_Select);
+	menu.ExitBackButton = true;
+	SetMenuTitle(menu, "Settings Overview\n \n");
 	AddMenuItem(menu, "jhudSettings", "JHUD Settings");
 	AddMenuItem(menu, "speedSettings", "Speedometer Settings");
 	AddMenuItem(menu, "posEditor", "Hud Positions Editor");
@@ -182,7 +202,7 @@ void ShowJhudSettingsMenu(int client)
 	}
 	Menu menu = new Menu(Jhud_Select);
 	menu.ExitBackButton = true;
-	SetMenuTitle(menu, "JHUD SETTINGS\n \n");
+	SetMenuTitle(menu, "Jhud Settings\n \n");
 	AddMenuItem(menu, "strafespeed", (g_iSettings[client][Bools] & JHUD_JSS) ? "[x] Jss":"[ ] Jss");
 	AddMenuItem(menu, "sync", (g_iSettings[client][Bools] & JHUD_SYNC) ? "[x] Sync":"[ ] Sync");
 	AddMenuItem(menu, "extraspeeds", (g_iSettings[client][Bools] & JHUD_EXTRASPEED) ? "[x] Extra speeds":"[ ] Extra speeds");
@@ -197,7 +217,7 @@ void ShowSpeedSettingsMenu(int client)
 	}
 	Menu menu = new Menu(Speedometer_Select);
 	menu.ExitBackButton = true;
-	SetMenuTitle(menu, "SPEED SETTINGS\n \n");
+	SetMenuTitle(menu, "Speed Settings\n \n");
 	AddMenuItem(menu, "speedGainColor", (g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR) ? "[x] Gain Based Color":"[ ] Gain Based Color");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -210,9 +230,11 @@ void ShowPosEditMenu(int client)
 	}
 	Menu menu = new Menu(PosEdit_Select);
 	menu.ExitBackButton = true;
-	SetMenuTitle(menu, "POSITIONS \n \n");
+	SetMenuTitle(menu, "Position Editor\n \n");
 	char sMessage[256];
-	Format(sMessage, sizeof(sMessage), "Editing Hud: %s", g_sHudStrs[g_iEditHud[client]]);
+	Format(sMessage, sizeof(sMessage), "%s", g_sHudStrs[g_iEditHud[client]]);
+	ReplaceString(sMessage, sizeof(sMessage), "\n", " / ");
+	Format(sMessage, sizeof(sMessage), "Editing Hud: %s", sMessage);
 	AddMenuItem(menu, "editingHud", sMessage);
 	AddMenuItem(menu, "center", "Dead Center");
 
@@ -237,7 +259,7 @@ void ShowColorsMenu(int client)
 	}
 	Menu menu = new Menu(Colors_Select);
 	menu.ExitBackButton = true;
-	SetMenuTitle(menu, "Colors Settings");
+	SetMenuTitle(menu, "Color Editor\n \n");
 
 	int editing = g_iEditColor[client];
 	if(editing == GainReallyBad)
@@ -250,11 +272,11 @@ void ShowColorsMenu(int client)
 	}
 	else if (editing == GainMeh)
 	{
-		AddMenuItem(menu, "editing", "< Gain: Okay >");
+		AddMenuItem(menu, "editing", "< Okay >");
 	}
 	else if (editing == GainGood)
 	{
-		AddMenuItem(menu, "editing", "< Gain: Good >");
+		AddMenuItem(menu, "editing", "< Good >");
 	}
 	else if (editing == GainReallyGood)
 	{
@@ -395,7 +417,38 @@ public int Hud_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
 		}
-		else if(StrEqual(info, "jhudSettings"))
+		else if(StrEqual(info, "enFjt"))
+		{
+			g_iSettings[client][Bools] ^= FJT_ENABLED;
+		}
+		else if(StrEqual(info, "hudSettings"))
+		{
+			ShowHudSettingsOverview(client);
+			return 0;
+		}
+		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
+		ShowBHUDMenu(client);
+	}
+	else if(action == MenuAction_Cancel)
+	{
+		ShowJsMenu(client);
+		return 0;
+	}
+	else if(action == MenuAction_End)
+	{
+		delete menu;
+	}
+	return 0;
+}
+
+public int Overview_Select(Menu menu, MenuAction action, int client, int option)
+{
+	if(action == MenuAction_Select)
+	{
+		char info[32];
+		menu.GetItem(option, info, sizeof(info));
+
+		if(StrEqual(info, "jhudSettings"))
 		{
 			ShowJhudSettingsMenu(client);
 			return 0;
@@ -410,12 +463,10 @@ public int Hud_Select(Menu menu, MenuAction action, int client, int option)
 			ShowPosEditMenu(client);
 			return 0;
 		}
-		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
-		ShowBHUDMenu(client);
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowJsMenu(client);
+		ShowBHUDMenu(client);
 		return 0;
 	}
 	else if(action == MenuAction_End)
@@ -504,7 +555,7 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 	else if(action == MenuAction_Cancel)
 	{
 		g_bEditing[client] = false;
-		ShowBHUDMenu(client);
+		ShowHudSettingsOverview(client);
 		return 0;
 	}
 	else if(action == MenuAction_End)
@@ -538,7 +589,7 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowBHUDMenu(client);
+		ShowHudSettingsOverview(client);
 		return 0;
 	}
 	else if(action == MenuAction_End)
@@ -564,7 +615,7 @@ public int Speedometer_Select(Menu menu, MenuAction action, int client, int opti
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowBHUDMenu(client);
+		ShowHudSettingsOverview(client);
 		return 0;
 	}
 	else if(action == MenuAction_End)

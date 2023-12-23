@@ -16,6 +16,7 @@
 #define SSJ_SHAVIT_TIME_DELTA 1 << 15
 #define SSJ_STRAFES 1 << 16
 #define SSJ_SYNC 1 << 17
+#define FJT_ENABLED 1 << 18
 
 #define BHUD_SETTINGS_NUMBER 9
 #define COLOR_SETTINGS_START_IDX 0
@@ -59,7 +60,7 @@ enum //indexes of binary position locations
 char g_sHudStrs[][] = {
 	"Jhud",
 	"Trainer",
-	"Offset",
+	"Offset\nFJT",
 	"Speed"
 };
 
@@ -83,15 +84,15 @@ Cookie g_hSettings[BHUD_SETTINGS_NUMBER];
 
 public void Settings_Start()
 {
-	g_hSettings[GainReallyBad] 	= RegClientCookie("js-rlybadgain", "", CookieAccess_Protected);
-	g_hSettings[GainBad] 		= RegClientCookie("js-badgain", "", CookieAccess_Protected);
-	g_hSettings[GainMeh] 		= RegClientCookie("js-mehgain", "", CookieAccess_Protected);
-	g_hSettings[GainGood] 		= RegClientCookie("js-goodgain", "", CookieAccess_Protected);
+	g_hSettings[GainReallyBad] = RegClientCookie("js-rlybadgain", "", CookieAccess_Protected);
+	g_hSettings[GainBad] = RegClientCookie("js-badgain", "", CookieAccess_Protected);
+	g_hSettings[GainMeh] = RegClientCookie("js-mehgain", "", CookieAccess_Protected);
+	g_hSettings[GainGood] = RegClientCookie("js-goodgain", "", CookieAccess_Protected);
 	g_hSettings[GainReallyGood] = RegClientCookie("js-rlygoodgain", "", CookieAccess_Protected);
-	g_hSettings[Bools] 			= RegClientCookie("js-bools", "", CookieAccess_Protected);
-	g_hSettings[Usage] 			= RegClientCookie("js-usage", "", CookieAccess_Protected);
-	g_hSettings[Positions_X] 	= RegClientCookie("js-hud-positions-x", "", CookieAccess_Protected);
-	g_hSettings[Positions_Y] 	= RegClientCookie("js-hud-positions-y", "", CookieAccess_Protected);
+	g_hSettings[Bools] = RegClientCookie("js-bools", "", CookieAccess_Protected);
+	g_hSettings[Usage] = RegClientCookie("js-usage", "", CookieAccess_Protected);
+	g_hSettings[Positions_X] = RegClientCookie("js-hud-positions-x", "", CookieAccess_Protected);
+	g_hSettings[Positions_Y] = RegClientCookie("js-hud-positions-y", "", CookieAccess_Protected);
 
 	for(int i = 1; i <= MaxClients; i++)
 	{

@@ -12,10 +12,7 @@ public void Jhud_Process(int client, int jump, int speed, int strafecount, float
 		}
 		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
 		{
-			if(g_iSettings[i][Bools] & JHUD_ENABLED)
-			{
-				JHUD_DrawStats(i, jump, speed, gain, sync, jss);
-			}
+			JHUD_DrawStats(i, jump, speed, gain, sync, jss);
 		}
 	}
 }
