@@ -8,7 +8,7 @@ Central plugin for calling bhop statistic forwards and base plugins for displayi
 
 These plugins were created to be used in tandem with my sync style, [sync style](https://github.com/Nimmy2222/shavit-syncstyle). This style breaks probably every other SSJ/Jhud/Trainer, so you will need these. I also just wanted to make it easier for other people to make changes to these types of plugins in the future. Now devs will not have to worry about making mistakes with calculations, and can easily make changes they like.
 
-Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, and SSJ. Most (if not all) of these HUDs are more full-featured and accurate on my versions.
+Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, SSJ and FJT. Most (if not all) of these HUDs are more full-featured and accurate on my versions.
 
 Get Stats - Supports jump stats (and hopefully other devs plugins in the future), by reducing redundant calculations.
 
@@ -43,7 +43,7 @@ Press the green "Code" button at the top, and download zip. Extract zip, then dr
    	* All HUDs should be properly displayed to spectators
  
 * JumpStats Colors
-	* All HUD element colors are changeable but have inherent links.
+	* All HUD element colors are changeable but have inherent links (except FJT).
    	* You can adjust colors by "action", so you can change the color of any "bad action"/"good action", and all HUDs will reflect that color.
    	* The reasoning behind this, is doing it differently drastically ups code complexity/memory and I just don't see a need, this feature is already overkill.
    	* Defaults:
