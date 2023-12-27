@@ -50,7 +50,7 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 
 			for (int i = 1; i <= MaxClients; i++)
 			{
-				if(!IsValidClient(i) || !(g_iSettings[client][Bools] & TRAINER_ENABLED))
+				if(!(g_iSettings[i][Bools] & TRAINER_ENABLED) || !BgsIsValidClient(i))
 				{
 					continue;
 				}
@@ -58,11 +58,11 @@ public void Trainer_Tick(int client, int speed, bool inbhop, float gain, float j
 				if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
 				{
 					char message[256];
-					Trainer_GetTrainerString(client, message, g_fLastAverage[client], AveragePercentage);
+					Trainer_GetTrainerString(i, message, g_fLastAverage[client], AveragePercentage);
 
 					int idx = GetGainColorIdx(AveragePercentage * 100);
-					int settingsIdx = g_iSettings[client][idx];
-					SetHudTextParams(g_fCacheHudPositions[client][Trainer][X_DIM], g_fCacheHudPositions[client][Trainer][Y_DIM], 0.1, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
+					int settingsIdx = g_iSettings[i][idx];
+					SetHudTextParams(g_fCacheHudPositions[i][Trainer][X_DIM], g_fCacheHudPositions[i][Trainer][Y_DIM], 0.1, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
 					ShowHudText(i, GetDynamicChannel(0), message); //TRAINER
 				}
 			}

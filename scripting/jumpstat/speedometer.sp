@@ -37,13 +37,14 @@ void Speedometer_Tick(int client, int speed, bool inbhop, float gain)
 
 			if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
 			{
-				int idx;
 				char sMessage[256];
 				Format(sMessage, sizeof(sMessage), "%i", speed);
 				float coeffsum = g_fRawGain[client];
 				coeffsum /= SPEED_UPDATE_INTERVAL;
 				coeffsum *= 100.0;
 				coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+
+				int idx;
 				if(g_iSettings[i][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop)
 				{
 					idx = GetGainColorIdx(coeffsum);
@@ -64,8 +65,8 @@ void Speedometer_Tick(int client, int speed, bool inbhop, float gain)
 					}
 				}
 
-				int settingsIdx = g_iSettings[client][idx];
-				SetHudTextParams(g_fCacheHudPositions[client][Speedometer][X_DIM], g_fCacheHudPositions[client][Speedometer][Y_DIM], 0.2, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
+				int settingsIdx = g_iSettings[i][idx];
+				SetHudTextParams(g_fCacheHudPositions[i][Speedometer][X_DIM], g_fCacheHudPositions[i][Speedometer][Y_DIM], 0.2, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
 				ShowHudText(i, GetDynamicChannel(4), sMessage);
 			}
 		}
