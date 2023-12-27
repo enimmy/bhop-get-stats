@@ -98,13 +98,13 @@ float GetAdjustedHudCoordinate(int value, float scaler)
 	return rVal;
 }
 
-int HudCoordinateToInt(float value, int scaler, int min, int max)
+int GetHudCoordinateToInt(float value, int scaler, int min, int max)
 {
-	if(value != -1.0 || value < 0 || value > 1.0)
+	if(value == -1.0 || value < 0 || value > 1.0)
 	{
 		return 0;
 	}
-	
+
 	int adjVal = RoundToFloor(value * scaler);
 	if(adjVal > max)
 	{

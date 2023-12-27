@@ -27,7 +27,7 @@ public Plugin myinfo =
 	name = "bgs-jumpstats",
 	author = "Nimmy",
 	description = "all kinds of stuff",
-	version = "3.1",
+	version = "3.2",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 

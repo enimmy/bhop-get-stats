@@ -103,7 +103,7 @@ void EditHudPosition(int client, int editDim, int val)
 		subValue += val;
 	}
 
-	if(subValue > POSITION_MAX_INT || subValue < (POSITION_MIN_INT + 1)) //Min reserved for dead center
+	if(subValue > POS_MAX_INT || subValue < (POS_MIN_INT + 1)) //Min reserved for dead center
 	{
 		return;
 	}

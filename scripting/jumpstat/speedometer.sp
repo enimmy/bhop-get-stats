@@ -30,7 +30,7 @@ void Speedometer_Tick(int client, int speed, bool inbhop, float gain)
 	{
 		for (int i = 1; i <= MaxClients; i++)
 		{
-			if(!IsValidClient(i) || !(g_iSettings[i][Bools] & SPEEDOMETER_ENABLED))
+			if(!BgsIsValidClient(i) || !(g_iSettings[i][Bools] & SPEEDOMETER_ENABLED))
 			{
 				continue;
 			}
@@ -65,7 +65,7 @@ void Speedometer_Tick(int client, int speed, bool inbhop, float gain)
 				}
 
 				int settingsIdx = g_iSettings[client][idx];
-				SetHudTextParams(g_fCacheHudPositions[client][Speed][X_DIM], g_fCacheHudPositions[client][Speed][Y_DIM], 0.2, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
+				SetHudTextParams(g_fCacheHudPositions[client][Speedometer][X_DIM], g_fCacheHudPositions[client][Speedometer][Y_DIM], 0.2, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
 				ShowHudText(i, GetDynamicChannel(4), sMessage);
 			}
 		}

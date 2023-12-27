@@ -4,6 +4,7 @@ public void Jhud_Process(int client, int jump, int speed, int strafecount, float
 	{
 		return;
 	}
+
 	for(int i = 1; i < MaxClients; i++)
 	{
 		if(!(g_iSettings[i][Bools] & JHUD_ENABLED) || !BgsIsValidClient(i))
@@ -39,7 +40,7 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	{
 		if(g_iSettings[client][Bools] & JHUD_JSS == JHUD_JSS)
 		{
-			Format(message, sizeof(message), "%s (%iPCT)", message, RoundToFloor(jss * 100));
+			Format(message, sizeof(message), "%s (%iPCT)", message, RoundToFloor(jss * 100.0));
 		}
 
 		Format(message, sizeof(message), "%s\n%.2f", message, gain);
@@ -50,5 +51,5 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	}
 	ReplaceString(message, sizeof(message), "PCT", "%%", true);
 	SetHudTextParams(g_fCacheHudPositions[client][Jhud][X_DIM], g_fCacheHudPositions[client][Jhud][Y_DIM], 1.0, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0, 0.0);
-	ShowHudText(client, GetDynamicChannel(1), message); //JHUD
+	ShowHudText(client, GetDynamicChannel(1), message);
 }

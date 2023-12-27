@@ -30,8 +30,8 @@
 #define COLOR_BINARY_MASKF 15.0
 #define COLOR_BINARY_BITS 4
 
-#define POSITION_MIN_INT 0
-#define POSITION_MAX_INT 255
+#define POS_MIN_INT 0
+#define POS_MAX_INT 255
 #define POS_BINARY_MASK 255
 #define POS_BINARY_MASKF 255.0
 #define POS_INT_BITS 8
@@ -50,22 +50,25 @@
 //
 // FJT tied to Offset
 
+
+// 0000 0000 0000 0000 0000 0000 0000 0000
+//                 Rg   G    M    B    RB
+
 enum //indexes of binary position locations
 {
 	Jhud,
 	Trainer,
 	Offset,
-	Speed
+	Speedometer
 };
 
 char g_sHudStrs[][] = {
 	"Jhud",
 	"Trainer",
 	"Offset\nFJT",
-	"Speed"
+	"Speedometer"
 };
 
-//bhud
 enum //indexes of settings
 {
 	GainReallyBad,
@@ -150,10 +153,36 @@ public void OnClientCookiesCached(int client)
 
 void SetDefaults(int client)
 {
-	g_iSettings[client][Bools] = 203079; //0000 0000 0000 0011 0001 1001 0100 0111
-	g_iSettings[client][Positions_X] = 0; //all center
-	g_iSettings[client][Positions_Y] = 5845913; //0000 0000 0101 1001 0011 0011 1001 1001 speed -1 offsets .35 trainer .2 jhud .6
-	g_iSettings[client][Usage] = 6;
+	//Just comment or uncomment stuff to enable or disable
+	g_iSettings[client][Bools] = 0;
+	g_iSettings[client][Bools] |= JHUD_ENABLED;
+	g_iSettings[client][Bools] |= JHUD_JSS;
+	g_iSettings[client][Bools] |= JHUD_SYNC;
+	//g_iSettings[client][Bools] |= JHUD_EXTRASPEED;
+	//g_iSettings[client][Bools] |= TRAINER_ENABLED;
+	//g_iSettings[client][Bools] |= OFFSETS_ENABLED;
+	//g_iSettings[client][Bools] |= SPEEDOMETER_ENABLED;
+	g_iSettings[client][Bools] |= SPEEDOMETER_GAIN_COLOR;
+	g_iSettings[client][Bools] |= SSJ_ENABLED;
+	g_iSettings[client][Bools] |= SSJ_REPEAT;
+	//g_iSettings[client][Bools] |= SSJ_HEIGHTDIFF;
+	g_iSettings[client][Bools] |= SSJ_GAIN;
+	g_iSettings[client][Bools] |= SSJ_GAIN_COLOR;
+	//g_iSettings[client][Bools] |= SSJ_EFFICIENCY;
+	//g_iSettings[client][Bools] |= SSJ_SHAVIT_TIME;
+	//g_iSettings[client][Bools] |= SSJ_SHAVIT_TIME_DELTA;
+	g_iSettings[client][Bools] |= SSJ_STRAFES;
+	g_iSettings[client][Bools] |= SSJ_SYNC;
+	//g_iSettings[client][Bools] |= FJT_ENABLED;
+
+	g_iSettings[client][Positions_Y] = 0;
+	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(-1.0, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Jhud, POS_INT_BITS, POS_BINARY_MASK);
+	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(0.2, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Trainer, POS_INT_BITS, POS_BINARY_MASK);
+	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(0.35, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Offset, POS_INT_BITS, POS_BINARY_MASK);
+	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(0.01, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Speedometer, POS_INT_BITS, POS_BINARY_MASK);
+
+	g_iSettings[client][Positions_X] = 0;
+	g_iSettings[client][Usage] = 1;
 	g_iSettings[client][GainReallyBad] = Red;
 	g_iSettings[client][GainBad] = Orange;
 	g_iSettings[client][GainMeh] = Green;
