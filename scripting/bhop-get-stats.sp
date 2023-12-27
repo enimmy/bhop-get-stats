@@ -17,6 +17,7 @@ public Plugin myinfo =
 
 #define BHOP_FRAMES 10
 #define YAW 1
+#define FORWARDMOVE 0
 #define SIDEMOVE 1
 #define LEFT 0
 #define RIGHT 1
@@ -26,6 +27,8 @@ bool g_bTouchesWall[MAXPLAYERS + 1];
 bool g_bJumpedThisTick[MAXPLAYERS + 1];
 bool g_bOverlap[MAXPLAYERS + 1];
 bool g_bNoPress[MAXPLAYERS + 1];
+bool g_bSawTurn[MAXPLAYERS + 1];
+bool g_bSawPress[MAXPLAYERS + 1];
 
 int g_iTicksOnGround[MAXPLAYERS + 1];
 int g_iTouchTicks[MAXPLAYERS + 1];
@@ -152,6 +155,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				g_iCmdNum[client] = 0;
 				g_bNoPress[client] = false;
 				g_bOverlap[client] = false;
+				g_bSawPress[client] = false;
+				g_bSawTurn[client] = false;
 			}
 			return Plugin_Continue;
 		}
@@ -187,31 +192,25 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 
 	if(g_iTicksOnGround[client] == 0)
 	{
-		//jss calculation, probably overly complex rn
 		g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
 
-		float vel_yaw = ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]) * 180.0 / FLOAT_PI;
-		float delta_opt = -NormalizeAngle(angles[1] - vel_yaw);
-
-		if (GetRunCmdVelocity(client, true) == 0.0)
-		{
-			delta_opt = 90.0;
-		}
-
+		float vel_yaw = RadToDeg(ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]));
+		float adjVal = 0.0;
+		float sign = 1.0;
 		if (vel[0] != 0.0 && vel[1] == 0.0)
 		{
-			float sign = vel[0] > 0.0 ? -1.0 : 1.0;
-			delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (90.0 * sign)));
+			sign = g_fYawDifference[client] > 0.0 ? 1.0:-1.0;
+			adjVal = 90.0;
 		}
 
 		if (vel[0] != 0.0 && vel[1] != 0.0)
 		{
-			float sign = vel[1] > 0.0 ? -1.0 : 1.0;
-			if (vel[0] < 0.0)
-				sign = -sign;
-			delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (45.0 * sign)));
+			sign = vel[1] > 0.0 ? -1.0 : 1.0;
+			adjVal = 45.0;
 		}
+		sign = vel[0] < 0.0 ? sign * -1.0 : sign;
 
+		float delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (adjVal * sign)));
 		float perfyaw = NormalizeAngle(angles[1] + delta_opt);
 		float newangdiff = FloatAbs(NormalizeAngle(perfyaw - g_fLastAngles[client][1]));
 
@@ -219,16 +218,16 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 		g_fTickJss[client] = (FloatAbs(g_fYawDifference[client]) / newangdiff);
 		g_iAvgTicksNum[client]++;
 
-		PrintDebugMsg(client, "Tick Jss: %f", g_fTickJss[client]);
-		PrintDebugMsg(client, "Avg Jss: %f", g_fAvgDiffFromPerf[client] / g_iAvgTicksNum[client]);
-
 		//offset shit
 		if(g_iCmdNum[client] >= 1)
 		{
-			if(vel[1]* g_fLastVel[client][SIDEMOVE] < 0 || (g_fLastVel[client][SIDEMOVE] == 0 && vel[1] != 0))
+			if(
+				(vel[1] * g_fLastVel[client][SIDEMOVE] < 0 || (g_fLastVel[client][SIDEMOVE] == 0 && vel[1] != 0)) ||
+				(vel[0] * g_fLastVel[client][FORWARDMOVE] < 0 || g_fLastVel[client][FORWARDMOVE] == 0 && vel[0] != 0))
 			{
 				g_iKeyTick[client] = g_iCmdNum[client];
 				g_iStrafeCount[client]++;
+				g_bSawPress[client] = true;
 			}
 		}
 
@@ -237,6 +236,7 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 			if(g_iTurnDir[client] == RIGHT && g_iCmdNum[client] > 1)
 			{
 				g_iTurnTick[client] = g_iCmdNum[client];
+				g_bSawTurn[client] = true;
 			}
 
 			g_iTurnDir[client] = LEFT;
@@ -246,29 +246,31 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 			if(g_iTurnDir[client] == LEFT && g_iCmdNum[client] > 1)
 			{
 				g_iTurnTick[client] = g_iCmdNum[client];
+				g_bSawTurn[client] = true;
 			}
 
 			g_iTurnDir[client] = RIGHT;
 		}
 
-		if ((!(buttons & IN_MOVELEFT) && !(buttons & IN_MOVERIGHT)))
+		bool overlapThisTick = false;
+		if(((buttons & IN_MOVELEFT) && (buttons & IN_MOVERIGHT)) || ((buttons & IN_FORWARD) && (buttons & IN_BACK)))
+		{
+			g_bOverlap[client] = true;
+			overlapThisTick = true;
+		}
+
+		if(vel[SIDEMOVE] == 0.0 && vel[FORWARDMOVE] == 0.0 && !overlapThisTick)
 		{
 			g_bNoPress[client] = true;
 		}
 
-		if(((buttons & IN_MOVELEFT) && (buttons & IN_MOVERIGHT)) || ((buttons & IN_FORWARD) && (buttons & IN_BACK)))
-		{
-			g_bOverlap[client] = true;
-		}
-
-		//doesnt work with sideways for now, can do it i think
-		if((g_iTurnTick[client] == g_iCmdNum[client] || g_iKeyTick[client] == g_iCmdNum[client]) &&
-		((g_iTurnDir[client] == RIGHT && vel[1] > 0) ||
-		(g_iTurnDir[client] == LEFT && vel[1] < 0) ))
+		if(g_bSawPress[client] && g_bSawTurn[client])
 		{
 			StartStrafeForward(client);
 			g_bOverlap[client] = false;
 			g_bNoPress[client] = false;
+			g_bSawPress[client] = false;
+			g_bSawTurn[client] = false;
 		}
 
 		g_iStrafeTick[client]++;
@@ -326,12 +328,13 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 			g_fRawGain[client] += gaincoeff;
 			g_fTickGain[client] = gaincoeff;
 
-			PrintDebugMsg(client, "Tick Gain: %f", g_fTickGain[client]);
+			//PrintDebugMsg(client, "Tick Gain: %f", g_fTickGain[client]);
 			if(g_iStrafeTick[client])
 			{
-				PrintDebugMsg(client, "Gain: %f", g_fRawGain[client] / g_fRawGain[client]);
+				//PrintDebugMsg(client, "Gain: %f", g_fRawGain[client] / g_fRawGain[client]);
 			}
 		}
+		g_iCmdNum[client]++;
 	}
 	StartTickForward(client);
 
@@ -363,7 +366,6 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 		g_iAvgTicksNum[client] = 0;
 	}
 
-	g_iCmdNum[client]++;
 	g_fLastAngles[client] = angles;
 	g_fLastVel[client] = vel;
 
