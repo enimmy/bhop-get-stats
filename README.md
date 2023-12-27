@@ -19,7 +19,8 @@ Press the green "Code" button at the top, and download zip. Extract zip, then dr
   JumpStats (Open Menu):
   ```
     - /js
-    - /jhud /trainer /strafetrainer /offsets /offset /ssj /speedometer (Enabled by default in CVARS, but disablable commands)
+    - /jhud /trainer /strafetrainer /offsets /offset /ssj /speedometer /fjt 
+	- (Enabled by default in CVARS, but disablable commands)
   ```
 
 # Cvars:
@@ -30,22 +31,23 @@ Press the green "Code" button at the top, and download zip. Extract zip, then dr
    * js-override-offset Override /offset /offsets
    * js-override-speed Override /speedometer /speed
    * js-override-ssj Override /ssj
+   * js-override-fjt override /fjt
 
 # Dependencies:
 * (All Plugins -> bhop-get-stats.smx) (in this repo) the central plugin. You cannot just install jumpstats by itself, you MUST HAVE bhop-get-stats.smx
 * (JumpStats) -> [Dynamic Channels](https://github.com/Vauff/DynamicChannels)
-* (JumpStats) -> (OPTIONAL) [Shavit](https://github.com/shavitush/bhoptimer) For Time/Time Delta chat options
+* (JumpStats) -> (OPTIONAL) [Shavit](https://github.com/shavitush/bhoptimer) For FJT Hud/Time SSJ/Time Delta SJJ options
 
 # Changelog:
 * JumpStats Overall
-	* All HUD elements (jhud, trainer, offsets, speedometer) can be adjusted to be positioned pretty much anywhere on the screen.
-	* Menus for all of these HUDs have been merged.
+	* All HUD elements (jhud, trainer, offsets, speedometer) can be adjusted to be positioned pretty much anywhere on the screen
+	* Menus for all of these HUDs have been merged
    	* All HUDs should be properly displayed to spectators
  
 * JumpStats Colors
-	* All HUD element colors are changeable but have inherent links (except FJT).
-   	* You can adjust colors by "action", so you can change the color of any "bad action"/"good action", and all HUDs will reflect that color.
-   	* The reasoning behind this, is doing it differently drastically ups code complexity/memory and I just don't see a need, this feature is already overkill.
+	* All HUD element colors are changeable but have inherent links (except FJT)
+   	* You can adjust colors by "action", so you can change the color of any "bad action"/"good action", and all HUDs will reflect that color
+   	* The reasoning behind this, is doing it differently drastically ups code complexity/memory and I just don't see a need, this feature is already overkill
    	* Defaults:
    		* 90+ Gain / High Speed SSJ / -1 Offset / 90-100 JSS: White
    	 	* 80+ Gain / Decent Speed SSJ / 0 Offset / 80-90 JSS: Cyan
@@ -69,7 +71,12 @@ Press the green "Code" button at the top, and download zip. Extract zip, then dr
 	* The update rate on the actual bar slider is now divorced from the number, they are both still accurate, but players who like using the bar now get updates more often while number users can still use their number without it being too fast
 
 * OFFSETS:
-	* No real changes, just merged in now.
+	* Should properly detect every type of strafe (normal, sideways, reverse, halfsideways, etc)
+   	* moved "really good" action onto -1 offset instead of 0
+   	* altered no press detection to detect whether you're normal or sideways
 
  * SPEEDOMETER
-   	* Added option to have colors based on current gain, instead of just gaining/maintaining/losing speed.
+   	* Added option to have colors based on current gain, instead of just gaining/maintaining/losing speed
+
+* FJT
+	* Nothing really changed, just merged into the plugin
