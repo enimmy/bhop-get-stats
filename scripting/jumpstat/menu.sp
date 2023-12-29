@@ -127,7 +127,7 @@ void ShowJsMenu(int client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-void ShowSSJMenu(int client)
+void ShowSSJMenu(int client, int pos = 0)
 {
 	if(!BgsIsValidClient(client))
 	{
@@ -157,7 +157,12 @@ void ShowSSJMenu(int client)
 		AddMenuItem(menu, "enTimeDelta", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA) ? "[x] Time Difference":"[ ] Time Difference");
 	}
 
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+	while(pos % GetMenuPagination(menu) != 0)
+	{
+		pos--;
+	}
+
+	DisplayMenuAtItem(menu, client, pos, MENU_TIME_FOREVER);
 }
 
 void ShowBHUDMenu(int client)
@@ -394,12 +399,14 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 
 		BgsSetCookie(client, g_hSettings[Usage], g_iSettings[client][Usage]);
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
-		ShowSSJMenu(client);
+		ShowSSJMenu(client, option);
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowJsMenu(client);
-		return 0;
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowJsMenu(client);
+		}
 	}
 	else if(action == MenuAction_End)
 	{
@@ -445,8 +452,10 @@ public int Hud_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowJsMenu(client);
-		return 0;
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowJsMenu(client);
+		}
 	}
 	else if(action == MenuAction_End)
 	{
@@ -480,8 +489,10 @@ public int Overview_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowBHUDMenu(client);
-		return 0;
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowBHUDMenu(client);
+		}
 	}
 	else if(action == MenuAction_End)
 	{
@@ -520,8 +531,10 @@ public int Colors_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowJsMenu(client);
-		return 0;
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowJsMenu(client);
+		}
 	}
 	else if(action == MenuAction_End)
 	{
@@ -572,8 +585,10 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowHudSettingsOverview(client);
-		return 0;
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowHudSettingsOverview(client);
+		}
 	}
 	else if(action == MenuAction_End)
 	{
@@ -606,8 +621,10 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowHudSettingsOverview(client);
-		return 0;
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowHudSettingsOverview(client);
+		}
 	}
 	else if(action == MenuAction_End)
 	{
@@ -632,8 +649,10 @@ public int Speedometer_Select(Menu menu, MenuAction action, int client, int opti
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		ShowHudSettingsOverview(client);
-		return 0;
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowHudSettingsOverview(client);
+		}
 	}
 	else if(action == MenuAction_End)
 	{
