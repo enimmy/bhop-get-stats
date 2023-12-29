@@ -7,14 +7,14 @@
 #include <jumpstat/colors.sp>
 #include <jumpstat/settings.sp>
 #include <jumpstat/util.sp>
-#include <jumpstat/commands.sp>
-#include <jumpstat/menu.sp>
 #include <jumpstat/jhud.sp>
 #include <jumpstat/offsets.sp>
 #include <jumpstat/speedometer.sp>
 #include <jumpstat/ssj.sp>
 #include <jumpstat/trainer.sp>
 #include <jumpstat/fjt.sp>
+#include <jumpstat/menu.sp>
+#include <jumpstat/commands.sp>
 
 #undef REQUIRE_PLUGIN
 #include <shavit>

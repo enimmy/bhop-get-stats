@@ -4,6 +4,7 @@ static bool lateLoad;
 static bool shavitLoaded;
 static EngineVersion engineVersion;
 chatstrings_t g_csChatStrings;
+bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", menu.sp. defined in here to prevent scoping errors
 
 void Init_Utils(bool late, bool shavit, EngineVersion engine)
 {
@@ -62,6 +63,21 @@ int BgsGetHUDTarget(int client, int fallback = 0)
 bool BgsIsValidClient(int client, bool bAlive = false)
 {
 	return (client >= 1 && client <= MaxClients && IsClientInGame(client) && !IsClientSourceTV(client) && (!bAlive || IsPlayerAlive(client)));
+}
+
+void BgsPrintToChat(int client, const char[] format, any...)
+{
+	char buffer[300];
+	VFormat(buffer, sizeof(buffer), format, 3);
+
+	if(BgsShavitLoaded())
+	{
+		Shavit_PrintToChat(client, "%s[JumpStats]: %s%s", g_csChatStrings.sVariable, g_csChatStrings.sText, buffer)
+	}
+	else
+	{
+		PrintToChat(client, "%s%s[JumpStats]: %s%s", (BgsGetEngineVersion() == Engine_CSGO) ? " ":"", g_sBstatColorsHex[Cyan], g_sBstatColorsHex[White], buffer);
+	}
 }
 
 void BgsSetCookie(int client, Cookie hCookie, int n)

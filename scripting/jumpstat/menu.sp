@@ -6,8 +6,6 @@ static bool g_xLocked[MAXPLAYERS + 1]; //bool for editmode, player locked X thro
 static bool g_yLocked[MAXPLAYERS + 1]; //bool for editmode, player locked Y through the menu
 static bool g_bEditLastTick[MAXPLAYERS + 1]; //player was editing, so if their g_bEditing is false they mustve just stopped. do stuff
 
-bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", see OnPlayerRunCmd
-
 #define TEST_POS_UPDATE_INTERVAL 7
 
 //Edit Mode
@@ -248,6 +246,7 @@ void ShowPosEditMenu(int client)
 	Format(message, sizeof(message), "Editing Hud: %s", message);
 	AddMenuItem(menu, "editingHud", message);
 	AddMenuItem(menu, "center", "Dead Center");
+	AddMenuItem(menu, "default", "Default Position");
 
 	Format(message, sizeof(message), "Edit Mode: %s", g_bEditing[client] ? "On":"Off");
 	AddMenuItem(menu, "editMode", message);
@@ -553,6 +552,10 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 			BgsSetCookie(client, g_hSettings[Positions_Y], g_iSettings[client][Positions_Y]);
 			PushPosCache(client);
 		}
+		else if(StrEqual(info, "default"))
+		{
+			SetDefaultHudPos(client, g_iEditHud[client]);
+		}
 		else if(StrEqual(info, "editMode"))
 		{
 			g_bEditing[client] = !g_bEditing[client];
@@ -569,7 +572,6 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 	}
 	else if(action == MenuAction_Cancel)
 	{
-		g_bEditing[client] = false;
 		ShowHudSettingsOverview(client);
 		return 0;
 	}

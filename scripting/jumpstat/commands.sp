@@ -43,7 +43,8 @@ public Action Command_CheckFjtOverride(int client, any args)
 {
 	if(g_hOverrideFjt.IntValue)
 	{
-		Command_Js(client, 0);
+		g_iSettings[client][Bools] ^= FJT_ENABLED;
+		BgsPrintToChat(client, "FJT: %s", g_iSettings[client][Bools] & FJT_ENABLED ? "On":"Off");
 		return Plugin_Handled;
 	}
 
@@ -54,7 +55,12 @@ public Action Command_CheckJhudOverride(int client, any args)
 {
 	if(g_hOverrideJhud.IntValue)
 	{
-		Command_Js(client, 0);
+		g_iSettings[client][Bools] ^= JHUD_ENABLED;
+		BgsPrintToChat(client, "Jhud: %s", g_iSettings[client][Bools] & JHUD_ENABLED ? "On":"Off");
+		if(g_iSettings[client][Bools] & JHUD_ENABLED)
+		{
+			ShowJhudSettingsMenu(client);
+		}
 		return Plugin_Handled;
 	}
 
@@ -65,7 +71,8 @@ public Action Command_CheckTrainerOverride(int client, any args)
 {
 	if(g_hOverrideTrainer.IntValue)
 	{
-		Command_Js(client, 0);
+		g_iSettings[client][Bools] ^= TRAINER_ENABLED;
+		BgsPrintToChat(client, "Strafe-Trainer: %s", g_iSettings[client][Bools] & TRAINER_ENABLED ? "On":"Off");
 		return Plugin_Handled;
 	}
 
@@ -76,7 +83,12 @@ public Action Command_CheckSpeedOverride(int client, any args)
 {
 	if(g_hOverrideSpeed.IntValue)
 	{
-		Command_Js(client, 0);
+		g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
+		BgsPrintToChat(client, "Speedometer: %s", g_iSettings[client][Bools] & SPEEDOMETER_ENABLED ? "On":"Off");
+		if(g_iSettings[client][Bools] & SPEEDOMETER_ENABLED)
+		{
+			ShowSpeedSettingsMenu(client);
+		}
 		return Plugin_Handled;
 	}
 
@@ -87,7 +99,8 @@ public Action Command_CheckOffsetOverride(int client, any args)
 {
 	if(g_hOverrideOffset.IntValue)
 	{
-		Command_Js(client, 0);
+		g_iSettings[client][Bools] ^= OFFSETS_ENABLED;
+		BgsPrintToChat(client, "Offsets: %s", g_iSettings[client][Bools] & OFFSETS_ENABLED ? "On":"Off");
 		return Plugin_Handled;
 	}
 
@@ -98,7 +111,12 @@ public Action Command_CheckSsjOverride(int client, any args)
 {
 	if(g_hOverrideSsj.IntValue)
 	{
-		Command_Js(client, 0);
+		g_iSettings[client][Bools] ^= SSJ_ENABLED;
+		BgsPrintToChat(client, "SSJ: %s", g_iSettings[client][Bools] & SSJ_ENABLED ? "On":"Off");
+		if(g_iSettings[client][Bools] & SSJ_ENABLED)
+		{
+			ShowSSJMenu(client);
+		}
 		return Plugin_Handled;
 	}
 

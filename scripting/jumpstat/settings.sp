@@ -69,6 +69,13 @@ char g_sHudStrs[][] = {
 	"Speedometer"
 };
 
+static float g_fDefaultHudYPositions[] = {
+	-1.0,
+	0.2,
+	0.35,
+	0.01
+};
+
 enum //indexes of settings
 {
 	GainReallyBad,
@@ -176,10 +183,10 @@ void SetDefaults(int client)
 	//g_iSettings[client][Bools] |= FJT_ENABLED;
 
 	g_iSettings[client][Positions_Y] = 0;
-	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(-1.0, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Jhud, POS_INT_BITS, POS_BINARY_MASK);
-	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(0.2, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Trainer, POS_INT_BITS, POS_BINARY_MASK);
-	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(0.35, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Offset, POS_INT_BITS, POS_BINARY_MASK);
-	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(0.01, POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), Speedometer, POS_INT_BITS, POS_BINARY_MASK);
+	for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)
+	{
+		SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(g_fDefaultHudYPositions[i], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), i, POS_INT_BITS, POS_BINARY_MASK);
+	}
 
 	g_iSettings[client][Positions_X] = 0;
 	g_iSettings[client][Usage] = 1;
@@ -189,6 +196,15 @@ void SetDefaults(int client)
 	g_iSettings[client][GainGood] = Cyan;
 	g_iSettings[client][GainReallyGood] = White;
 	SaveAllCookies(client);
+	PushPosCache(client);
+}
+
+void SetDefaultHudPos(int client, int hud)
+{
+	SetIntSubValue(g_iSettings[client][Positions_X], 0, hud, POS_INT_BITS, POS_BINARY_MASK);
+	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(g_fDefaultHudYPositions[hud], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), hud, POS_INT_BITS, POS_BINARY_MASK);
+	BgsSetCookie(client, g_hSettings[Positions_X], g_iSettings[client][Positions_X]);
+	BgsSetCookie(client, g_hSettings[Positions_Y], g_iSettings[client][Positions_Y]);
 	PushPosCache(client);
 }
 
