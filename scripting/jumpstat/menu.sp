@@ -155,6 +155,7 @@ void ShowSSJMenu(int client, int pos = 0)
 	{
 		AddMenuItem(menu, "enTime", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME) ? "[x] Time":"[ ] Time");
 		AddMenuItem(menu, "enTimeDelta", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA) ? "[x] Time Difference":"[ ] Time Difference");
+		AddMenuItem(menu, "enFjtChat", (g_iSettings[client][Bools] & FJT_CHAT) ? "[x] FJT":"[ ] FJT");
 	}
 
 	while(pos % GetMenuPagination(menu) != 0)
@@ -395,6 +396,10 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "enTimeDelta"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_SHAVIT_TIME_DELTA;
+		}
+		else if(StrEqual(info, "enFjtChat"))
+		{
+			g_iSettings[client][Bools] ^= FJT_CHAT;
 		}
 
 		BgsSetCookie(client, g_hSettings[Usage], g_iSettings[client][Usage]);

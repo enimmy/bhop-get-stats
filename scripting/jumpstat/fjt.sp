@@ -28,7 +28,7 @@ void Fjt_OnJump(int client, int jump)
 	{
 		g_bJumpInZone[client] = true;
 	}
-	else
+	else if((Shavit_GetTimerStatus(client) == Timer_Running) && (Shavit_GetClientJumps(client) == 1))
 	{
 		PrintJumpTick(client);
 	}
@@ -44,7 +44,7 @@ void PrintJumpTick(int client)
 	}
 	for(int i = 1; i < MaxClients; i++)
 	{
-		if(!(g_iSettings[i][Bools] & FJT_ENABLED) || !BgsIsValidClient(i))
+		if(( !(g_iSettings[i][Bools] & FJT_ENABLED) && !(g_iSettings[i][Bools] & FJT_CHAT) ) || !BgsIsValidClient(i))
 		{
 			continue;
 		}
@@ -53,7 +53,16 @@ void PrintJumpTick(int client)
 			SetHudTextParams(g_fCacheHudPositions[i][Offset][X_DIM], g_fCacheHudPositions[i][Offset][Y_DIM] + 0.05, 2.0, 255, 255, 255, 255);
 			int tick = RoundToNearest(Shavit_GetClientTime(client) * 100);
 			tick = g_bJumpInZone[client] ? (tick*-1):tick;
-			ShowHudText(i, GetDynamicChannel(3), "FJT: %i", tick);
+
+			if((g_iSettings[i][Bools] & FJT_ENABLED))
+			{
+				ShowHudText(i, GetDynamicChannel(3), "FJT: %i", tick);
+			}
+
+			if((g_iSettings[i][Bools] & FJT_CHAT))
+			{
+				Shavit_PrintToChat(client, "%sFJT: %s%i", g_csChatStrings.sText, g_csChatStrings.sVariable, tick);
+			}
 		}
 	}
 }

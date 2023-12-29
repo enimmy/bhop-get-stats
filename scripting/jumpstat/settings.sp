@@ -17,6 +17,7 @@
 #define SSJ_STRAFES 1 << 16
 #define SSJ_SYNC 1 << 17
 #define FJT_ENABLED 1 << 18
+#define FJT_CHAT 1 << 19
 
 #define BHUD_SETTINGS_NUMBER 9
 #define COLOR_SETTINGS_START_IDX 0
@@ -181,6 +182,7 @@ void SetDefaults(int client)
 	g_iSettings[client][Bools] |= SSJ_STRAFES;
 	g_iSettings[client][Bools] |= SSJ_SYNC;
 	//g_iSettings[client][Bools] |= FJT_ENABLED;
+	//g_iSettings[client][Bools] |= FJT_CHAT;
 
 	g_iSettings[client][Positions_Y] = 0;
 	for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)
