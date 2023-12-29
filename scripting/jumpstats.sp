@@ -90,6 +90,7 @@ public void BhopStat_JumpForward(int client, int jump, int speed, int strafecoun
 	Jhud_Process(client, jump, speed, strafecount, heightdelta, gain, sync, eff, yawwing, jss);
 	Ssj_Process(client, jump, speed, strafecount, heightdelta, gain, sync, eff, yawwing, jss);
 	Fjt_OnJump(client, jump);
+	Offset_Dump(client, jump, sync);
 }
 
 public void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress)

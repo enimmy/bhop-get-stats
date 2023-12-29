@@ -120,10 +120,35 @@ void ShowJsMenu(int client)
 
 	Menu menu = new Menu(Js_Select);
 	SetMenuTitle(menu, "JumpStats - Nimmy\n \n");
-	AddMenuItem(menu, "chat", "Chat");
-	AddMenuItem(menu, "hud", "Hud");
+	AddMenuItem(menu, "stats", "Statistics");
+	AddMenuItem(menu, "hud", "Hud Position Editor");
 	AddMenuItem(menu, "colors", "Colors");
-	AddMenuItem(menu, "reset", "Reset Settings");
+	AddMenuItem(menu, "reset", "Reset");
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+void ShowStatOverviewMenu(int client)
+{
+	if(!BgsIsValidClient(client))
+	{
+		return;
+	}
+
+	Menu menu = new Menu(StatOverview_Select);
+	menu.ExitBackButton = true;
+	SetMenuTitle(menu, "Jump Stats\n \n");
+	AddMenuItem(menu, "ssj", "SSJ (Chat)");
+	AddMenuItem(menu, "jhud", "Jhud (HUD)");
+	AddMenuItem(menu, "offsets", "Offsets (HUD/Console)");
+	AddMenuItem(menu, "speedometer", "Speedometer (HUD)");
+
+	if(BgsShavitLoaded())
+	{
+		AddMenuItem(menu, "fjt", "FJT (HUD/Chat)");
+	}
+
+	AddMenuItem(menu, "trainer", (g_iSettings[client][Bools] & TRAINER_ENABLED) ? "[x] Trainer (HUD)":"[ ] Trainer (HUD)");
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -155,7 +180,6 @@ void ShowSSJMenu(int client, int pos = 0)
 	{
 		AddMenuItem(menu, "enTime", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME) ? "[x] Time":"[ ] Time");
 		AddMenuItem(menu, "enTimeDelta", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA) ? "[x] Time Difference":"[ ] Time Difference");
-		AddMenuItem(menu, "enFjtChat", (g_iSettings[client][Bools] & FJT_CHAT) ? "[x] FJT":"[ ] FJT");
 	}
 
 	while(pos % GetMenuPagination(menu) != 0)
@@ -164,46 +188,6 @@ void ShowSSJMenu(int client, int pos = 0)
 	}
 
 	DisplayMenuAtItem(menu, client, pos, MENU_TIME_FOREVER);
-}
-
-void ShowBHUDMenu(int client)
-{
-	if(!BgsIsValidClient(client))
-	{
-		return;
-	}
-
-	Menu menu = new Menu(Hud_Select);
-	menu.ExitBackButton = true;
-	SetMenuTitle(menu, "HUD Jump Stats\n \n");
-	AddMenuItem(menu, "enJhud", (g_iSettings[client][Bools] & JHUD_ENABLED) ? "[x] Jhud":"[ ] Jhud");
-	AddMenuItem(menu, "enTrainer", (g_iSettings[client][Bools] & TRAINER_ENABLED) ? "[x] Trainer":"[ ] Trainer");
-	AddMenuItem(menu, "enOffset", (g_iSettings[client][Bools] & OFFSETS_ENABLED) ? "[x] Offsets":"[ ] Offsets");
-	AddMenuItem(menu, "enSpeed", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Speedometer":"[ ] Speedometer");
-
-	if(BgsShavitLoaded())
-	{
-		AddMenuItem(menu, "enFjt", (g_iSettings[client][Bools] & FJT_ENABLED) ? "[x] FJT":"[ ] FJT");
-	}
-
-	AddMenuItem(menu, "hudSettings", "All HUD Settings");
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
-}
-
-void ShowHudSettingsOverview(int client)
-{
-	if(!BgsIsValidClient(client))
-	{
-		return;
-	}
-
-	Menu menu = new Menu(Overview_Select);
-	menu.ExitBackButton = true;
-	SetMenuTitle(menu, "Settings Overview\n \n");
-	AddMenuItem(menu, "jhudSettings", "JHUD Settings");
-	AddMenuItem(menu, "speedSettings", "Speedometer Settings");
-	AddMenuItem(menu, "posEditor", "Hud Positions Editor");
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
 void ShowJhudSettingsMenu(int client)
@@ -216,9 +200,40 @@ void ShowJhudSettingsMenu(int client)
 	Menu menu = new Menu(Jhud_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Jhud Settings\n \n");
+	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & JHUD_ENABLED) ? "[x] Enabled":"[ ] Enabled")
 	AddMenuItem(menu, "strafespeed", (g_iSettings[client][Bools] & JHUD_JSS) ? "[x] Jss":"[ ] Jss");
 	AddMenuItem(menu, "sync", (g_iSettings[client][Bools] & JHUD_SYNC) ? "[x] Sync":"[ ] Sync");
 	AddMenuItem(menu, "extraspeeds", (g_iSettings[client][Bools] & JHUD_EXTRASPEED) ? "[x] Extra speeds":"[ ] Extra speeds");
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+void ShowOffsetsMenu(int client)
+{
+	if(!BgsIsValidClient(client))
+	{
+		return;
+	}
+
+	Menu menu = new Menu(Offsets_Select);
+	menu.ExitBackButton = true;
+	SetMenuTitle(menu, "Offsets Settings\n \n");
+	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & OFFSETS_ENABLED) ? "[x] HUD":"[ ] HUD");
+	AddMenuItem(menu, "spam", (g_iSettings[client][Bools] & OFFSETS_SPAM_CONSOLE) ? "[x] Console Dump":"[ ] Console Dump");
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+void ShowFjtSettingsMenu(int client)
+{
+	if(!BgsIsValidClient(client))
+	{
+		return;
+	}
+
+	Menu menu = new Menu(Fjt_Select);
+	menu.ExitBackButton = true;
+	SetMenuTitle(menu, "FJT Settings\n \n");
+	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & FJT_ENABLED) ? "[x] HUD":"[ ] HUD");
+	AddMenuItem(menu, "chat", (g_iSettings[client][Bools] & FJT_CHAT) ? "[x] Chat":"[ ] Chat");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -232,6 +247,7 @@ void ShowSpeedSettingsMenu(int client)
 	Menu menu = new Menu(Speedometer_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Speed Settings\n \n");
+	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Enabled":"[ ] Enabled");
 	AddMenuItem(menu, "speedGainColor", (g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR) ? "[x] Gain Based Color":"[ ] Gain Based Color");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -315,26 +331,23 @@ public int Js_Select(Menu menu, MenuAction action, int client, int option)
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
 
-		if(StrEqual(info, "chat"))
+		if(StrEqual(info, "stats"))
 		{
-			ShowSSJMenu(client);
-			return 0;
+			ShowStatOverviewMenu(client);
 		}
 		else if(StrEqual(info, "hud"))
 		{
-			ShowBHUDMenu(client);
-			return 0;
+			ShowPosEditMenu(client);
 		}
 		else if(StrEqual(info, "colors"))
 		{
 			ShowColorsMenu(client);
-			return 0;
 		}
 		else if(StrEqual(info, "reset"))
 		{
 			SetDefaults(client);
+			ShowJsMenu(client);
 		}
-		ShowJsMenu(client);
 	}
 	else if(action == MenuAction_End)
 	{
@@ -397,10 +410,6 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			g_iSettings[client][Bools] ^= SSJ_SHAVIT_TIME_DELTA;
 		}
-		else if(StrEqual(info, "enFjtChat"))
-		{
-			g_iSettings[client][Bools] ^= FJT_CHAT;
-		}
 
 		BgsSetCookie(client, g_hSettings[Usage], g_iSettings[client][Usage]);
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
@@ -410,7 +419,7 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 	{
 		if(option == MenuCancel_ExitBack)
 		{
-			ShowJsMenu(client);
+			ShowStatOverviewMenu(client);
 		}
 	}
 	else if(action == MenuAction_End)
@@ -420,83 +429,44 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 	return 0;
 }
 
-public int Hud_Select(Menu menu, MenuAction action, int client, int option)
+public int StatOverview_Select(Menu menu, MenuAction action, int client, int option)
 {
 	if(action == MenuAction_Select)
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
 
-		if(StrEqual(info, "enJhud"))
+		if(StrEqual(info, "ssj"))
 		{
-			g_iSettings[client][Bools] ^= JHUD_ENABLED;
+			ShowSSJMenu(client);
 		}
-		else if(StrEqual(info, "enTrainer"))
-		{
-			g_iSettings[client][Bools] ^= TRAINER_ENABLED;
-		}
-		else if(StrEqual(info, "enOffset"))
-		{
-			g_iSettings[client][Bools] ^= OFFSETS_ENABLED;
-		}
-		else if(StrEqual(info, "enSpeed"))
-		{
-			g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
-		}
-		else if(StrEqual(info, "enFjt"))
-		{
-			g_iSettings[client][Bools] ^= FJT_ENABLED;
-		}
-		else if(StrEqual(info, "hudSettings"))
-		{
-			ShowHudSettingsOverview(client);
-			return 0;
-		}
-		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
-		ShowBHUDMenu(client);
-	}
-	else if(action == MenuAction_Cancel)
-	{
-		if(option == MenuCancel_ExitBack)
-		{
-			ShowJsMenu(client);
-		}
-	}
-	else if(action == MenuAction_End)
-	{
-		delete menu;
-	}
-	return 0;
-}
-
-public int Overview_Select(Menu menu, MenuAction action, int client, int option)
-{
-	if(action == MenuAction_Select)
-	{
-		char info[32];
-		menu.GetItem(option, info, sizeof(info));
-
-		if(StrEqual(info, "jhudSettings"))
+		else if(StrEqual(info, "jhud"))
 		{
 			ShowJhudSettingsMenu(client);
-			return 0;
 		}
-		else if(StrEqual(info, "speedSettings"))
+		else if(StrEqual(info, "trainer"))
+		{
+			g_iSettings[client][Bools] ^= TRAINER_ENABLED;
+			ShowStatOverviewMenu(client);
+		}
+		else if(StrEqual(info, "offsets"))
+		{
+			ShowOffsetsMenu(client);
+		}
+		else if(StrEqual(info, "fjt"))
+		{
+			ShowFjtSettingsMenu(client);
+		}
+		else if(StrEqual(info, "speedometer"))
 		{
 			ShowSpeedSettingsMenu(client);
-			return 0;
-		}
-		else if(StrEqual(info, "posEditor"))
-		{
-			ShowPosEditMenu(client);
-			return 0;
 		}
 	}
 	else if(action == MenuAction_Cancel)
 	{
 		if(option == MenuCancel_ExitBack)
 		{
-			ShowBHUDMenu(client);
+			ShowJsMenu(client);
 		}
 	}
 	else if(action == MenuAction_End)
@@ -592,7 +562,7 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 	{
 		if(option == MenuCancel_ExitBack)
 		{
-			ShowHudSettingsOverview(client);
+			ShowJsMenu(client);
 		}
 	}
 	else if(action == MenuAction_End)
@@ -609,7 +579,11 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
 
-		if(StrEqual(info, "strafespeed"))
+		if(StrEqual(info, "en"))
+		{
+			g_iSettings[client][Bools] ^= JHUD_ENABLED;
+		}
+		else if(StrEqual(info, "strafespeed"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_JSS;
 		}
@@ -628,7 +602,71 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 	{
 		if(option == MenuCancel_ExitBack)
 		{
-			ShowHudSettingsOverview(client);
+			ShowStatOverviewMenu(client);
+		}
+	}
+	else if(action == MenuAction_End)
+	{
+		delete menu;
+	}
+	return 0;
+}
+
+public int Offsets_Select(Menu menu, MenuAction action, int client, int option)
+{
+	if(action == MenuAction_Select)
+	{
+		char info[32];
+		menu.GetItem(option, info, sizeof(info));
+
+		if(StrEqual(info, "en"))
+		{
+			g_iSettings[client][Bools] ^= OFFSETS_ENABLED;
+		}
+		else if(StrEqual(info, "spam"))
+		{
+			g_iSettings[client][Bools] ^= OFFSETS_SPAM_CONSOLE;
+		}
+		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
+		ShowOffsetsMenu(client);
+	}
+	else if(action == MenuAction_Cancel)
+	{
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowStatOverviewMenu(client);
+		}
+	}
+	else if(action == MenuAction_End)
+	{
+		delete menu;
+	}
+	return 0;
+}
+
+public int Fjt_Select(Menu menu, MenuAction action, int client, int option)
+{
+	if(action == MenuAction_Select)
+	{
+		char info[32];
+		menu.GetItem(option, info, sizeof(info));
+
+		if(StrEqual(info, "en"))
+		{
+			g_iSettings[client][Bools] ^= FJT_ENABLED;
+		}
+		else if(StrEqual(info, "chat"))
+		{
+			g_iSettings[client][Bools] ^= FJT_CHAT;
+		}
+		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
+		ShowFjtSettingsMenu(client);
+	}
+	else if(action == MenuAction_Cancel)
+	{
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowStatOverviewMenu(client);
 		}
 	}
 	else if(action == MenuAction_End)
@@ -644,8 +682,11 @@ public int Speedometer_Select(Menu menu, MenuAction action, int client, int opti
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-
-		if(StrEqual(info, "speedGainColor"))
+		if(StrEqual(info, "en"))
+		{
+			g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
+		}
+		else if(StrEqual(info, "speedGainColor"))
 		{
 			g_iSettings[client][Bools] ^= SPEEDOMETER_GAIN_COLOR;
 		}
@@ -656,7 +697,7 @@ public int Speedometer_Select(Menu menu, MenuAction action, int client, int opti
 	{
 		if(option == MenuCancel_ExitBack)
 		{
-			ShowHudSettingsOverview(client);
+			ShowStatOverviewMenu(client);
 		}
 	}
 	else if(action == MenuAction_End)

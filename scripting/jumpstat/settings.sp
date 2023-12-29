@@ -18,6 +18,7 @@
 #define SSJ_SYNC 1 << 17
 #define FJT_ENABLED 1 << 18
 #define FJT_CHAT 1 << 19
+#define OFFSETS_SPAM_CONSOLE 1 << 20
 
 #define BHUD_SETTINGS_NUMBER 9
 #define COLOR_SETTINGS_START_IDX 0

@@ -45,6 +45,10 @@ public Action Command_CheckFjtOverride(int client, any args)
 	{
 		g_iSettings[client][Bools] ^= FJT_ENABLED;
 		BgsPrintToChat(client, "FJT: %s", g_iSettings[client][Bools] & FJT_ENABLED ? "On":"Off");
+		if(g_iSettings[client][Bools] & FJT_ENABLED)
+		{
+			ShowFjtSettingsMenu(client);
+		}
 		return Plugin_Handled;
 	}
 
@@ -101,6 +105,10 @@ public Action Command_CheckOffsetOverride(int client, any args)
 	{
 		g_iSettings[client][Bools] ^= OFFSETS_ENABLED;
 		BgsPrintToChat(client, "Offsets: %s", g_iSettings[client][Bools] & OFFSETS_ENABLED ? "On":"Off");
+		if(g_iSettings[client][Bools] & OFFSETS_ENABLED)
+		{
+			ShowOffsetsMenu(client);
+		}
 		return Plugin_Handled;
 	}
 
