@@ -1,7 +1,5 @@
 # bhop-get-stats
 
-### Big fat warning: If you choose to use these plugins, please be aware they are pretty much in beta and I'm not 100% they are all working great, but I would still really appreciate it if you tried them out and messaged me with any issues
-
 ### [my discord](https://discord.gg/j9nfnjcUVd)
 
 Central plugin for calling bhop statistic forwards and base plugins for displaying that information.
