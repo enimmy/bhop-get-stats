@@ -19,6 +19,8 @@
 #undef REQUIRE_PLUGIN
 #include <shavit>
 
+#define JS_VERSTION "3.3"
+
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -27,7 +29,7 @@ public Plugin myinfo =
 	name = "bgs-jumpstats",
 	author = "Nimmy",
 	description = "all kinds of stuff",
-	version = "3.2",
+	version = JS_VERSTION,
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 
@@ -38,6 +40,7 @@ public Plugin myinfo =
 // FJT 3 (here) This is a very light HUD, only a very short time on first jump. use this channel for more stuff
 // Speedometer 4 (here)
 // Shavit-Hud Top Left 5 (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
+// If you use 3 and need another channel, i'd disable shavit top left and use that channel
 
 bool g_bLate = false;
 bool g_bShavit = false;
@@ -50,7 +53,7 @@ public void OnPluginStart()
 		Shavit_OnChatConfigLoaded();
 	}
 
-	Init_Utils(g_bLate, g_bShavit, GetEngineVersion());
+	Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
 	Commands_Start();
 	Settings_Start();
 }
@@ -66,7 +69,7 @@ public void OnLibraryAdded(const char[] name)
 	if(StrEqual(name, "shavit"))
 	{
 		g_bShavit = true;
-		Init_Utils(g_bLate, g_bShavit, GetEngineVersion());
+		Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
 	}
 }
 
@@ -75,14 +78,15 @@ public void OnLibraryRemoved(const char[] name)
 	if(StrEqual(name, "shavit"))
 	{
 		g_bShavit = false;
-		Init_Utils(g_bLate, g_bShavit, GetEngineVersion());
+		Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
 	}
 }
 
-public void BhopStat_TickForward(int client, int speed, bool inbhop, float gain, float jss)
+public void BhopStat_TickForward(int client, float speed, bool inbhop, float gain, float jss)
 {
 	Speedometer_Tick(client, speed, inbhop, gain);
 	Trainer_Tick(client, speed, inbhop, gain, jss);
+	Offset_Tick(client, speed, inbhop, gain, jss);
 }
 
 public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
@@ -105,6 +109,9 @@ public void Shavit_OnLeaveZone(int client, int type, int track, int id, int enti
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	Menu_CheckEditMode(client, buttons, mouse);
+	if(!IsFakeClient(client))
+	{
+		Menu_CheckEditMode(client, buttons, mouse);
+	}
 	return Plugin_Continue;
 }

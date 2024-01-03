@@ -119,7 +119,11 @@ void ShowJsMenu(int client)
 	}
 
 	Menu menu = new Menu(Js_Select);
-	SetMenuTitle(menu, "JumpStats - Nimmy\n \n");
+	char title[256];
+	char version[32];
+	BgsVersion(version, sizeof(version));
+	Format(title, sizeof(title), "JumpStats %s - Nimmy\n\n", version)
+	SetMenuTitle(menu, title);
 	AddMenuItem(menu, "stats", "Statistics");
 	AddMenuItem(menu, "hud", "Hud Position Editor");
 	AddMenuItem(menu, "colors", "Colors");
@@ -219,6 +223,7 @@ void ShowOffsetsMenu(int client)
 	SetMenuTitle(menu, "Offsets Settings\n \n");
 	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & OFFSETS_ENABLED) ? "[x] HUD":"[ ] HUD");
 	AddMenuItem(menu, "spam", (g_iSettings[client][Bools] & OFFSETS_SPAM_CONSOLE) ? "[x] Console Dump":"[ ] Console Dump");
+	AddMenuItem(menu, "adv", (g_iSettings[client][Bools] & OFFSETS_ADVANCED) ? "[x] Advanced":"[ ] Advanced");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -626,6 +631,39 @@ public int Offsets_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "spam"))
 		{
 			g_iSettings[client][Bools] ^= OFFSETS_SPAM_CONSOLE;
+		}
+		else if(StrEqual(info, "adv"))
+		{
+			g_iSettings[client][Bools] ^= OFFSETS_ADVANCED;
+
+			if(g_iSettings[client][Bools] & OFFSETS_ADVANCED)
+			{
+				BgsPrintToChat(client, "Advanced offsets information in your console!");
+				PrintToConsole(client,
+				"JumpStats: You've enabled advanced mode, so this section will explain some"
+				... "of its features and some mechanics behind offsets. \n"
+				... "Offset - A time comparison (in ticks) of when you turned your mouse and pressed the strafe key.\n"
+				... "------------------------------------------------------------------------------------------------\n"
+				... "-1 - Perfect offset, you pressed your strafe key 1 tick before you turned your mouse.\n"
+				... "------------------------------------------------------------------------------------------------\n");
+				PrintToConsole(client,
+				"0 - A 0 offset loses you speed depending on how fast your strafe speed is the tick after you turned.\n"
+				... "The higher your strafe speed, the most speed loss. So if you hit a 0 and have low strafe speed, that\n"
+				... "is the second best option for gaining speed. Lower strafe speeds are generally only optimal for\n"
+				... "gaining distance though, so in most cases a robot perfect strafe (inhuman) wouldn't want a 0, but its\n"
+				... "but in real practice it can be good for your speed as long as your strafe speed is right for it.\n"
+				... "------------------------------------------------------------------------------------------------\n"
+				... "-2 - A -2 offset will result in ticks where you don't gain speed, the higher you strafe speed is\n"
+				... "the lesser this effects your speed, so this is the second best option if your strafe speed is higher\n");
+				PrintToConsole(client,
+				"------------------------------------------------------------------------------------------------\n"
+				... "Colors of 0s and -2s will be (by default) green in this mode if your strafe speed doesn't match up,\n"
+				... "So if you hit a 0 with high strafe speed, green, with low strafe speed, blue. Same for -2 except the\n"
+				... "Opposite.\n"
+				... "------------------------------------------------------------------------------------------------\n"
+				... "Overlap - You pressed A/D or W/S at the same time, go turn on nulls.\n"
+				... "No Press - You let go of the opposing key too early when you turned.\n");
+			}
 		}
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowOffsetsMenu(client);

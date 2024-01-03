@@ -19,6 +19,7 @@
 #define FJT_ENABLED 1 << 18
 #define FJT_CHAT 1 << 19
 #define OFFSETS_SPAM_CONSOLE 1 << 20
+#define OFFSETS_ADVANCED 1 << 21
 
 #define BHUD_SETTINGS_NUMBER 9
 #define COLOR_SETTINGS_START_IDX 0
@@ -41,22 +42,7 @@
 #define X_DIM 0
 #define Y_DIM 1
 
-//Position Notes float(0 - 1) int(0 - 255)
-// converted float = (int/255). 0 values return -1 (dead center)
-//
-// 0000 0000 0000 0000 0000 0000 0000 0000 g_iSettngs[Position_Y]
-// TX        TY        JX        JY
-//
-// 0000 0000 0000 0000 0000 0000 0000 0000 g_iSettngs[Position_X]
-// SPX       SPY       OX        OY
-//
-// FJT tied to Offset
-
-
-// 0000 0000 0000 0000 0000 0000 0000 0000
-//                 Rg   G    M    B    RB
-
-enum //indexes of binary position locations
+enum
 {
 	Jhud,
 	Trainer,
@@ -91,7 +77,7 @@ enum //indexes of settings
 	Positions_Y
 }
 
-float g_fCacheHudPositions[MAXPLAYERS + 1][4][2]; //Positions are stored in cookies as ints (0-255), this cache holds the players converted poitions
+float g_fCacheHudPositions[MAXPLAYERS + 1][JUMPSTATS_HUD_NUMBER][2]; //Positions are stored in cookies as ints (0-255), this cache holds the players converted poitions
 int g_iSettings[MAXPLAYERS + 1][BHUD_SETTINGS_NUMBER];
 Cookie g_hSettings[BHUD_SETTINGS_NUMBER];
 
@@ -118,7 +104,7 @@ public void Settings_Start()
 
 public void PushPosCache(int client)
 {
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)
 	{
 		g_fCacheHudPositions[client][i][X_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_X], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF);
 		g_fCacheHudPositions[client][i][Y_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_Y], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF);
@@ -163,6 +149,8 @@ public void OnClientCookiesCached(int client)
 void SetDefaults(int client)
 {
 	//Just comment or uncomment stuff to enable or disable
+	PrintToConsole(client, "[JumpStats] Forcing default settings");
+
 	g_iSettings[client][Bools] = 0;
 	g_iSettings[client][Bools] |= JHUD_ENABLED;
 	g_iSettings[client][Bools] |= JHUD_JSS;
@@ -184,6 +172,8 @@ void SetDefaults(int client)
 	g_iSettings[client][Bools] |= SSJ_SYNC;
 	//g_iSettings[client][Bools] |= FJT_ENABLED;
 	//g_iSettings[client][Bools] |= FJT_CHAT;
+	//g_iSettings[client][Bools] |= OFFSETS_SPAM_CONSOLE;
+	g_iSettings[client][Bools] |= OFFSETS_ADVANCED;
 
 	g_iSettings[client][Positions_Y] = 0;
 	for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)

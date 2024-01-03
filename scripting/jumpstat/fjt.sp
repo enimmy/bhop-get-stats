@@ -54,12 +54,12 @@ void PrintJumpTick(int client)
 			int tick = RoundToNearest(Shavit_GetClientTime(client) * 100);
 			tick = g_bJumpInZone[client] ? (tick*-1):tick;
 
-			if((g_iSettings[i][Bools] & FJT_ENABLED))
+			if(g_iSettings[i][Bools] & FJT_ENABLED)
 			{
 				ShowHudText(i, GetDynamicChannel(3), "FJT: %i", tick);
 			}
 
-			if((g_iSettings[i][Bools] & FJT_CHAT))
+			if(g_iSettings[i][Bools] & FJT_CHAT)
 			{
 				Shavit_PrintToChat(client, "%sFJT: %s%i", g_csChatStrings.sText, g_csChatStrings.sVariable, tick);
 			}

@@ -3,14 +3,16 @@
 static bool lateLoad;
 static bool shavitLoaded;
 static EngineVersion engineVersion;
+static char jumpstatsVersion[32];
 chatstrings_t g_csChatStrings;
 bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", menu.sp. defined in here to prevent scoping errors
 
-void Init_Utils(bool late, bool shavit, EngineVersion engine)
+void Init_Utils(bool late, bool shavit, EngineVersion engine, char[] version)
 {
 	lateLoad = late;
 	shavitLoaded = shavit;
 	engineVersion = engine;
+	Format(jumpstatsVersion, sizeof(jumpstatsVersion), "%s", version);
 	if(shavitLoaded)
 	{
 		Shavit_OnChatConfigLoaded();
@@ -20,6 +22,11 @@ void Init_Utils(bool late, bool shavit, EngineVersion engine)
 bool BgsLateLoaded()
 {
 	return lateLoad;
+}
+
+void BgsVersion(char[] buffer, int len)
+{
+	Format(buffer, len, "%s", jumpstatsVersion);
 }
 
 bool BgsShavitLoaded()

@@ -2,6 +2,10 @@
 #include <sdkhooks>
 #include <sourcemod>
 
+#undef REQUIRE_PLUGIN
+#include <shavit>
+bool g_bShavit = false;
+
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -67,6 +71,8 @@ public void OnPluginStart()
 	HookEvent("player_jump", Player_Jump);
 	g_fTickrate = GetTickInterval();
 
+	g_bShavit = LibraryExists("shavit");
+
 	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
 	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
 	//yawing not done
@@ -75,7 +81,7 @@ public void OnPluginStart()
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
 
-	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float);
+	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Float, Param_Cell, Param_Float, Param_Float);
 	//int client, int speed, float gain, float jss);
 
 	for (int i = 1; i <= MaxClients; i++)
@@ -91,6 +97,22 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	RegPluginLibrary("bhop-get-stats");
 	return APLRes_Success;
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if(StrEqual(name, "shavit"))
+	{
+		g_bShavit = true;
+	}
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if(StrEqual(name, "shavit"))
+	{
+		g_bShavit = false;
+	}
 }
 
 public void OnClientPutInServer(int client)
@@ -121,7 +143,7 @@ public void Player_Jump(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
-	if(IsFakeClient(client) || (g_iJump[client] > 0 && g_iStrafeTick[client] == 0))
+	if(g_iJump[client] > 0 && g_iStrafeTick[client] == 0)
 	{
 		return;
 	}
@@ -132,14 +154,28 @@ public void Player_Jump(Event event, const char[] name, bool dontBroadcast)
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3])
 {
-	int flags = GetEntityFlags(client);
+	if(!IsPlayerAlive(client))
+	{
+		return Plugin_Continue;
+	}
+	if(g_bShavit && Shavit_IsReplayEntity(client))
+	{
+		//in prog
+	}
+	else
+	{
+		g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
+		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
+		Bgs_ProcessRunCmd(client, buttons, impulse, vel, angles, GetEntityFlags(client), GetEntityMoveType(client));
+	}
 
-	g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
-	GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
+	return Plugin_Continue;
+}
 
+public void Bgs_ProcessRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int flags, MoveType movetype)
+{
 	if(flags & FL_ONGROUND)
 	{
-
 		g_iTicksOnGround[client]++;
 		if(g_iTicksOnGround[client] >= BHOP_FRAMES)
 		{
@@ -158,7 +194,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 				g_bSawPress[client] = false;
 				g_bSawTurn[client] = false;
 			}
-			return Plugin_Continue;
+			return;
 		}
 
 		if ((buttons & IN_JUMP) > 0 && g_iTicksOnGround[client] == 1)
@@ -168,7 +204,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			GetClientAbsOrigin(client, currpos); //player landed, mustve jumped right?, calc veer
 			float xAxisVeer = FloatAbs(currpos[0] - g_fLastJumpPosition[client][0]);
 			float yAxisVeer = FloatAbs(currpos[1] - g_fLastJumpPosition[client][1]);
-			g_fLastVeer[client] = xAxisVeer >= yAxisVeer ? yAxisVeer:xAxisVeer; //something about this wrong, kinda close to distbug but not fully
+			g_fLastVeer[client] = xAxisVeer >= yAxisVeer ? yAxisVeer:xAxisVeer; //something about this wrong, kinda close to distbug but not fully, might need to wait till jump land
 			//PrintToChat(client, "veer %f", g_fLastVeer[client]);
 		}
 	}
@@ -177,19 +213,31 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		g_iTicksOnGround[client] = 0;
 	}
 
-	MoveType movetype = GetEntityMoveType(client);
 	if(movetype == MOVETYPE_NONE || movetype == MOVETYPE_NOCLIP || movetype == MOVETYPE_LADDER || GetEntProp(client, Prop_Data, "m_nWaterLevel") >= 2)
 	{
-		g_iTicksOnGround[client] = BHOP_FRAMES + 1; //lol
+		g_iTicksOnGround[client] = BHOP_FRAMES + 1;
 	}
-
-	return Plugin_Continue;
 }
 
 
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3])
 {
+	if(!IsPlayerAlive(client))
+	{
+		return;
+	}
+	if(g_bShavit && Shavit_IsReplayEntity(client))
+	{
+		//in prog
+	}
+	else
+	{
+		Bgs_ProcessPostRunCmd(client, buttons, impulse, vel, angles);
+	}
+}
 
+void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel[3], const float angles[3])
+{
 	if(g_iTicksOnGround[client] == 0)
 	{
 		g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
@@ -453,7 +501,7 @@ void StartTickForward(int client)
 {
 	Call_StartForward(TickStatsForward);
 	Call_PushCell(client);
-	Call_PushCell(RoundToFloor(GetRunCmdVelocity(client, true)));
+	Call_PushFloat(GetRunCmdVelocity(client, true));
 	Call_PushCell(view_as<int>((g_iTicksOnGround[client] == 0)));
 	Call_PushFloat(g_fTickGain[client]);
 	Call_PushFloat(g_fTickJss[client]);

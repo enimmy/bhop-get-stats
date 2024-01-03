@@ -15,7 +15,7 @@ public SharedPlugin __pl_bhopgetstats =
 };
 
 /**
- * Called after jump event and strafe statistics have been calculated.
+ * Called OnPlayerRunCmdPost, after HookEvent Player_Jump and stuff is calced (doesnt call for bots atm)
  *
  * @param client					Client index
  * @param jump						jump number (resets groundticks > 10, nothing to do with timer zones)
@@ -41,6 +41,8 @@ forward void BhopStat_JumpForward(int client, int jump, int speed, int strafecou
 forward void BhopStat_StrafeForward(int client, int offset, bool overlap, bool nopress);
 
 /**
+ * //Called OnPlayerRunCmdPost, skipped if not alive
+ *
  * @param client					client index
  * @param speed                     2d velocity
  * @param inBhop                    if player is hoppin or not
@@ -48,4 +50,4 @@ forward void BhopStat_StrafeForward(int client, int offset, bool overlap, bool n
  * @param jss						jss
  * @noreturn
  */
-forward void BhopStat_TickForward(int client, int speed, bool inBhop, float gain, float jss);
+forward void BhopStat_TickForward(int client, float speed, bool inBhop, float gain, float jss);
