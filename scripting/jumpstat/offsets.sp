@@ -65,16 +65,6 @@ void Offset_Delay_Process(int client, int offset, bool overlap, bool nopress, fl
 
 	char message[256];
 	Format(message, sizeof(message), "%d (%i)", offset, g_iRepeatedOffsets[client]);
-	if(overlap)
-	{
-		Format(message, sizeof(message), "%s Overlap", message);
-	}
-
-	if(nopress)
-	{
-		Format(message, sizeof(message), "%s No Press", message);
-	}
-
 	int colorIdx = Offset_GetColorIdx(offset);
 
 	for(int i = 1; i < MaxClients; i++)
