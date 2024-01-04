@@ -148,9 +148,6 @@ public void OnClientCookiesCached(int client)
 
 void SetDefaults(int client)
 {
-	//Just comment or uncomment stuff to enable or disable
-	PrintToConsole(client, "[JumpStats] Forcing default settings");
-
 	g_iSettings[client][Bools] = 0;
 	g_iSettings[client][Bools] |= JHUD_ENABLED;
 	g_iSettings[client][Bools] |= JHUD_JSS;
