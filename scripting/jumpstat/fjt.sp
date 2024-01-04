@@ -61,7 +61,7 @@ void PrintJumpTick(int client)
 
 			if(g_iSettings[i][Bools] & FJT_CHAT)
 			{
-				Shavit_PrintToChat(client, "%sFJT: %s%i", g_csChatStrings.sText, g_csChatStrings.sVariable, tick);
+				Shavit_PrintToChat(i, "%sFJT: %s%i", g_csChatStrings.sText, g_csChatStrings.sVariable, tick);
 			}
 		}
 	}
