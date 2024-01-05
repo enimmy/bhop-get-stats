@@ -172,12 +172,15 @@ void ShowSSJMenu(int client, int pos = 0)
 	char message[256];
 	Format(message, sizeof(message), "Usage: %i",g_iSettings[client][Usage]);
 	AddMenuItem(menu, "enUsage", message);
+	AddMenuItem(menu, "enDecimals", (g_iSettings[client][Bools] & SSJ_DECIMALS) ? "[x] Decimals":"[ ] Decimals");
 
 	AddMenuItem(menu, "enGain", (g_iSettings[client][Bools] & SSJ_GAIN) ? "[x] Gain":"[ ] Gain");
 	AddMenuItem(menu, "enGainColor", (g_iSettings[client][Bools] & SSJ_GAIN_COLOR) ? "[x] Gain Colors":"[ ] Gain Color");
 	AddMenuItem(menu, "enSync", (g_iSettings[client][Bools] & SSJ_SYNC) ? "[x] Sync":"[ ] Sync");
 	AddMenuItem(menu, "enStrafes", (g_iSettings[client][Bools] & SSJ_STRAFES) ? "[x] Strafes":"[ ] Strafes");
+	AddMenuItem(menu, "enJss", (g_iSettings[client][Bools] & SSJ_JSS) ? "[x] Jss":"[ ] Jss");
 	AddMenuItem(menu, "enEff", (g_iSettings[client][Bools] & SSJ_EFFICIENCY) ? "[x] Efficiency":"[ ] Efficiency");
+	AddMenuItem(menu, "enOffset", (g_iSettings[client][Bools] & SSJ_OFFSETS) ? "[x] Offsets":"[ ] Offsets");
 	AddMenuItem(menu, "enHeight", (g_iSettings[client][Bools] & SSJ_HEIGHTDIFF) ? "[x] Height Difference":"[ ] Height Difference");
 
 	if(BgsShavitLoaded())
@@ -383,6 +386,10 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 				g_iSettings[client][Usage] = 1;
 			}
 		}
+		else if(StrEqual(info, "enDecimals"))
+		{
+			g_iSettings[client][Bools] ^= SSJ_DECIMALS;
+		}
 		else if(StrEqual(info, "enGain"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_GAIN;
@@ -399,6 +406,10 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			g_iSettings[client][Bools] ^= SSJ_STRAFES;
 		}
+		else if(StrEqual(info, "enJss"))
+		{
+			g_iSettings[client][Bools] ^= SSJ_JSS;
+		}
 		else if(StrEqual(info, "enEff"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_EFFICIENCY;
@@ -406,6 +417,10 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "enHeight"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_HEIGHTDIFF;
+		}
+		else if(StrEqual(info, "enOffset"))
+		{
+			g_iSettings[client][Bools] ^= SSJ_OFFSETS;
 		}
 		else if(StrEqual(info, "enTime"))
 		{

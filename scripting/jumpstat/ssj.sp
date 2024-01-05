@@ -18,28 +18,32 @@ float eff, float yawwing, float jss)
 		}
 		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
 		{
-			SSJ_WriteMessage(i, client, jump, speed, strafecount, heightdelta, gain, sync, eff);
+			SSJ_WriteMessage(i, client, jump, speed, strafecount, heightdelta, gain, sync, eff, jss);
 		}
 	}
 	g_fLastJumpTime[client] = time;
 }
 
 void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecount, float heightdelta, float gain, float sync,
- float eff)
+ float eff, float jss)
 {
-	if(g_iSettings[client][Bools] & SSJ_REPEAT)
+	if(jump != 1)
 	{
-		if(jump % g_iSettings[client][Usage] != 0)
+		if(g_iSettings[client][Bools] & SSJ_REPEAT)
+		{
+			if(jump % g_iSettings[client][Usage] != 0)
+			{
+				return;
+			}
+		}
+		else if(jump != g_iSettings[client][Usage])
 		{
 			return;
 		}
 	}
-	else if(jump != g_iSettings[client][Usage])
-	{
-		return;
-	}
 
-	char message[300];
+	char message[230]; //Max is slightly more but shavit needs to add stuff
+	int maxlen = sizeof(message) - 30;
 	FormatEx(message, sizeof(message), "J: %s%i", g_csChatStrings.sVariable, jump);
 	Format(message, sizeof(message), "%s %s| S: %s%i", message, g_csChatStrings.sText, g_csChatStrings.sVariable, speed);
 
@@ -57,27 +61,39 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 			{
 				int idx = GetGainColorIdx(gain);
 				int settingsIdx = g_iSettings[client][idx];
-				Format(message, sizeof(message), "%s %s| G: %s%.1f%%", message, g_csChatStrings.sText, g_sBstatColorsHex[settingsIdx], gain);
+
+				if(g_iSettings[client][Bools] & SSJ_DECIMALS)
+				{
+					Format(message, sizeof(message), "%s %s| G: %s%.2f%%", message, g_csChatStrings.sText, g_sBstatColorsHex[settingsIdx], gain);
+				}
+				else
+				{
+					Format(message, sizeof(message), "%s %s| G: %s%i%%", message, g_csChatStrings.sText, g_sBstatColorsHex[settingsIdx], RoundToFloor(gain));
+				}
 			}
 			else
 			{
-				Format(message, sizeof(message), "%s %s| G: %s%.1f%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, gain);
+				if(g_iSettings[client][Bools] & SSJ_DECIMALS)
+				{
+					Format(message, sizeof(message), "%s %s| G: %s%.2f%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, gain);
+				}
+				else
+				{
+					Format(message, sizeof(message), "%s %s| G: %s%i%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, RoundToFloor(gain));
+				}
 			}
 		}
 
 		if(g_iSettings[client][Bools] & SSJ_SYNC)
 		{
-			Format(message, sizeof(message), "%s %s| S: %s%.1f%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, sync);
-		}
-
-		if(g_iSettings[client][Bools] & SSJ_EFFICIENCY)
-		{
-			Format(message, sizeof(message), "%s %s| Ef: %s%.1f%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, eff);
-		}
-
-		if(g_iSettings[client][Bools] & SSJ_HEIGHTDIFF)
-		{
-			Format(message, sizeof(message), "%s %s| HΔ: %s%.1f", message, g_csChatStrings.sText, g_csChatStrings.sVariable, heightdelta);
+			if(g_iSettings[client][Bools] & SSJ_DECIMALS)
+			{
+				Format(message, sizeof(message), "%s %s| S: %s%.2f%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, sync);
+			}
+			else
+			{
+				Format(message, sizeof(message), "%s %s| S: %s%i%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, RoundToFloor(sync));
+			}
 		}
 
 		if(g_iSettings[client][Bools] & SSJ_STRAFES)
@@ -85,14 +101,61 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 			Format(message, sizeof(message), "%s %s| Stf: %s%i", message, g_csChatStrings.sText, g_csChatStrings.sVariable, strafecount);
 		}
 
+		if(g_iSettings[client][Bools] & SSJ_JSS)
+		{
+			Format(message, sizeof(message), "%s %s|Jss: %s%i", message, g_csChatStrings.sText, g_csChatStrings.sVariable, RoundToFloor(jss * 100));
+		}
+
+		if(g_iSettings[client][Bools] & SSJ_EFFICIENCY)
+		{
+			if(g_iSettings[client][Bools] & SSJ_DECIMALS)
+			{
+				Format(message, sizeof(message), "%s %s| Ef: %s%.2f%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, eff);
+			}
+			else
+			{
+				Format(message, sizeof(message), "%s %s| Ef: %s%i%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, RoundToFloor(eff));
+			}
+		}
+
+		if(g_iSettings[client][Bools] & SSJ_HEIGHTDIFF)
+		{
+			Format(message, sizeof(message), "%s %s| HΔ: %s%.1f", message, g_csChatStrings.sText, g_csChatStrings.sVariable, heightdelta);
+		}
+
 		if(g_iSettings[client][Bools] & SSJ_SHAVIT_TIME && BgsShavitLoaded())
 		{
 			Format(message, sizeof(message), "%s %s| T: %s%.2f", message, g_csChatStrings.sText, g_csChatStrings.sVariable, time);
 		}
 
-		if(g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA && BgsShavitLoaded())
+		if(strlen(message) < maxlen && g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA && BgsShavitLoaded())
 		{
 			Format(message, sizeof(message), "%s %s| TΔ: %s%.2f", message, g_csChatStrings.sText, g_csChatStrings.sVariable, (time - g_fLastJumpTime[target]));
+		}
+
+		if(strlen(message) < maxlen && g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA)
+		{
+			Format(message, sizeof(message), "%s %s| TΔ: %s%.2f", message, g_csChatStrings.sText, g_csChatStrings.sVariable, (time - g_fLastJumpTime[target]));
+		}
+
+		if(strlen(message) < maxlen && g_iSettings[client][Bools] & SSJ_OFFSETS)
+		{
+			Format(message, sizeof(message), "%s %s| Of:%s", message, g_csChatStrings.sText, g_csChatStrings.sVariable);
+			for(int i = 0; i < g_iCurrentFrame[client]; i++)
+			{
+				if(strlen(message) >= (sizeof(message) - 1))
+				{
+					break;
+				}
+				if(i == 0)
+				{
+					Format(message, sizeof(message), "%s %i", message, g_iOffsetHistory[client][i]);
+				}
+				else
+				{
+					Format(message, sizeof(message), "%s, %i", message, g_iOffsetHistory[client][i]);
+				}
+			}
 		}
 	}
 

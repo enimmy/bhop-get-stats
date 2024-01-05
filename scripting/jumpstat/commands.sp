@@ -43,12 +43,7 @@ public Action Command_CheckFjtOverride(int client, any args)
 {
 	if(g_hOverrideFjt.IntValue)
 	{
-		g_iSettings[client][Bools] ^= FJT_ENABLED;
-		BgsPrintToChat(client, "FJT: %s", g_iSettings[client][Bools] & FJT_ENABLED ? "On":"Off");
-		if(g_iSettings[client][Bools] & FJT_ENABLED)
-		{
-			ShowFjtSettingsMenu(client);
-		}
+		ShowFjtSettingsMenu(client);
 		return Plugin_Handled;
 	}
 
@@ -59,12 +54,7 @@ public Action Command_CheckJhudOverride(int client, any args)
 {
 	if(g_hOverrideJhud.IntValue)
 	{
-		g_iSettings[client][Bools] ^= JHUD_ENABLED;
-		BgsPrintToChat(client, "Jhud: %s", g_iSettings[client][Bools] & JHUD_ENABLED ? "On":"Off");
-		if(g_iSettings[client][Bools] & JHUD_ENABLED)
-		{
-			ShowJhudSettingsMenu(client);
-		}
+		ShowJhudSettingsMenu(client);
 		return Plugin_Handled;
 	}
 
@@ -87,12 +77,7 @@ public Action Command_CheckSpeedOverride(int client, any args)
 {
 	if(g_hOverrideSpeed.IntValue)
 	{
-		g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
-		BgsPrintToChat(client, "Speedometer: %s", g_iSettings[client][Bools] & SPEEDOMETER_ENABLED ? "On":"Off");
-		if(g_iSettings[client][Bools] & SPEEDOMETER_ENABLED)
-		{
-			ShowSpeedSettingsMenu(client);
-		}
+		ShowSpeedSettingsMenu(client);
 		return Plugin_Handled;
 	}
 
@@ -103,12 +88,7 @@ public Action Command_CheckOffsetOverride(int client, any args)
 {
 	if(g_hOverrideOffset.IntValue)
 	{
-		g_iSettings[client][Bools] ^= OFFSETS_ENABLED;
-		BgsPrintToChat(client, "Offsets: %s", g_iSettings[client][Bools] & OFFSETS_ENABLED ? "On":"Off");
-		if(g_iSettings[client][Bools] & OFFSETS_ENABLED)
-		{
-			ShowOffsetsMenu(client);
-		}
+		ShowOffsetsMenu(client);
 		return Plugin_Handled;
 	}
 
@@ -119,12 +99,7 @@ public Action Command_CheckSsjOverride(int client, any args)
 {
 	if(g_hOverrideSsj.IntValue)
 	{
-		g_iSettings[client][Bools] ^= SSJ_ENABLED;
-		BgsPrintToChat(client, "SSJ: %s", g_iSettings[client][Bools] & SSJ_ENABLED ? "On":"Off");
-		if(g_iSettings[client][Bools] & SSJ_ENABLED)
-		{
-			ShowSSJMenu(client);
-		}
+		ShowSSJMenu(client);
 		return Plugin_Handled;
 	}
 

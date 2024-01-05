@@ -13,8 +13,8 @@ enum struct offset_t
 
 #define OFFSETS_MAX_FRAME 15
 
-static int g_iOffsetHistory[MAXPLAYERS + 1][OFFSETS_MAX_FRAME];
-static int g_iCurrentFrame[MAXPLAYERS + 1];
+int g_iOffsetHistory[MAXPLAYERS + 1][OFFSETS_MAX_FRAME];
+int g_iCurrentFrame[MAXPLAYERS + 1];
 
 
 void Offset_Tick(int client, float speed, bool inbhop, float gain, float jss)
@@ -63,10 +63,6 @@ void Offset_Delay_Process(int client, int offset, bool overlap, bool nopress, fl
 		g_iCurrentFrame[client] = 0;
 	}
 
-	char message[256];
-	Format(message, sizeof(message), "%d (%i)", offset, g_iRepeatedOffsets[client]);
-	int colorIdx = Offset_GetColorIdx(offset);
-
 	for(int i = 1; i < MaxClients; i++)
 	{
 		if(!(g_iSettings[i][Bools] & OFFSETS_ENABLED) || !BgsIsValidClient(i))
@@ -76,38 +72,43 @@ void Offset_Delay_Process(int client, int offset, bool overlap, bool nopress, fl
 
 		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
 		{
-			if(g_iSettings[i][Bools] & OFFSETS_ADVANCED)
-			{
-				if(overlap)
-				{
-					Format(message, sizeof(message), "%s Overlap", message);
-					colorIdx = GainReallyBad;
-				}
-
-				if(nopress)
-				{
-					Format(message, sizeof(message), "%s No Press", message);
-					colorIdx = GainReallyBad;
-				}
-
-				if(offset == 0 && jss <= 0.80)
-				{
-					colorIdx = GainGood;
-				}
-
-				if(offset == -2 && jss >= 0.80)
-				{
-					colorIdx = GainGood;
-				}
-			}
-			Offset_DrawOffset(i, message, colorIdx);
+			Offset_DrawOffset(i, offset, g_iRepeatedOffsets[client], overlap, nopress, jss)
 		}
 	}
 	g_iLastOffset[client] = offset;
 }
 
-void Offset_DrawOffset(int client, char[] message, int colorIdx)
+void Offset_DrawOffset(int client, int offset, int repeats, bool overlap, bool nopress, float tickjss)
 {
+	char message[256];
+	Format(message, sizeof(message), "%d (%i)", offset, repeats);
+	int colorIdx = Offset_GetColorIdx(offset);
+
+	if(g_iSettings[client][Bools] & OFFSETS_ADVANCED)
+	{
+		if(overlap)
+		{
+			Format(message, sizeof(message), "%s Overlap", message);
+			colorIdx = GainReallyBad;
+		}
+
+		if(nopress)
+		{
+			Format(message, sizeof(message), "%s No Press", message);
+			colorIdx = GainReallyBad;
+		}
+
+		if(offset == 0 && tickjss <= 0.80)
+		{
+			colorIdx = GainGood;
+		}
+
+		if(offset == -2 && tickjss >= 0.80)
+		{
+			colorIdx = GainGood;
+		}
+	}
+
 	int settingsIdx = g_iSettings[client][colorIdx];
 	SetHudTextParams(g_fCacheHudPositions[client][Offset][X_DIM], g_fCacheHudPositions[client][Offset][Y_DIM], 0.5, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
 	ShowHudText(client, GetDynamicChannel(2), message);

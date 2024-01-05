@@ -20,6 +20,9 @@
 #define FJT_CHAT 1 << 19
 #define OFFSETS_SPAM_CONSOLE 1 << 20
 #define OFFSETS_ADVANCED 1 << 21
+#define SSJ_JSS 1 << 22
+#define SSJ_DECIMALS 1 << 23
+#define SSJ_OFFSETS 1 << 24
 
 #define BHUD_SETTINGS_NUMBER 9
 #define COLOR_SETTINGS_START_IDX 0
@@ -150,7 +153,7 @@ void SetDefaults(int client)
 {
 	g_iSettings[client][Bools] = 0;
 	g_iSettings[client][Bools] |= JHUD_ENABLED;
-	g_iSettings[client][Bools] |= JHUD_JSS;
+	//g_iSettings[client][Bools] |= JHUD_JSS;
 	g_iSettings[client][Bools] |= JHUD_SYNC;
 	//g_iSettings[client][Bools] |= JHUD_EXTRASPEED;
 	//g_iSettings[client][Bools] |= TRAINER_ENABLED;
@@ -170,7 +173,10 @@ void SetDefaults(int client)
 	//g_iSettings[client][Bools] |= FJT_ENABLED;
 	//g_iSettings[client][Bools] |= FJT_CHAT;
 	//g_iSettings[client][Bools] |= OFFSETS_SPAM_CONSOLE;
-	g_iSettings[client][Bools] |= OFFSETS_ADVANCED;
+	//g_iSettings[client][Bools] |= OFFSETS_ADVANCED;
+	//g_iSettings[client][Bools] |= SSJ_JSS;
+	//g_iSettings[client][Bools] |= SSJ_DECIMALS;
+	//g_iSettings[client][Bools] |= SSJ_OFFSETS;
 
 	g_iSettings[client][Positions_Y] = 0;
 	for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)
