@@ -138,7 +138,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 			Format(message, sizeof(message), "%s %s| TΔ: %s%.2f", message, g_csChatStrings.sText, g_csChatStrings.sVariable, (time - g_fLastJumpTime[target]));
 		}
 
-		if(strlen(message) < maxlen && g_iSettings[client][Bools] & SSJ_OFFSETS)
+		if(strlen(message) < maxlen && strafecount >= 1 && g_iSettings[client][Bools] & SSJ_OFFSETS)
 		{
 			Format(message, sizeof(message), "%s %s| Of:%s", message, g_csChatStrings.sText, g_csChatStrings.sVariable);
 			for(int i = 0; i < g_iCurrentFrame[client]; i++)
