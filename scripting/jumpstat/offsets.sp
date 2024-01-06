@@ -138,7 +138,7 @@ void Offset_Dump(int client, int jump, float sync)
 
 		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
 		{
-			PrintToConsole(client, "%s", message);
+			PrintToConsole(i, "%s", message);
 		}
 	}
 

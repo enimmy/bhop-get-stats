@@ -141,7 +141,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 		if(strlen(message) < maxlen && strafecount >= 1 && g_iSettings[client][Bools] & SSJ_OFFSETS)
 		{
 			Format(message, sizeof(message), "%s %s| Of:%s", message, g_csChatStrings.sText, g_csChatStrings.sVariable);
-			for(int i = 0; i < g_iCurrentFrame[client]; i++)
+			for(int i = 0; i < g_iCurrentFrame[target]; i++)
 			{
 				if(strlen(message) >= (sizeof(message) - 1))
 				{
@@ -149,11 +149,11 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 				}
 				if(i == 0)
 				{
-					Format(message, sizeof(message), "%s %i", message, g_iOffsetHistory[client][i]);
+					Format(message, sizeof(message), "%s %i", message, g_iOffsetHistory[target][i]);
 				}
 				else
 				{
-					Format(message, sizeof(message), "%s, %i", message, g_iOffsetHistory[client][i]);
+					Format(message, sizeof(message), "%s, %i", message, g_iOffsetHistory[target][i]);
 				}
 			}
 		}
