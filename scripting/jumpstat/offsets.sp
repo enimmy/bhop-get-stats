@@ -1,46 +1,13 @@
 static int g_iLastOffset[MAXPLAYERS + 1];
 static int g_iRepeatedOffsets[MAXPLAYERS + 1];
 
-static offset_t g_otDelayingOffset[MAXPLAYERS + 1];
-static int g_bOffsetDelayed[MAXPLAYERS + 1];
-
-enum struct offset_t
-{
-	int offset;
-	bool overlap;
-	bool nopress;
-}
-
 #define OFFSETS_MAX_FRAME 15
 
 int g_iOffsetHistory[MAXPLAYERS + 1][OFFSETS_MAX_FRAME];
 int g_iCurrentFrame[MAXPLAYERS + 1];
 
 
-void Offset_Tick(int client, float speed, bool inbhop, float gain, float jss)
-{
-	if(!inbhop)
-	{
-		return;
-	}
-
-	if(g_bOffsetDelayed[client])
-	{
-		Offset_Delay_Process(client, g_otDelayingOffset[client].offset, g_otDelayingOffset[client].overlap, g_otDelayingOffset[client].nopress, jss);
-	}
-
-	g_bOffsetDelayed[client] = false;
-}
-
 void Offset_Process(int client, int offset, bool overlap, bool nopress)
-{
-	g_otDelayingOffset[client].offset = offset;
-	g_otDelayingOffset[client].nopress = nopress;
-	g_otDelayingOffset[client].overlap = overlap;
-	g_bOffsetDelayed[client] = true;
-}
-
-void Offset_Delay_Process(int client, int offset, bool overlap, bool nopress, float jss)
 {
 	if(g_bEditing[client])
 	{
@@ -72,13 +39,13 @@ void Offset_Delay_Process(int client, int offset, bool overlap, bool nopress, fl
 
 		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
 		{
-			Offset_DrawOffset(i, offset, g_iRepeatedOffsets[client], overlap, nopress, jss)
+			Offset_DrawOffset(i, offset, g_iRepeatedOffsets[client], overlap, nopress)
 		}
 	}
 	g_iLastOffset[client] = offset;
 }
 
-void Offset_DrawOffset(int client, int offset, int repeats, bool overlap, bool nopress, float tickjss)
+void Offset_DrawOffset(int client, int offset, int repeats, bool overlap, bool nopress)
 {
 	char message[256];
 	Format(message, sizeof(message), "%d (%i)", offset, repeats);
@@ -96,16 +63,6 @@ void Offset_DrawOffset(int client, int offset, int repeats, bool overlap, bool n
 		{
 			Format(message, sizeof(message), "%s No Press", message);
 			colorIdx = GainReallyBad;
-		}
-
-		if(offset == 0 && tickjss <= 0.80)
-		{
-			colorIdx = GainGood;
-		}
-
-		if(offset == -2 && tickjss >= 0.80)
-		{
-			colorIdx = GainGood;
 		}
 	}
 
@@ -159,7 +116,7 @@ int Offset_GetColorIdx(int offset) {
 		return GainReallyGood;
     } else if(offset == -2)
 	{
-		return GainMeh;
+		return GainGood;
 	} else if(offset == -3)
 	{
 		return GainBad;

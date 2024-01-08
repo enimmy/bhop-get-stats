@@ -77,7 +77,7 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 		SetHudTextParams(g_fCacheHudPositions[client][g_iEditHud[client]][X_DIM], g_fCacheHudPositions[client][g_iEditHud[client]][Y_DIM], 1.0, g_iBstatColors[GainGood][0], g_iBstatColors[GainGood][1], g_iBstatColors[GainGood][2], 255, 0, 0.0, 0.0, 0.0);
 		ShowHudText(client, GetDynamicChannel(g_iEditHud[client]), g_sHudStrs[g_iEditHud[client]]);
 
-		for(int i = 0; i < JUMPSTATS_HUD_NUMBER; i++)
+		for(int i = 0; i < sizeof(g_fDefaultHudYPositions); i++)
 		{
 			if(i != g_iEditHud[client])
 			{
@@ -151,7 +151,7 @@ void ShowStatOverviewMenu(int client)
 		AddMenuItem(menu, "fjt", "FJT (HUD/Chat)");
 	}
 
-	AddMenuItem(menu, "trainer", (g_iSettings[client][Bools] & TRAINER_ENABLED) ? "[x] Trainer (HUD)":"[ ] Trainer (HUD)");
+	AddMenuItem(menu, "trainer", "Trainer (HUD)");
 
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -226,7 +226,7 @@ void ShowOffsetsMenu(int client)
 	SetMenuTitle(menu, "Offsets Settings\n \n");
 	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & OFFSETS_ENABLED) ? "[x] HUD":"[ ] HUD");
 	AddMenuItem(menu, "spam", (g_iSettings[client][Bools] & OFFSETS_SPAM_CONSOLE) ? "[x] Console Dump":"[ ] Console Dump");
-	AddMenuItem(menu, "adv", (g_iSettings[client][Bools] & OFFSETS_ADVANCED) ? "[x] Advanced":"[ ] Advanced");
+	AddMenuItem(menu, "adv", (g_iSettings[client][Bools] & OFFSETS_ADVANCED) ? "[x] NoPress/Overlap Text":"[ ] NoPress/Overlap Text");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -257,6 +257,25 @@ void ShowSpeedSettingsMenu(int client)
 	SetMenuTitle(menu, "Speed Settings\n \n");
 	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Enabled":"[ ] Enabled");
 	AddMenuItem(menu, "speedGainColor", (g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR) ? "[x] Gain Based Color":"[ ] Gain Based Color");
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+void ShowTrainerSettingsMenu(int client)
+{
+	if(!BgsIsValidClient(client))
+	{
+		return;
+	}
+
+	Menu menu = new Menu(Trainer_Select);
+	menu.ExitBackButton = true;
+	SetMenuTitle(menu, "Trainer Settings\n \n");
+	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & TRAINER_ENABLED) ? "[x] Enabled":"[ ] Enabled");
+	AddMenuItem(menu, "strict", (g_iSettings[client][Bools] & TRAINER_STRICT) ? "[x] Strict Colors":"[ ] Strict Colors");
+
+	char message[256];
+	Format(message, sizeof(message), "Trainer Speeds: %s", g_sTrainerSpeed[g_iSettings[client][TrainerSpeed]]);
+	AddMenuItem(menu, "speed", message);
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -353,7 +372,7 @@ public int Js_Select(Menu menu, MenuAction action, int client, int option)
 		}
 		else if(StrEqual(info, "reset"))
 		{
-			SetDefaults(client);
+			SetAllDefaults(client);
 			ShowJsMenu(client);
 		}
 	}
@@ -466,8 +485,7 @@ public int StatOverview_Select(Menu menu, MenuAction action, int client, int opt
 		}
 		else if(StrEqual(info, "trainer"))
 		{
-			g_iSettings[client][Bools] ^= TRAINER_ENABLED;
-			ShowStatOverviewMenu(client);
+			ShowTrainerSettingsMenu(client);
 		}
 		else if(StrEqual(info, "offsets"))
 		{
@@ -516,7 +534,7 @@ public int Colors_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			int editing = g_iEditColor[client];
 			g_iSettings[client][editing]++;
-			if(g_iSettings[client][editing] >= COLORS_NUMBER)
+			if(g_iSettings[client][editing] >= sizeof(g_iBstatColors))
 			{
 				g_iSettings[client][editing] = 0;
 			}
@@ -547,7 +565,7 @@ public int PosEdit_Select(Menu menu, MenuAction action, int client, int option)
 		if(StrEqual(info, "editingHud"))
 		{
 			g_iEditHud[client]++;
-			if(g_iEditHud[client] >= JUMPSTATS_HUD_NUMBER)
+			if(g_iEditHud[client] >= sizeof(g_fDefaultHudYPositions))
 			{
 				g_iEditHud[client] = 0;
 			}
@@ -642,20 +660,11 @@ public int Offsets_Select(Menu menu, MenuAction action, int client, int option)
 		if(StrEqual(info, "en"))
 		{
 			g_iSettings[client][Bools] ^= OFFSETS_ENABLED;
-		}
-		else if(StrEqual(info, "spam"))
-		{
-			g_iSettings[client][Bools] ^= OFFSETS_SPAM_CONSOLE;
-		}
-		else if(StrEqual(info, "adv"))
-		{
-			g_iSettings[client][Bools] ^= OFFSETS_ADVANCED;
-
-			if(g_iSettings[client][Bools] & OFFSETS_ADVANCED)
+			if(g_iSettings[client][Bools] & OFFSETS_ENABLED)
 			{
 				BgsPrintToChat(client, "Advanced offsets information in your console!");
 				PrintToConsole(client,
-				"JumpStats: You've enabled advanced mode, so this section will explain some"
+				"JumpStats: You've enabled offsets, so this section will explain some"
 				... "of its features and some mechanics behind offsets. \n"
 				... "Offset - A time comparison (in ticks) of when you turned your mouse and pressed the strafe key.\n"
 				... "------------------------------------------------------------------------------------------------\n"
@@ -664,21 +673,24 @@ public int Offsets_Select(Menu menu, MenuAction action, int client, int option)
 				PrintToConsole(client,
 				"0 - A 0 offset loses you speed depending on how fast your strafe speed is the tick after you turned.\n"
 				... "The higher your strafe speed, the most speed loss. So if you hit a 0 and have low strafe speed, that\n"
-				... "is the second best option for gaining speed. Lower strafe speeds are generally only optimal for\n"
+				... "is an okay, and human option, for gaining speed. Lower strafe speeds are generally only optimal for\n"
 				... "gaining distance though, so in most cases a robot perfect strafe (inhuman) wouldn't want a 0, but its\n"
 				... "but in real practice it can be good for your speed as long as your strafe speed is right for it.\n"
 				... "------------------------------------------------------------------------------------------------\n"
 				... "-2 - A -2 offset will result in ticks where you don't gain speed, the higher you strafe speed is\n"
 				... "the lesser this effects your speed, so this is the second best option if your strafe speed is higher\n");
 				PrintToConsole(client,
-				"------------------------------------------------------------------------------------------------\n"
-				... "Colors of 0s and -2s will be (by default) green in this mode if your strafe speed doesn't match up,\n"
-				... "So if you hit a 0 with high strafe speed, green, with low strafe speed, blue. Same for -2 except the\n"
-				... "Opposite.\n"
-				... "------------------------------------------------------------------------------------------------\n"
-				... "Overlap - You pressed A/D or W/S at the same time, go turn on nulls.\n"
+				"Overlap - You pressed A/D or W/S at the same time, go turn on nulls.\n"
 				... "No Press - You let go of the opposing key too early when you turned.\n");
 			}
+		}
+		else if(StrEqual(info, "spam"))
+		{
+			g_iSettings[client][Bools] ^= OFFSETS_SPAM_CONSOLE;
+		}
+		else if(StrEqual(info, "adv"))
+		{
+			g_iSettings[client][Bools] ^= OFFSETS_ADVANCED;
 		}
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowOffsetsMenu(client);
@@ -745,6 +757,46 @@ public int Speedometer_Select(Menu menu, MenuAction action, int client, int opti
 		}
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowSpeedSettingsMenu(client);
+	}
+	else if(action == MenuAction_Cancel)
+	{
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowStatOverviewMenu(client);
+		}
+	}
+	else if(action == MenuAction_End)
+	{
+		delete menu;
+	}
+	return 0;
+}
+
+public int Trainer_Select(Menu menu, MenuAction action, int client, int option)
+{
+	if(action == MenuAction_Select)
+	{
+		char info[32];
+		menu.GetItem(option, info, sizeof(info));
+		if(StrEqual(info, "en"))
+		{
+			g_iSettings[client][Bools] ^= TRAINER_ENABLED;
+		}
+		else if(StrEqual(info, "speed"))
+		{
+			g_iSettings[client][TrainerSpeed]++;
+			if(g_iSettings[client][TrainerSpeed] >= sizeof(g_iTrainerSpeeds))
+			{
+				g_iSettings[client][TrainerSpeed] = Trainer_Slow;
+			}
+		}
+		else if(StrEqual(info, "strict"))
+		{
+			g_iSettings[client][Bools] ^= TRAINER_STRICT;
+		}
+		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
+		BgsSetCookie(client, g_hSettings[TrainerSpeed], g_iSettings[client][TrainerSpeed]);
+		ShowTrainerSettingsMenu(client);
 	}
 	else if(action == MenuAction_Cancel)
 	{

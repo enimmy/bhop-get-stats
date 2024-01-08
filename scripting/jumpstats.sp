@@ -86,7 +86,6 @@ public void BhopStat_TickForward(int client, float speed, bool inbhop, float gai
 {
 	Speedometer_Tick(client, speed, inbhop, gain);
 	Trainer_Tick(client, speed, inbhop, gain, jss);
-	Offset_Tick(client, speed, inbhop, gain, jss);
 }
 
 public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)

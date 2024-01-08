@@ -1,5 +1,3 @@
-#define COLORS_NUMBER 9
-
 enum //enum for colors same indexes as colors below
 {
 	Red, //for all colors structs, first 5 idxs are default, dont reorder them

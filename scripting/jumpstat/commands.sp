@@ -65,8 +65,7 @@ public Action Command_CheckTrainerOverride(int client, any args)
 {
 	if(g_hOverrideTrainer.IntValue)
 	{
-		g_iSettings[client][Bools] ^= TRAINER_ENABLED;
-		BgsPrintToChat(client, "Strafe-Trainer: %s", g_iSettings[client][Bools] & TRAINER_ENABLED ? "On":"Off");
+		ShowTrainerSettingsMenu(client);
 		return Plugin_Handled;
 	}
 

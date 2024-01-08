@@ -1,10 +1,12 @@
-#define FullPercent 0
-#define BarPercent 1
 #define TRAINER_FULLUPDATE_TICK_INTERVAL 13
-#define TRAINER_TICK_INTERVAL 5
 
-static float g_fTrainerPercents[MAXPLAYERS + 1][2];
-static float g_fLastAverage[MAXPLAYERS + 1];
+static float g_fTrainerPercentsNumber[MAXPLAYERS + 1];
+static float g_fLastAverageNumber[MAXPLAYERS + 1];
+
+static float g_fTrainerPercentsBarSlow[MAXPLAYERS + 1];
+static float g_fTrainerPercentsBarMedium[MAXPLAYERS + 1];
+static float g_fTrainerPercentsBarFast[MAXPLAYERS + 1];
+
 static int g_iCmdNum[MAXPLAYERS + 1];
 
 public void Trainer_Tick(int client, float speed, bool inbhop, float gain, float jss)
@@ -15,60 +17,123 @@ public void Trainer_Tick(int client, float speed, bool inbhop, float gain, float
 	}
 
 	g_iCmdNum[client]++;
-	bool trainer = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 || g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0);
 
 	if(!inbhop)
 	{
-		g_fTrainerPercents[client][FullPercent] = 0.0;
-		g_fTrainerPercents[client][BarPercent] = 0.0;
+		g_fTrainerPercentsNumber[client] = 0.0;
+		g_fTrainerPercentsBarSlow[client] = 0.0;
+		g_fTrainerPercentsBarMedium[client] = 0.0;
+		g_fTrainerPercentsBarFast[client] = 0.0;
+		return;
 	}
 	else
 	{
-		g_fTrainerPercents[client][FullPercent] += jss;
-		g_fTrainerPercents[client][BarPercent] += jss;
+		g_fTrainerPercentsNumber[client] += jss;
+		g_fTrainerPercentsBarSlow[client] += jss;
+		g_fTrainerPercentsBarMedium[client] += jss;
+		g_fTrainerPercentsBarFast[client] += jss;
 
-		if(trainer)
+		if(g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 ||
+		g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Slow] == 0 ||
+		g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Medium] == 0 ||
+		g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Fast] == 0)
 		{
-			float AveragePercentage;
-			bool fullUpdate = (g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0);
 
-			if (fullUpdate)
+			if(g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0)
 			{
-				AveragePercentage = g_fTrainerPercents[client][FullPercent] / TRAINER_FULLUPDATE_TICK_INTERVAL;
-				g_fTrainerPercents[client][FullPercent] = 0.0;
-				g_fLastAverage[client] = AveragePercentage;
+				g_fLastAverageNumber[client] = g_fTrainerPercentsNumber[client] / TRAINER_FULLUPDATE_TICK_INTERVAL;
+				g_fTrainerPercentsNumber[client] = 0.0;
 			}
 
-			if (g_iCmdNum[client] % TRAINER_TICK_INTERVAL == 0)
+			float speeds[3] = { -1.0, ...};
+			if (g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Slow] == 0)
 			{
-				if(!fullUpdate)
-				{
-					AveragePercentage = g_fTrainerPercents[client][BarPercent] / TRAINER_TICK_INTERVAL;
-				}
-				g_fTrainerPercents[client][BarPercent] = 0.0;
+				speeds[Trainer_Slow] = g_fTrainerPercentsBarSlow[client] / g_iTrainerSpeeds[Trainer_Slow];
+				g_fTrainerPercentsBarSlow[client] = 0.0;
 			}
 
-			char message[256];
-			Trainer_GetTrainerString(client, message, g_fLastAverage[client], AveragePercentage);
-
-			for (int i = 1; i <= MaxClients; i++)
+			if(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Medium] == 0)
 			{
-				if(!(g_iSettings[i][Bools] & TRAINER_ENABLED) || !BgsIsValidClient(i))
-				{
-					continue;
-				}
-
-				if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
-				{
-					int idx = GetGainColorIdx(AveragePercentage * 100);
-					int settingsIdx = g_iSettings[i][idx];
-					SetHudTextParams(g_fCacheHudPositions[i][Trainer][X_DIM], g_fCacheHudPositions[i][Trainer][Y_DIM], 0.1, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
-					ShowHudText(i, GetDynamicChannel(0), message);
-				}
+				speeds[Trainer_Medium] = g_fTrainerPercentsBarMedium[client] / g_iTrainerSpeeds[Trainer_Medium];
+				g_fTrainerPercentsBarMedium[client] = 0.0;
 			}
+
+			if(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Fast] == 0)
+			{
+				speeds[Trainer_Fast] = g_fTrainerPercentsBarFast[client] / g_iTrainerSpeeds[Trainer_Fast];
+				g_fTrainerPercentsBarFast[client] = 0.0;
+			}
+
+			PushTrainerToClients(client, speeds, g_iCmdNum[client]);
 		}
 	}
 	return;
+}
+
+void PushTrainerToClients(int client, float speeds[3], int cmdnum)
+{
+	char speedMessages[sizeof(g_iTrainerSpeeds)][256];
+
+	if(speeds[Trainer_Slow] != -1.0)
+	{
+		Trainer_GetTrainerString(client, speedMessages[Trainer_Slow], g_fLastAverageNumber[client], speeds[Trainer_Slow]);
+	}
+
+	if(speeds[Trainer_Medium] != -1.0)
+	{
+		Trainer_GetTrainerString(client, speedMessages[Trainer_Medium], g_fLastAverageNumber[client], speeds[Trainer_Medium]);
+	}
+
+	if(speeds[Trainer_Fast] != -1.0)
+	{
+		Trainer_GetTrainerString(client, speedMessages[Trainer_Fast], g_fLastAverageNumber[client], speeds[Trainer_Fast]);
+	}
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if(!(g_iSettings[i][Bools] & TRAINER_ENABLED) || !BgsIsValidClient(i))
+		{
+			continue;
+		}
+
+		int trainerSpeedIdx = g_iSettings[i][TrainerSpeed];
+		int trainerSpeed = g_iTrainerSpeeds[trainerSpeedIdx];
+
+		if(cmdnum % trainerSpeed != 0)
+		{
+			continue;
+		}
+
+		if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
+		{
+			float avg = speeds[trainerSpeedIdx] * 100;
+			int idx = GetGainColorIdx(avg);
+			if(avg > 100.0 && !(g_iSettings[i][Bools] & TRAINER_STRICT))
+			{
+				if(avg <= 105.0)
+				{
+					idx = GainGood;
+				}
+				else if(avg <= 110.0)
+				{
+					idx = GainMeh;
+				}
+				else if(avg <= 115.0)
+				{
+					idx = GainBad;
+				}
+				else
+				{
+					idx = GainReallyBad;
+				}
+			}
+
+			int settingsIdx = g_iSettings[i][idx];
+			float holdTime = trainerSpeed / (BgsTickRate() * 1.0) + 0.05;
+			SetHudTextParams(g_fCacheHudPositions[i][Trainer][X_DIM], g_fCacheHudPositions[i][Trainer][Y_DIM], holdTime, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
+			ShowHudText(i, GetDynamicChannel(0), speedMessages[trainerSpeedIdx]);
+		}
+	}
 }
 
 //message, number and average are different. number is on top, average is the | in the middle. they update at different rates
