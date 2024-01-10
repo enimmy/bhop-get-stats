@@ -1,12 +1,14 @@
 # bhop-get-stats
 
-### [my discord](https://discord.gg/j9nfnjcUVd)
+## [my discord](https://discord.gg/j9nfnjcUVd)
 
-Central plugin for calling bhop statistic forwards and base plugins for displaying that information.
+### credits - me, Alkatraz, Nairda, Oblivious, Xutax, xWidovV
 
-These plugins were created to be used in tandem with my sync style, [sync style](https://github.com/Nimmy2222/shavit-syncstyle). This style breaks probably every other SSJ/Jhud/Trainer, so you will need these. I also just wanted to make it easier for other people to make changes to these types of plugins in the future. Now devs will not have to worry about making mistakes with calculations, and can easily make changes they like.
+Central plugin for calling bhop statistic forwards and a plugin for displaying that information.
 
-Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, SSJ and FJT. Most (if not all) of these HUDs are more full-featured and accurate on my versions.
+These plugins were created to be used in tandem with my sync style, [sync style](https://github.com/Nimmy2222/shavit-syncstyle). This style breaks probably every other SSJ/Jhud/Trainer, so you will need jumpstats. I also just wanted to make it easier for other people to make changes to these types of plugins in the future. Now devs will not have to worry about making mistakes with calculations, and can easily make changes they like.
+
+Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, SSJ and FJT. Most (if not all) of these HUDs are more full-featured or accurate on my versions.
 
 Get Stats - Supports jump stats (and hopefully other devs plugins in the future), by reducing redundant calculations.
 
@@ -17,7 +19,7 @@ Press the green "Code" button at the top, and download zip. Extract zip, then dr
   JumpStats (Open Menu):
   ```
     - /js
-    - /jhud /trainer /strafetrainer /offsets /offset /ssj /speedometer /fjt 
+    - /jhud /trainer /strafetrainer /offsets /offset /ssj /speedometer /speed /fjt 
 	- (Enabled by default in CVARS, but disablable commands)
   ```
 
@@ -54,18 +56,20 @@ Press the green "Code" button at the top, and download zip. Extract zip, then dr
    	  	* Any gain lower than 60 / Terrible Speed SSJ / Any positive offset, or below -4 / Any JSS Above 100 or below 60: Red
 
 * SSJ:
-	* removed some characters/decimal points to add more options (approaching the character limit)
 	* added optional colors onto the gain numbers
 	* fixed many bugs from the base version
+	* added jss, offsets, and decimals options in the menu
 
 * JHUD:
 	* removed all constant speed settings (moved to speedometer)
 	* added sync into the logs
 	* Uses a more accurate JSS calculation (old 103% is 100%, basically going over 100% now will lose you speed)
+   	* white/adjustable great gains option for 90+ gains or good speeds on jump 1-6 or 1-16(extra speeds)
 
 * TRAINER:
 	* Updated JSS calculation
-	* changed some of the color logic
+	* similar color logic to base strafe trainer, but with added white color/great gains option to change it
+   	* options for stricter colors, and changing the speed of the trainer updating
 	* The update rate on the actual bar slider is now divorced from the number, they are both still accurate, but players who like using the bar now get updates more often while number users can still use their number without it being too fast
 
 * OFFSETS:
