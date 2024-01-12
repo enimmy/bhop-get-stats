@@ -101,9 +101,14 @@ void EditHudPosition(int client, int editDim, int val)
 		subValue += val;
 	}
 
-	if(subValue > POS_MAX_INT || subValue < (POS_MIN_INT + 1)) //Min reserved for dead center
+	if(subValue > POS_MAX_INT)
 	{
-		return;
+		subValue = POS_MAX_INT;
+	}
+
+	if(subValue < (POS_MIN_INT + 1))
+	{
+		subValue = POS_MIN_INT + 1;
 	}
 
 	SetIntSubValue(g_iSettings[client][editDim], subValue, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);

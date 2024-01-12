@@ -35,7 +35,6 @@ bool g_bSawTurn[MAXPLAYERS + 1];
 bool g_bSawPress[MAXPLAYERS + 1];
 
 int g_iTicksOnGround[MAXPLAYERS + 1];
-int g_iTouchTicks[MAXPLAYERS + 1];
 int g_iStrafeTick[MAXPLAYERS + 1];
 int g_iSyncedTick[MAXPLAYERS + 1];
 int g_iJump[MAXPLAYERS + 1];
@@ -158,7 +157,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	{
 		return Plugin_Continue;
 	}
-	if(g_bShavit && Shavit_IsReplayEntity(client))
+	if((g_bShavit && Shavit_IsReplayEntity(client)) || IsFakeClient(client))
 	{
 		//in prog
 	}
@@ -226,7 +225,7 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	{
 		return;
 	}
-	if(g_bShavit && Shavit_IsReplayEntity(client))
+	if((g_bShavit && Shavit_IsReplayEntity(client)) || IsFakeClient(client))
 	{
 		//in prog
 	}
@@ -238,11 +237,22 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 
 void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel[3], const float angles[3])
 {
+	g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
+
 	if(g_iTicksOnGround[client] == 0)
 	{
-		g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
 
-		float vel_yaw = RadToDeg(ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]));
+		float perfAngleDiff = RadToDeg(ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]));
+
+		if(perfAngleDiff == 0.0)
+		{
+			if(perfAngleDiff != perfAngleDiff)
+			{
+				PrintToConsole(client, "BGS: velyaw nan %i", g_iCmdNum[client])
+			}
+			PrintToConsole(client, "BGS: velyaw 0.0 %i", g_iCmdNum[client])
+		}
+
 		float adjVal = 0.0;
 		float sign = 1.0;
 		if (vel[0] != 0.0 && vel[1] == 0.0)
@@ -258,13 +268,23 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel
 		}
 		sign = vel[0] < 0.0 ? sign * -1.0 : sign;
 
-		float delta_opt = -NormalizeAngle(angles[1] - (vel_yaw + (adjVal * sign)));
-		float perfyaw = NormalizeAngle(angles[1] + delta_opt);
-		float newangdiff = FloatAbs(NormalizeAngle(perfyaw - g_fLastAngles[client][1]));
+		float delta_opt = -NormalizeAngle(angles[1] - (perfAngleDiff + (adjVal * sign)));
+		float perfAngle = NormalizeAngle(angles[1] + delta_opt);
+		float newangdiff = FloatAbs(NormalizeAngle(perfAngle - g_fLastAngles[client][YAW]));
 
-		g_fAvgDiffFromPerf[client] += (FloatAbs(g_fYawDifference[client]) / newangdiff);
-		g_fTickJss[client] = (FloatAbs(g_fYawDifference[client]) / newangdiff);
-		g_iAvgTicksNum[client]++;
+		if(newangdiff == 0.0)
+		{
+			if(newangdiff != newangdiff)
+			{
+				PrintToConsole(client, "BGS: perf ang diff nan %i / %f", g_iCmdNum[client], perfAngleDiff);
+			}
+			PrintToConsole(client, "BGS: ang diff 0.0 %i", g_iCmdNum[client], perfAngleDiff);
+		}
+
+		float trueAddedJss = FloatAbs(g_fYawDifference[client]) / newangdiff;
+
+		g_fAvgDiffFromPerf[client] += trueAddedJss;
+		g_fTickJss[client] = trueAddedJss;
 
 		//offset shit
 		if(g_iCmdNum[client] >= 1)
@@ -388,11 +408,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel
 
 	if(g_bTouchesWall[client])
 	{
-		g_iTouchTicks[client]++;
 		g_bTouchesWall[client] = false;
-	} else
-	{
-		g_iTouchTicks[client] = 0;
 	}
 
 	//run order RunCmd -> Jump Hook -> PostCmd | if you compare runcmd and postcmd gain calcs runcmd has 1 extra raw gain tick if you dont wait till here to finalize

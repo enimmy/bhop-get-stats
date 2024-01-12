@@ -104,17 +104,33 @@ void BgsSetCookie(int client, Cookie hCookie, int n)
 	PrintDebugMsg(client, "Attempting to set cookie to %i", n);
 }
 
-int GetIntSubValue(int num, int position, int binaryShift, int binaryMask)
+int GetIntSubValue(int num, int position, int binaryShift)
 {
-	return (num >> position * binaryShift) & binaryMask;
+	if(num == -1) //every bit is 1, return max posiiton
+	{
+		return 255;
+	}
+	else if(num < 0)
+	{
+	    num = ~num;
+	    num = num >> (position * binaryShift);
+        num = ~num & 255;
+	}
+	else 
+	{
+	  	num = (num >> (position * binaryShift));  
+	}
+
+	return num;
 }
 
 void SetIntSubValue(int &editNum, int insertVal, int position, int binaryShift, int binaryMask)
 {
+
 	editNum = (editNum & ~(binaryMask << (position * binaryShift))) | ((insertVal & binaryMask) << (position * binaryShift));
 }
 
-float GetAdjustedHudCoordinate(int value, float scaler)
+float GetAdjustedHudCoordinate(int value, float scaler) //bounds -256 
 {
 	float rVal = -1.0;
 	if(value <= 0 || value > RoundToFloor(scaler))
@@ -148,6 +164,8 @@ int GetHudCoordinateToInt(float value, int scaler, int min, int max)
 	}
 	return adjVal;
 }
+
+void BgsDisplayHud()
 
 void PrintDebugMsg(int client, const char[] msg, any...)
 {
