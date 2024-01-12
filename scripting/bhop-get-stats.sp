@@ -13,7 +13,7 @@ public Plugin myinfo =
 {
 	name = "bhop get stats",
 	//I put peoples names on here who I got code from or help, if you don't want to be listed on here contact me. Just trying to show appreciation
-	author = "Nimmy / Alkatraz, Nairda (ssj code) / Oblivious , Xutax(perf angle calc)",
+	author = "Nimmy",
 	description = "central plugin to call bhop stats",
 	version = "1.2",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
@@ -35,7 +35,6 @@ bool g_bSawTurn[MAXPLAYERS + 1];
 bool g_bSawPress[MAXPLAYERS + 1];
 
 int g_iTicksOnGround[MAXPLAYERS + 1];
-int g_iTouchTicks[MAXPLAYERS + 1];
 int g_iStrafeTick[MAXPLAYERS + 1];
 int g_iSyncedTick[MAXPLAYERS + 1];
 int g_iJump[MAXPLAYERS + 1];
@@ -166,13 +165,13 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	{
 		g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
 		GetEntPropVector(client, Prop_Data, "m_vecAbsVelocity", g_fRunCmdVelVec[client]);
-		Bgs_ProcessRunCmd(client, buttons, impulse, vel, angles, GetEntityFlags(client), GetEntityMoveType(client));
+		Bgs_ProcessRunCmd(client, buttons, vel, angles, GetEntityFlags(client), GetEntityMoveType(client));
 	}
 
 	return Plugin_Continue;
 }
 
-public void Bgs_ProcessRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int flags, MoveType movetype)
+public void Bgs_ProcessRunCmd(int client, int &buttons, float vel[3], float angles[3], int flags, MoveType movetype)
 {
 	if(flags & FL_ONGROUND)
 	{
@@ -232,11 +231,11 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	}
 	else
 	{
-		Bgs_ProcessPostRunCmd(client, buttons, impulse, vel, angles);
+		Bgs_ProcessPostRunCmd(client, buttons, vel, angles);
 	}
 }
 
-void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel[3], const float angles[3])
+void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const float angles[3])
 {
 	if(g_iTicksOnGround[client] == 0)
 	{
@@ -368,7 +367,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel
 				gaincoeff = (wishspd - FloatAbs(currentgain)) / wishspd;
 			}
 
-			if(g_bTouchesWall[client] && g_iTouchTicks[client] && gaincoeff > 0.5)
+			if(g_bTouchesWall[client] && gaincoeff > 0.5)
 			{
 				gaincoeff -= 1.0;
 				gaincoeff = FloatAbs(gaincoeff);
@@ -388,11 +387,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel
 
 	if(g_bTouchesWall[client])
 	{
-		g_iTouchTicks[client]++;
 		g_bTouchesWall[client] = false;
-	} else
-	{
-		g_iTouchTicks[client] = 0;
 	}
 
 	//run order RunCmd -> Jump Hook -> PostCmd | if you compare runcmd and postcmd gain calcs runcmd has 1 extra raw gain tick if you dont wait till here to finalize
