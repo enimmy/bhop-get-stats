@@ -122,9 +122,11 @@ public void PushPosCache(int client)
 {
 	for(int i = 0; i < sizeof(g_fDefaultHudYPositions); i++)
 	{
-		g_fCacheHudPositions[client][i][X_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_X], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF);
-		g_fCacheHudPositions[client][i][Y_DIM] = GetAdjustedHudCoordinate(GetIntSubValue(g_iSettings[client][Positions_Y], i, POS_INT_BITS, POS_BINARY_MASK), POS_BINARY_MASKF);
-		PrintDebugMsg(client, "Master-Hud: %s X,Y (%f, %f)", g_sHudStrs[i], g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM]);
+		int x = GetIntSubValue(g_iSettings[client][Positions_X], i, POS_INT_BITS, POS_BINARY_MASK);
+		int y = GetIntSubValue(g_iSettings[client][Positions_Y], i, POS_INT_BITS, POS_BINARY_MASK);
+		g_fCacheHudPositions[client][i][X_DIM] = GetAdjustedHudCoordinate(x, POS_BINARY_MASKF);
+		g_fCacheHudPositions[client][i][Y_DIM] = GetAdjustedHudCoordinate(y, POS_BINARY_MASKF);
+		//PrintToConsole(client, "Master-Hud: %s X,Y (%f, %f) from (%i, %i)", g_sHudStrs[i], g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM], x ,y);
 	}
 }
 
@@ -137,36 +139,12 @@ public void OnClientCookiesCached(int client)
 
 		if(cookie[0] == '\0')
 		{
-			g_iSettings[client][i] = -1;
+			SetAllDefaults(client);
+			break;
 		}
 		else
 		{
 			g_iSettings[client][i] = StringToInt(cookie);
-		}
-	}
-
-	for(int i = 0; i < sizeof(g_iSettings[]); i++)
-	{
-		int checkVal = g_iSettings[client][i];
-		if(i >= COLOR_SETTINGS_START_IDX && i <= COLOR_SETTINGS_END_IDX && (checkVal == -1 || checkVal >= sizeof(g_iBstatColors)))
-		{
-			PushDefaultColors(client);
-		}
-		else if(i == Bools && checkVal == -1)
-		{
-			PushDefaultBools(client);
-		}
-		else if(i == Usage && checkVal == -1)
-		{
-			PushDefaultUsage(client);
-		}
-		else if(i == Positions_X || i == Positions_Y && (checkVal == -1 || checkVal > 255))
-		{
-			PushDefaultPositions(client);
-		}
-		else if(i == TrainerSpeed && (checkVal == -1 || checkVal >= sizeof(g_iTrainerSpeeds)))
-		{
-			PushDefaultTrainerSpeed(client);
 		}
 	}
 	PushPosCache(client);

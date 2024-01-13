@@ -9,11 +9,6 @@ int g_iCurrentFrame[MAXPLAYERS + 1];
 
 void Offset_Process(int client, int offset, bool overlap, bool nopress)
 {
-	if(g_bEditing[client])
-	{
-		return;
-	}
-
 	if(g_iLastOffset[client] == offset)
 	{
 		g_iRepeatedOffsets[client]++;
@@ -66,9 +61,7 @@ void Offset_DrawOffset(int client, int offset, int repeats, bool overlap, bool n
 		}
 	}
 
-	int settingsIdx = g_iSettings[client][colorIdx];
-	SetHudTextParams(g_fCacheHudPositions[client][Offset][X_DIM], g_fCacheHudPositions[client][Offset][Y_DIM], 0.5, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
-	ShowHudText(client, GetDynamicChannel(2), message);
+	BgsDisplayHud(client, g_fCacheHudPositions[client][Offset], g_iBstatColors[g_iSettings[client][colorIdx]], 0.5, GetDynamicChannel(2), false, message)
 }
 
 void Offset_Dump(int client, int jump, float sync)

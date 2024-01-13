@@ -38,10 +38,6 @@ void Fjt_OnJump(int client, int jump)
 
 void PrintJumpTick(int client)
 {
-	if(g_bEditing[client])
-	{
-		return;
-	}
 	for(int i = 1; i < MaxClients; i++)
 	{
 		if(( !(g_iSettings[i][Bools] & FJT_ENABLED) && !(g_iSettings[i][Bools] & FJT_CHAT) ) || !BgsIsValidClient(i))

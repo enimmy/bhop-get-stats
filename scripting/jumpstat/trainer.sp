@@ -11,11 +11,6 @@ static int g_iCmdNum[MAXPLAYERS + 1];
 
 public void Trainer_Tick(int client, float speed, bool inbhop, float gain, float jss)
 {
-	if(g_bEditing[client])
-	{
-		return;
-	}
-
 	g_iCmdNum[client]++;
 
 	if(!inbhop)
@@ -128,10 +123,8 @@ void PushTrainerToClients(int client, float speeds[3], int cmdnum)
 				}
 			}
 
-			int settingsIdx = g_iSettings[i][idx];
 			float holdTime = trainerSpeed / (BgsTickRate() * 1.0) + 0.05;
-			SetHudTextParams(g_fCacheHudPositions[i][Trainer][X_DIM], g_fCacheHudPositions[i][Trainer][Y_DIM], holdTime, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
-			ShowHudText(i, GetDynamicChannel(0), speedMessages[trainerSpeedIdx]);
+			BgsDisplayHud(i, g_fCacheHudPositions[i][Trainer], g_iBstatColors[g_iSettings[i][idx]], holdTime, GetDynamicChannel(0), false, speedMessages[trainerSpeedIdx])
 		}
 	}
 }

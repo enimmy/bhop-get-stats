@@ -12,10 +12,9 @@ bool g_bShavit = false;
 public Plugin myinfo =
 {
 	name = "bhop get stats",
-	//I put peoples names on here who I got code from or help, if you don't want to be listed on here contact me. Just trying to show appreciation
-	author = "Nimmy / Alkatraz, Nairda (ssj code) / Oblivious , Xutax(perf angle calc)",
+	author = "Nimmy",
 	description = "central plugin to call bhop stats",
-	version = "1.2",
+	version = "1.3",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 
@@ -25,7 +24,6 @@ public Plugin myinfo =
 #define SIDEMOVE 1
 #define LEFT 0
 #define RIGHT 1
-//#define DEBUG
 
 bool g_bTouchesWall[MAXPLAYERS + 1];
 bool g_bJumpedThisTick[MAXPLAYERS + 1];
@@ -231,60 +229,56 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	}
 	else
 	{
-		Bgs_ProcessPostRunCmd(client, buttons, impulse, vel, angles);
+		Bgs_ProcessPostRunCmd(client, buttons, vel, angles);
 	}
 }
 
-void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel[3], const float angles[3])
+void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const float angles[3])
 {
 	g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
 
 	if(g_iTicksOnGround[client] == 0)
 	{
 
-		float perfAngleDiff = RadToDeg(ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]));
-
-		if(perfAngleDiff == 0.0)
+		if(g_fRunCmdVelVec[client][1] != 0.0 && g_fRunCmdVelVec[client][0] != 0.0)
 		{
-			if(perfAngleDiff != perfAngleDiff)
+			float perfAngleDiff = RadToDeg(ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]));
+
+			float adjVal = 0.0;
+			float sign = 1.0;
+
+			if (vel[0] != 0.0 && vel[1] == 0.0)
 			{
-				PrintToConsole(client, "BGS: velyaw nan %i", g_iCmdNum[client])
+				sign = g_fYawDifference[client] > 0.0 ? 1.0:-1.0;
+				adjVal = 90.0;
 			}
-			PrintToConsole(client, "BGS: velyaw 0.0 %i", g_iCmdNum[client])
-		}
 
-		float adjVal = 0.0;
-		float sign = 1.0;
-		if (vel[0] != 0.0 && vel[1] == 0.0)
-		{
-			sign = g_fYawDifference[client] > 0.0 ? 1.0:-1.0;
-			adjVal = 90.0;
-		}
-
-		if (vel[0] != 0.0 && vel[1] != 0.0)
-		{
-			sign = vel[1] > 0.0 ? -1.0 : 1.0;
-			adjVal = 45.0;
-		}
-		sign = vel[0] < 0.0 ? sign * -1.0 : sign;
-
-		float delta_opt = -NormalizeAngle(angles[1] - (perfAngleDiff + (adjVal * sign)));
-		float perfAngle = NormalizeAngle(angles[1] + delta_opt);
-		float newangdiff = FloatAbs(NormalizeAngle(perfAngle - g_fLastAngles[client][YAW]));
-
-		if(newangdiff == 0.0)
-		{
-			if(newangdiff != newangdiff)
+			if (vel[0] != 0.0 && vel[1] != 0.0)
 			{
-				PrintToConsole(client, "BGS: perf ang diff nan %i / %f", g_iCmdNum[client], perfAngleDiff);
+				sign = vel[1] > 0.0 ? -1.0 : 1.0;
+				adjVal = 45.0;
 			}
-			PrintToConsole(client, "BGS: ang diff 0.0 %i", g_iCmdNum[client], perfAngleDiff);
+			sign = vel[0] < 0.0 ? sign * -1.0 : sign;
+
+			float delta_opt = -NormalizeAngle(angles[1] - (perfAngleDiff + (adjVal * sign)));
+			float perfAngle = NormalizeAngle(angles[1] + delta_opt);
+			float newangdiff = FloatAbs(NormalizeAngle(perfAngle - g_fLastAngles[client][YAW]));
+
+			if(newangdiff == 0.0)
+			{
+				if(newangdiff != newangdiff)
+				{
+					PrintToConsole(client, "BGS: perf ang diff nan %i / %f", g_iCmdNum[client], perfAngleDiff);
+				}
+				PrintToConsole(client, "BGS: ang diff 0.0 %i", g_iCmdNum[client], perfAngleDiff);
+			}
+
+			float trueAddedJss = FloatAbs(g_fYawDifference[client]) / newangdiff;
+
+			g_fAvgDiffFromPerf[client] += trueAddedJss;
+			g_fTickJss[client] = trueAddedJss;
+			g_iAvgTicksNum[client]++;
 		}
-
-		float trueAddedJss = FloatAbs(g_fYawDifference[client]) / newangdiff;
-
-		g_fAvgDiffFromPerf[client] += trueAddedJss;
-		g_fTickJss[client] = trueAddedJss;
 
 		//offset shit
 		if(g_iCmdNum[client] >= 1)
@@ -388,19 +382,13 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, int impulse, const float vel
 				gaincoeff = (wishspd - FloatAbs(currentgain)) / wishspd;
 			}
 
-			if(g_bTouchesWall[client] && g_iTouchTicks[client] && gaincoeff > 0.5)
+			if(g_bTouchesWall[client] && gaincoeff > 0.5)
 			{
 				gaincoeff -= 1.0;
 				gaincoeff = FloatAbs(gaincoeff);
 			}
 			g_fRawGain[client] += gaincoeff;
 			g_fTickGain[client] = gaincoeff;
-
-			//PrintDebugMsg(client, "Tick Gain: %f", g_fTickGain[client]);
-			if(g_iStrafeTick[client])
-			{
-				//PrintDebugMsg(client, "Gain: %f", g_fRawGain[client] / g_fRawGain[client]);
-			}
 		}
 		g_iCmdNum[client]++;
 	}
@@ -496,7 +484,13 @@ void StartJumpForward(int target)
 		Call_PushFloat(100.0 * g_iSyncedTick[target] / g_iStrafeTick[target]);
 		Call_PushFloat(efficiency);
 		Call_PushFloat(-1.0);
-		Call_PushFloat(g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target]);
+
+		float jss = 0.0;
+		if(g_iAvgTicksNum[target] != 0)
+		{
+			jss = g_fAvgDiffFromPerf[target] / g_iAvgTicksNum[target];
+		}
+		Call_PushFloat(jss);
 		Call_Finish();
 	}
 }
@@ -547,13 +541,4 @@ float NormalizeAngle(float ang)
 		ang += 360.0;
 	}
 	return ang;
-}
-
-void PrintDebugMsg(int client, const char[] msg, any...)
-{
-	#if defined DEBUG
-	char buffer[300];
-	VFormat(buffer, sizeof(buffer), msg, 3);
-	PrintToConsole(client, "BStat-Debug: %s", buffer);
-	#endif
 }

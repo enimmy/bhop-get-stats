@@ -1,5 +1,4 @@
 
-//#define DEBUG
 static bool lateLoad;
 static bool shavitLoaded;
 static EngineVersion engineVersion;
@@ -23,6 +22,7 @@ void Init_Utils(bool late, bool shavit, EngineVersion engine, char[] version)
 	}
 }
 
+
 bool BgsLateLoaded()
 {
 	return lateLoad;
@@ -33,10 +33,12 @@ void BgsVersion(char[] buffer, int len)
 	Format(buffer, len, "%s", jumpstatsVersion);
 }
 
+
 bool BgsShavitLoaded()
 {
 	return shavitLoaded;
 }
+
 
 int BgsTickRate()
 {
@@ -101,24 +103,19 @@ void BgsSetCookie(int client, Cookie hCookie, int n)
 	char strCookie[64];
 	IntToString(n, strCookie, sizeof(strCookie));
 	SetClientCookie(client, hCookie, strCookie);
-	PrintDebugMsg(client, "Attempting to set cookie to %i", n);
 }
 
-int GetIntSubValue(int num, int position, int binaryShift)
+int GetIntSubValue(int num, int position, int binaryShift, int binaryMask)
 {
-	if(num == -1) //every bit is 1, return max posiiton
+	if(num < 0)
 	{
-		return 255;
+		num = ~num;
+		num = num >> (position * binaryShift);
+		num = ~num & binaryMask;
 	}
-	else if(num < 0)
+	else
 	{
-	    num = ~num;
-	    num = num >> (position * binaryShift);
-        num = ~num & 255;
-	}
-	else 
-	{
-	  	num = (num >> (position * binaryShift));  
+	  	num = (num >> (position * binaryShift)) & binaryMask;
 	}
 
 	return num;
@@ -126,11 +123,10 @@ int GetIntSubValue(int num, int position, int binaryShift)
 
 void SetIntSubValue(int &editNum, int insertVal, int position, int binaryShift, int binaryMask)
 {
-
 	editNum = (editNum & ~(binaryMask << (position * binaryShift))) | ((insertVal & binaryMask) << (position * binaryShift));
 }
 
-float GetAdjustedHudCoordinate(int value, float scaler) //bounds -256 
+float GetAdjustedHudCoordinate(int value, float scaler)
 {
 	float rVal = -1.0;
 	if(value <= 0 || value > RoundToFloor(scaler))
@@ -148,7 +144,7 @@ float GetAdjustedHudCoordinate(int value, float scaler) //bounds -256
 
 int GetHudCoordinateToInt(float value, int scaler, int min, int max)
 {
-	if(value == -1.0 || value < 0 || value > 1.0)
+	if(value < 0 || value > 1.0)
 	{
 		return 0;
 	}
@@ -165,13 +161,15 @@ int GetHudCoordinateToInt(float value, int scaler, int min, int max)
 	return adjVal;
 }
 
-void BgsDisplayHud()
-
-void PrintDebugMsg(int client, const char[] msg, any...)
+void BgsDisplayHud(int client, float pos[2], int rgb[3], float holdTime, int channel, bool force, const char[] message, any...)
 {
-	#if defined DEBUG
-	char buffer[300];
-	VFormat(buffer, sizeof(buffer), msg, 3);
-	PrintToConsole(client, "jumpstats: %s", buffer);
-	#endif
+	if(g_bEditing[client] && !force)
+	{
+		return;
+	}
+
+	char buffer[512];
+	VFormat(buffer, sizeof(buffer), message, 8);
+	SetHudTextParams(pos[0], pos[1], holdTime, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0, 0.0);
+	ShowHudText(client, channel, message);
 }

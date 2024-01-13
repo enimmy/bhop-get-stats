@@ -6,10 +6,6 @@ static int g_iCmdNum[MAXPLAYERS + 1];
 
 void Speedometer_Tick(int client, float fspeed, bool inbhop, float gain)
 {
-	if(g_bEditing[client])
-	{
-		return;
-	}
 	g_iCmdNum[client]++;
 	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
 
@@ -30,8 +26,8 @@ void Speedometer_Tick(int client, float fspeed, bool inbhop, float gain)
 	{
 		int speed = RoundToFloor(fspeed);
 
-		char sMessage[256];
-		Format(sMessage, sizeof(sMessage), "%i", speed);
+		char message[256];
+		Format(message, sizeof(message), "%i", speed);
 
 		float coeffsum = g_fRawGain[client];
 		coeffsum /= SPEED_UPDATE_INTERVAL;
@@ -65,13 +61,12 @@ void Speedometer_Tick(int client, float fspeed, bool inbhop, float gain)
 			{
 				int settingsIdx = g_iSettings[i][speedIdx];
 
-				if(g_iSettings[i][Bools] & SPEEDOMETER_GAIN_COLOR)
+				if(g_iSettings[i][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop)
 				{
 					settingsIdx = g_iSettings[i][gainIdx];
 				}
 
-				SetHudTextParams(g_fCacheHudPositions[i][Speedometer][X_DIM], g_fCacheHudPositions[i][Speedometer][Y_DIM], 0.2, g_iBstatColors[settingsIdx][0], g_iBstatColors[settingsIdx][1], g_iBstatColors[settingsIdx][2], 255, 0, 0.0, 0.0, 0.0);
-				ShowHudText(i, GetDynamicChannel(4), sMessage);
+				BgsDisplayHud(i, g_fCacheHudPositions[i][Speedometer], g_iBstatColors[settingsIdx], 0.2, GetDynamicChannel(4), false, message);
 			}
 		}
 
