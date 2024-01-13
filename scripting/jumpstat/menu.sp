@@ -68,7 +68,7 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 		{
 			if(i != g_iEditHud[client])
 			{
-				BgsDisplayHud(client, g_fCacheHudPositions[client][i], g_iBstatColors[GainGood], 1.0, GetDynamicChannel(i), true, g_sHudStrs[i]);
+				BgsDisplayHud(client, g_fCacheHudPositions[client][i], g_iBstatColors[GainReallyBad], 1.0, GetDynamicChannel(i), true, g_sHudStrs[i]);
 			}
 		}
 	}
@@ -313,7 +313,8 @@ public Action ShowPosEditPanel(int client, int args)
 	panel.DrawItem("Set to Center");
 	panel.DrawItem("Set to Default");
 
-	panel.DrawItem("", ITEMDRAW_SPACER_NOSLOT);
+	panel.DrawItem("", ITEMDRAW_SPACER);
+	panel.DrawItem("", ITEMDRAW_SPACER);
 
 	panel.DrawItem("Use WASD/Mouse to Adjust HUDs \n"
 					..."Walk - Lock X | Duck - Lock Y\n"
@@ -632,7 +633,7 @@ public int PosEditPanel_Select(Menu menu, MenuAction action, int client, int sel
 				SetDefaultHudPos(client, g_iEditHud[client]);
 			}
 
-			case 6:
+			case 8:
 			{
 				PosEditPanel_Select(menu, MenuAction_Cancel, client, selection);
 				return 0;
