@@ -42,21 +42,27 @@ enum
 	Jhud,
 	Trainer,
 	Offset,
-	Speedometer
+	Speedometer,
+	FJT,
+	ShowKeys
 };
 
 char g_sHudStrs[][] = {
 	"Jhud",
 	"Trainer",
-	"Offset\nFJT",
-	"Speedometer"
+	"Offset",
+	"Speedometer",
+	"FJT",
+	"ShowKeys"
 };
 
 float g_fDefaultHudYPositions[] = {
 	-1.0,
 	0.2,
 	0.35,
-	0.01
+	0.01,
+	0.4,
+	-1.0
 };
 
 enum
@@ -89,12 +95,14 @@ enum //indexes of settings
 	Usage,
 	Positions_X,
 	Positions_Y,
+	Positions2_X,
+	Positions2_Y,
 	TrainerSpeed
 }
 
 float g_fCacheHudPositions[MAXPLAYERS + 1][sizeof(g_fDefaultHudYPositions)][2]; //Positions are stored in cookies as ints (0-255), this cache holds the players converted poitions
-int g_iSettings[MAXPLAYERS + 1][10];
-Cookie g_hSettings[10];
+int g_iSettings[MAXPLAYERS + 1][12];
+Cookie g_hSettings[12];
 
 public void Settings_Start()
 {
@@ -107,6 +115,8 @@ public void Settings_Start()
 	g_hSettings[Usage] = RegClientCookie("js-usage", "", CookieAccess_Protected);
 	g_hSettings[Positions_X] = RegClientCookie("js-hud-positions-x", "", CookieAccess_Protected);
 	g_hSettings[Positions_Y] = RegClientCookie("js-hud-positions-y", "", CookieAccess_Protected);
+	g_hSettings[Positions2_X] = RegClientCookie("js-hudpositions2-x", "", CookieAccess_Protected);
+	g_hSettings[Positions2_Y] = RegClientCookie("js-hudpositions2-y", "", CookieAccess_Protected);
 	g_hSettings[TrainerSpeed] = RegClientCookie("js-trainer-speed", "", CookieAccess_Protected);
 
 	for(int i = 1; i <= MaxClients; i++)
@@ -118,16 +128,97 @@ public void Settings_Start()
 	}
 }
 
-public void PushPosCache(int client)
+void PushPosCache(int client)
 {
 	for(int i = 0; i < sizeof(g_fDefaultHudYPositions); i++)
 	{
-		int x = GetIntSubValue(g_iSettings[client][Positions_X], i, POS_INT_BITS, POS_BINARY_MASK);
-		int y = GetIntSubValue(g_iSettings[client][Positions_Y], i, POS_INT_BITS, POS_BINARY_MASK);
-		g_fCacheHudPositions[client][i][X_DIM] = GetAdjustedHudCoordinate(x, POS_BINARY_MASKF);
-		g_fCacheHudPositions[client][i][Y_DIM] = GetAdjustedHudCoordinate(y, POS_BINARY_MASKF);
-		//PrintToConsole(client, "Master-Hud: %s X,Y (%f, %f) from (%i, %i)", g_sHudStrs[i], g_fCacheHudPositions[client][i][X_DIM], g_fCacheHudPositions[client][i][Y_DIM], x ,y);
+		g_fCacheHudPositions[client][i][X_DIM] = GetAdjustedHudCoordinate(GetHudPositionInt(client, i, X_DIM), POS_BINARY_MASKF);
+		g_fCacheHudPositions[client][i][Y_DIM] = GetAdjustedHudCoordinate(GetHudPositionInt(client, i, Y_DIM), POS_BINARY_MASKF);
 	}
+}
+
+void SetHudPositionInt(int client, int hud, int dim, int insert)
+{
+	int intPos = hud / (32 / POS_INT_BITS);
+	int subValPos = hud % (32 / POS_INT_BITS);
+
+	int tinyInd = 0;
+	if(dim == X_DIM)
+	{
+		for(int i = 0; i < sizeof(g_iSettings[]); i++)
+		{
+			if(i == Positions_X || i == Positions2_X)
+			{
+				if(intPos == tinyInd)
+				{
+					SetIntSubValue(g_iSettings[client][i], insert, subValPos, POS_INT_BITS, POS_BINARY_MASK);
+					return;
+				}
+				tinyInd++;
+			}
+		}
+	}
+	else
+	{
+		for(int i = 0; i < sizeof(g_iSettings[]); i++)
+		{
+			if(i == Positions_Y || i == Positions2_Y)
+			{
+				if(intPos == tinyInd)
+				{
+					SetIntSubValue(g_iSettings[client][i], insert, subValPos, POS_INT_BITS, POS_BINARY_MASK);
+					return;
+				}
+				tinyInd++;
+			}
+		}
+	}
+}
+
+int GetHudPositionInt(int client, int hud, int dim)
+{
+	int intPos = hud / (32 / POS_INT_BITS);
+	int subValPos = hud % (32 / POS_INT_BITS);
+
+	int tinyInd = 0;
+
+	if(dim == X_DIM)
+	{
+		for(int i = 0; i < sizeof(g_iSettings[]); i++)
+		{
+			if(i == Positions_X || i == Positions2_X)
+			{
+				if(intPos == tinyInd)
+				{
+					return GetIntSubValue(g_iSettings[client][i], subValPos, POS_INT_BITS, POS_BINARY_MASK);
+				}
+				tinyInd++;
+			}
+		}
+	}
+	else
+	{
+		for(int i = 0; i < sizeof(g_iSettings[]); i++)
+		{
+			if(i == Positions_Y || i == Positions2_Y)
+			{
+				if(intPos == tinyInd)
+				{
+					return GetIntSubValue(g_iSettings[client][i], subValPos, POS_INT_BITS, POS_BINARY_MASK);
+				}
+				tinyInd++;
+			}
+		}
+	}
+	return 0;
+}
+
+void SaveHudPositionCookies(int client)
+{
+	BgsSetCookie(client, g_hSettings[Positions_X], g_iSettings[client][Positions_X]);
+	BgsSetCookie(client, g_hSettings[Positions_Y], g_iSettings[client][Positions_Y]);
+	BgsSetCookie(client, g_hSettings[Positions2_X], g_iSettings[client][Positions2_X]);
+	BgsSetCookie(client, g_hSettings[Positions2_Y], g_iSettings[client][Positions2_Y]);
 }
 
 public void OnClientCookiesCached(int client)
@@ -139,7 +230,7 @@ public void OnClientCookiesCached(int client)
 
 		if(cookie[0] == '\0')
 		{
-			SetAllDefaults(client);
+			SetDefaultSetting(client, i);
 			break;
 		}
 		else
@@ -154,9 +245,34 @@ void SetAllDefaults(int client)
 {
 	PushDefaultBools(client);
 	PushDefaultUsage(client);
-	PushDefaultPositions(client);
+	PushDefaultPositions1(client);
+	PushDefaultPositions2(client);
 	PushDefaultColors(client);
 	PushDefaultTrainerSpeed(client);
+}
+
+void SetDefaultSetting(int client, int setting)
+{
+	if(setting >= COLOR_SETTINGS_START_IDX && setting <= COLOR_SETTINGS_END_IDX)
+	{
+		PushDefaultColors(client);
+	}
+	else if(setting == Bools)
+	{
+		PushDefaultBools(client);
+	}
+	else if(setting == Positions_X || setting == Positions_Y)
+	{
+		PushDefaultPositions1(client);
+	}
+	else if(setting == Positions2_X || setting == Positions2_Y)
+	{
+		PushDefaultPositions2(client);
+	}
+	else if(setting == TrainerSpeed)
+	{
+		PushDefaultTrainerSpeed(client);
+	}
 }
 
 void PushDefaultBools(int client)
@@ -198,17 +314,31 @@ void PushDefaultUsage(int client)
 	BgsSetCookie(client, g_hSettings[Usage], g_iSettings[client][Usage]);
 }
 
-void PushDefaultPositions(int client)
+void PushDefaultPositions1(int client)
 {
 	g_iSettings[client][Positions_Y] = 0;
-	for(int i = 0; i < sizeof(g_fDefaultHudYPositions); i++)
-	{
-		SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(g_fDefaultHudYPositions[i], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), i, POS_INT_BITS, POS_BINARY_MASK);
-	}
+
+	SetHudPositionInt(client, Jhud, Y_DIM, GetHudCoordinateToInt(g_fDefaultHudYPositions[Jhud], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT));
+	SetHudPositionInt(client, Trainer, Y_DIM, GetHudCoordinateToInt(g_fDefaultHudYPositions[Trainer], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT));
+	SetHudPositionInt(client, Offset, Y_DIM, GetHudCoordinateToInt(g_fDefaultHudYPositions[Offset], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT));
+	SetHudPositionInt(client, Speedometer, Y_DIM, GetHudCoordinateToInt(g_fDefaultHudYPositions[Speedometer], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT));
 
 	g_iSettings[client][Positions_X] = 0;
 	BgsSetCookie(client, g_hSettings[Positions_X], g_iSettings[client][Positions_X]);
 	BgsSetCookie(client, g_hSettings[Positions_Y], g_iSettings[client][Positions_Y]);
+	PushPosCache(client);
+}
+
+void PushDefaultPositions2(int client)
+{
+	g_iSettings[client][Positions2_Y] = 0;
+
+	SetHudPositionInt(client, FJT, Y_DIM, GetHudCoordinateToInt(g_fDefaultHudYPositions[FJT], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT));
+	SetHudPositionInt(client, ShowKeys, Y_DIM, GetHudCoordinateToInt(g_fDefaultHudYPositions[ShowKeys], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT));
+
+	g_iSettings[client][Positions2_X] = 0;
+	BgsSetCookie(client, g_hSettings[Positions2_X], g_iSettings[client][Positions2_X]);
+	BgsSetCookie(client, g_hSettings[Positions2_Y], g_iSettings[client][Positions2_Y]);
 	PushPosCache(client);
 }
 
@@ -235,11 +365,9 @@ void PushDefaultTrainerSpeed(int client)
 
 void SetDefaultHudPos(int client, int hud)
 {
-	SetIntSubValue(g_iSettings[client][Positions_X], 0, hud, POS_INT_BITS, POS_BINARY_MASK);
-	SetIntSubValue(g_iSettings[client][Positions_Y], GetHudCoordinateToInt(g_fDefaultHudYPositions[hud], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT), hud, POS_INT_BITS, POS_BINARY_MASK);
-
-	BgsSetCookie(client, g_hSettings[Positions_X], g_iSettings[client][Positions_X]);
-	BgsSetCookie(client, g_hSettings[Positions_Y], g_iSettings[client][Positions_Y]);
+	SetHudPositionInt(client, hud, X_DIM, 0);
+	SetHudPositionInt(client, hud, Y_DIM, GetHudCoordinateToInt(g_fDefaultHudYPositions[hud], POS_BINARY_MASK, POS_MIN_INT, POS_MAX_INT));
+	SaveHudPositionCookies(client);
 	PushPosCache(client);
 }
 

@@ -3,6 +3,7 @@
 #include <bhop-get-stats>
 #include <DynamicChannels>
 #include <sdktools>
+#include <usermessages>
 
 #include <jumpstat/colors.sp>
 #include <jumpstat/settings.sp>
@@ -13,6 +14,7 @@
 #include <jumpstat/ssj.sp>
 #include <jumpstat/trainer.sp>
 #include <jumpstat/fjt.sp>
+#include <jumpstat/showkeys.sp>
 #include <jumpstat/menu.sp>
 #include <jumpstat/commands.sp>
 
@@ -111,6 +113,7 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 	if(!IsFakeClient(client))
 	{
 		Menu_CheckEditMode(client, buttons, mouse);
+		ShowKeys_Tick(client, buttons);
 	}
 	return Plugin_Continue;
 }

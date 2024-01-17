@@ -25,11 +25,11 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 	{
 		if(buttons & IN_MOVERIGHT)
 		{
-			EditHudPosition(client, Positions_X, 1);
+			EditHudPosition(client, X_DIM, 1);
 		}
 		else if(buttons & IN_MOVELEFT)
 		{
-			EditHudPosition(client, Positions_X, -1);
+			EditHudPosition(client, X_DIM, -1);
 		}
 	}
 
@@ -37,11 +37,11 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 	{
 		if(buttons & IN_FORWARD)
 		{
-			EditHudPosition(client, Positions_Y, -1);
+			EditHudPosition(client, Y_DIM, -1);
 		}
 		else if(buttons & IN_BACK)
 		{
-			EditHudPosition(client, Positions_Y, 1);
+			EditHudPosition(client, Y_DIM, 1);
 		}
 	}
 
@@ -50,11 +50,11 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 	{
 		if(mouse[X_DIM] != 0 && !xLock)
 		{
-			EditHudPosition(client, Positions_X, mouse[X_DIM]);
+			EditHudPosition(client, X_DIM, mouse[X_DIM]);
 		}
 		if(mouse[Y_DIM] != 0 && !yLock)
 		{
-			EditHudPosition(client, Positions_Y, mouse[Y_DIM]);
+			EditHudPosition(client, Y_DIM, mouse[Y_DIM]);
 		}
 	}
 
@@ -77,7 +77,7 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 
 void EditHudPosition(int client, int editDim, int val)
 {
-	int subValue = GetIntSubValue(g_iSettings[client][editDim], g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
+	int subValue = GetHudPositionInt(client, g_iEditHud[client], editDim);
 	if(subValue == 0) //Position was dead center
 	{
 		subValue = POS_BINARY_MASK / 2; //move to a pos close to center, but not dead center
@@ -97,7 +97,7 @@ void EditHudPosition(int client, int editDim, int val)
 		subValue = POS_MIN_INT + 1;
 	}
 
-	SetIntSubValue(g_iSettings[client][editDim], subValue, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
+	SetHudPositionInt(client, g_iEditHud[client], editDim, subValue);
 }
 
 void ExitEditModeAndSave(int client)
@@ -621,8 +621,8 @@ public int PosEditPanel_Select(Menu menu, MenuAction action, int client, int sel
 
 			case 2:
 			{
-				SetIntSubValue(g_iSettings[client][Positions_X], 0, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
-				SetIntSubValue(g_iSettings[client][Positions_Y], 0, g_iEditHud[client], POS_INT_BITS, POS_BINARY_MASK);
+				SetHudPositionInt(client, g_iEditHud[client], X_DIM, 0);
+				SetHudPositionInt(client, g_iEditHud[client], Y_DIM, 0);
 				BgsSetCookie(client, g_hSettings[Positions_X], g_iSettings[client][Positions_X]);
 				BgsSetCookie(client, g_hSettings[Positions_Y], g_iSettings[client][Positions_Y]);
 				PushPosCache(client);

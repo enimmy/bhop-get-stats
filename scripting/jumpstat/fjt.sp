@@ -46,7 +46,7 @@ void PrintJumpTick(int client)
 		}
 		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
 		{
-			SetHudTextParams(g_fCacheHudPositions[i][Offset][X_DIM], g_fCacheHudPositions[i][Offset][Y_DIM] + 0.05, 2.0, 255, 255, 255, 255);
+			SetHudTextParams(g_fCacheHudPositions[i][FJT][X_DIM], g_fCacheHudPositions[i][FJT][Y_DIM], 2.0, 255, 255, 255, 255);
 			int tick = RoundToNearest(Shavit_GetClientTime(client) * 100);
 			tick = g_bJumpInZone[client] ? (tick*-1):tick;
 
