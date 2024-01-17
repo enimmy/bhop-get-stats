@@ -36,11 +36,11 @@ public Plugin myinfo =
 }
 
 // Dev Notes - Channel Groups (0-5 Max)
-// Trainer 0 (here)
-// Jhud 1 (here)
-// Offset 2 (here)
-// FJT 3 (here) This is a very light HUD, only a very short time on first jump. use this channel for more stuff
-// Speedometer 4 (here)
+// Trainer 0
+// Jhud 1
+// Offset/Fjt 2
+// Showkeys 3
+// Speedometer 4
 // Shavit-Hud Top Left 5 (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
 // If you use 3 and need another channel, i'd disable shavit top left and use that channel
 
@@ -84,10 +84,11 @@ public void OnLibraryRemoved(const char[] name)
 	}
 }
 
-public void BhopStat_TickForward(int client, float speed, bool inbhop, float gain, float jss)
+public void BhopStat_TickForward(int client, int buttons, float vel[3], float angles[3], bool inbhop, float speed, float gain, float jss, float yawDiff)
 {
 	Speedometer_Tick(client, speed, inbhop, gain);
 	Trainer_Tick(client, speed, inbhop, gain, jss);
+	ShowKeys_Tick(client, buttons, yawDiff);
 }
 
 public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
@@ -113,7 +114,6 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 	if(!IsFakeClient(client))
 	{
 		Menu_CheckEditMode(client, buttons, mouse);
-		ShowKeys_Tick(client, buttons);
 	}
 	return Plugin_Continue;
 }

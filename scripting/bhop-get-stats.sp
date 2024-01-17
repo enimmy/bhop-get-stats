@@ -77,8 +77,9 @@ public void OnPluginStart()
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
 
-	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Float, Param_Cell, Param_Float, Param_Float);
-	//int client, int speed, float gain, float jss);
+	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Array, Param_Array, Param_Cell
+																Param_Float, Param_Float, Param_Float, Param_Float);
+	//int client, int buttons, f[3] vel, f[3] angles, bool inbhop, f speed, f gain, f jss, f yawDiff
 
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -489,15 +490,19 @@ void StartStrafeForward(int client)
 	Call_Finish();
 }
 
-//int client, int speed, float gain, float jss
-void StartTickForward(int client)
+//int client, int buttons, f[3] vel, f[3] angles, bool inbhop, f speed, f gain, f jss, f yawDiff
+void StartTickForward(int client, int buttons, float vel[3], float angles[3])
 {
 	Call_StartForward(TickStatsForward);
 	Call_PushCell(client);
-	Call_PushFloat(GetRunCmdVelocity(client, true));
+	Call_PushCell(buttons);
+	Call_PushArray(vel);
+	Call_PushArray(angles);
 	Call_PushCell(view_as<int>((g_iTicksOnGround[client] == 0)));
+	Call_PushFloat(GetRunCmdVelocity(client, true));
 	Call_PushFloat(g_fTickGain[client]);
 	Call_PushFloat(g_fTickJss[client]);
+	Call_PushFloat(g_fYawDifference[client]);
 	Call_Finish();
 }
 
