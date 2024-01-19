@@ -69,7 +69,8 @@ public void OnPluginStart()
 
 	g_bShavit = LibraryExists("shavit");
 
-	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
+	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float,
+	 																Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
 	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
 	//yawing not done
 	//add airpath, veer, jumpoff angle on j1

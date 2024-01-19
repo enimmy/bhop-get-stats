@@ -104,16 +104,20 @@ int Offset_GetColorIdx(int offset) {
     if(offset == 0)
 	{
 		return GainMeh;
-    } else if(offset == -1)
+    } 
+	else if(offset == -1)
 	{
 		return GainReallyGood;
-    } else if(offset == -2)
+    } 
+	else if(offset == -2)
 	{
 		return GainGood;
-	} else if(offset == -3)
+	} 
+	else if(offset == -3)
 	{
 		return GainBad;
-	} else
+	} 
+	else
 	{
 		return GainReallyBad;
 	}

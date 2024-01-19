@@ -58,6 +58,7 @@ public void OnPluginStart()
 	Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
 	Commands_Start();
 	Settings_Start();
+	ShowKeys_Start();
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)

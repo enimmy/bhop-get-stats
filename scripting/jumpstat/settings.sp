@@ -5,7 +5,7 @@
 #define TRAINER_ENABLED 1 << 4
 #define OFFSETS_ENABLED 1 << 5
 #define SPEEDOMETER_ENABLED 1 << 6
-#define SPEEDOMETER_GAIN_COLOR 1 << 7
+#define SPEEDOMETER_GAIN_COLOR 1 << 7 //maybe remove this
 #define SSJ_ENABLED 1 << 8
 #define SSJ_REPEAT 1 << 9
 #define SSJ_HEIGHTDIFF 1 << 10
@@ -307,6 +307,16 @@ void PushDefaultBools(int client)
 	//g_iSettings[client][Bools] |= SSJ_DECIMALS;
 	//g_iSettings[client][Bools] |= SSJ_OFFSETS;
 	//g_iSettings[client][Bools] |= TRAINER_STRICT;
+	//g_iSettings[client][Bools] |= SHOWKEYS_ENABLED;
+	//g_iSettings[client][Bools] |= SHOWKEYS_SIMPLE;
+	if(BgsGetEngineVersion == Engine_CSGO)
+	{
+		//g_iSettings[client][Bools] |= SHOWKEYS_UNRELIABLE;
+	}
+	else
+	{
+		g_iSettings[client][Bools] |= SHOWKEYS_UNRELIABLE;
+	}
 
 	BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 }
