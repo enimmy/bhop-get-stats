@@ -309,7 +309,7 @@ void PushDefaultBools(int client)
 	//g_iSettings[client][Bools] |= TRAINER_STRICT;
 	//g_iSettings[client][Bools] |= SHOWKEYS_ENABLED;
 	//g_iSettings[client][Bools] |= SHOWKEYS_SIMPLE;
-	if(BgsGetEngineVersion == Engine_CSGO)
+	if(BgsGetEngineVersion() == Engine_CSGO)
 	{
 		//g_iSettings[client][Bools] |= SHOWKEYS_UNRELIABLE;
 	}

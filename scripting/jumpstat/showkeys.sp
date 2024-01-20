@@ -21,7 +21,7 @@ void ShowKeys_Tick(int client, int buttons, float yawDiff)
 	}
 }
 
-void ShowKeys_Send(client, buttons, yawDiff)
+void ShowKeys_Send(int client, int buttons, float yawDiff)
 {
 	g_iCmdNum++;
 
@@ -35,58 +35,58 @@ void ShowKeys_Send(client, buttons, yawDiff)
 
 	if(g_iSettings[client][Bools] & SHOWKEYS_SIMPLE) //thanks shavit + xwidow
 	{
-		if(BgsGetEngineVersion == Engine_CSGO)
+		if(BgsGetEngineVersion() == Engine_CSGO)
 		{
 			FormatEx(message, size, "%s   %s\n%s\n%s%s　 %s 　%s%s\n%s　　%s",
-				(buttons & IN_JUMP) ? "Ｊ":" ", 
+				(buttons & IN_JUMP) ? "Ｊ":" ",
 				(buttons & IN_DUCK) ? "Ｃ":" ",
-				(buttons & IN_FORWARD) ? "Ｗ":" ", 
-				(fAngleDiff > 0) ? "←":" ", 
+				(buttons & IN_FORWARD) ? "Ｗ":" ",
+				(yawDiff > 0) ? "←":" ",
 				(buttons & IN_MOVELEFT) ? "Ａ":" ",
-				(buttons & IN_BACK) ? "Ｓ":" ", 
-				(buttons & IN_MOVERIGHT) ? "Ｄ":" ", 
-				(fAngleDiff < 0) ? "→":" ",
-				(buttons & IN_LEFT) ? "Ｌ":" ", 
+				(buttons & IN_BACK) ? "Ｓ":" ",
+				(buttons & IN_MOVERIGHT) ? "Ｄ":" ",
+				(yawDiff < 0) ? "→":" ",
+				(buttons & IN_LEFT) ? "Ｌ":" ",
 				(buttons & IN_RIGHT) ? "Ｒ":" ");
 		}
 		else
 		{
 			FormatEx(message, size, "　  %s　　%s\n      %s    \n  %s%s　 %s 　%s%s\n　  %s　　%s",
-				(buttons & IN_JUMP) > 0? "Ｊ":" ", 
+				(buttons & IN_JUMP) > 0? "Ｊ":" ",
 				(buttons & IN_DUCK) > 0? "Ｃ":" ",
 				(buttons & IN_FORWARD) > 0 ? "Ｗ":"  ",
-				(fAngleDiff > 0) ? "←":"  ", 
-				(buttons & IN_MOVELEFT) > 0? "Ａ":" ", 
+				(yawDiff > 0) ? "←":"  ",
+				(buttons & IN_MOVELEFT) > 0? "Ａ":" ",
 				(buttons & IN_BACK) > 0? "Ｓ":" ",
-				(buttons & IN_MOVERIGHT) > 0? "Ｄ":" ", 
-				(fAngleDiff < 0) ? "→":" ",
-				(buttons & IN_LEFT) > 0? "Ｌ":" ", 
+				(buttons & IN_MOVERIGHT) > 0? "Ｄ":" ",
+				(yawDiff < 0) ? "→":" ",
+				(buttons & IN_LEFT) > 0? "Ｌ":" ",
 				(buttons & IN_RIGHT) > 0? "Ｒ":" ");
 		}
 	}
 	else
 	{
 		FormatEx(message, size, "%s   %s\n%s  %s  %s\n%s　 %s 　%s\n %s　　%s",
-			(buttons & IN_JUMP) > 0? "Ｊ":"ｰ", 
+			(buttons & IN_JUMP) > 0? "Ｊ":"ｰ",
 			(buttons & IN_DUCK) > 0? "Ｃ":"ｰ",
-			(yawDiff > 0) ? "<":"ｰ", 
-			(buttons & IN_FORWARD) > 0 ? "Ｗ":"ｰ", 
+			(yawDiff > 0) ? "<":"ｰ",
+			(buttons & IN_FORWARD) > 0 ? "Ｗ":"ｰ",
 			(yawDiff < 0) ? ">":"ｰ",
-			(buttons & IN_MOVELEFT) > 0? "Ａ":"ｰ", 
-			(buttons & IN_BACK) > 0? "Ｓ":"ｰ", 
+			(buttons & IN_MOVELEFT) > 0? "Ａ":"ｰ",
+			(buttons & IN_BACK) > 0? "Ｓ":"ｰ",
 			(buttons & IN_MOVERIGHT) > 0? "Ｄ":"ｰ",
-			(buttons & IN_LEFT) > 0? "Ｌ":" ", 
+			(buttons & IN_LEFT) > 0? "Ｌ":" ",
 			(buttons & IN_RIGHT) > 0? "Ｒ":" ");
 	}
 
 
-	if(g_iSettings[client][Bools] & UnreliableHud)
+	if(g_iSettings[client][Bools] & SHOWKEYS_UNRELIABLE)
 	{
 		UnreliablePrintCenterText(client, message);
 	}
 	else
 	{
-		BgsDisplayHud(client, g_fCacheHudPositions[cient][ShowKeys], {255,255,255}, 0.7, GetDynamicChannel(3), false, message);
+		BgsDisplayHud(client, g_fCacheHudPositions[client][ShowKeys], {255,255,255}, 0.7, GetDynamicChannel(3), false, message);
 	}
 
 }
@@ -101,7 +101,7 @@ void UnreliablePrintCenterText(int client, const char[] str) //thanks shavit
 	// Start our own message instead of using PrintCenterText so we can exclude USERMSG_RELIABLE.
 	// This makes the HUD update visually faster.
 	BfWrite msg = view_as<BfWrite>(StartMessageEx(g_hCenterTextId, clients, 1, USERMSG_BLOCKHOOKS));
-	msg.WriteByte(HUD_PRINTCENTER);
+	msg.WriteByte(4);
 	msg.WriteString(str);
 	msg.WriteString("");
 	msg.WriteString("");
