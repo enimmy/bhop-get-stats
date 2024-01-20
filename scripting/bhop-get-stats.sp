@@ -78,7 +78,7 @@ public void OnPluginStart()
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 	//int client, int offset, bool overlap, bool nopress
 
-	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Array, Param_Array, Param_Cell,
+	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Cell, Param_Array, Param_Array, Param_Cell,
 																Param_Float, Param_Float, Param_Float, Param_Float);
 	//int client, int buttons, f[3] vel, f[3] angles, bool inbhop, f speed, f gain, f jss, f yawDiff
 

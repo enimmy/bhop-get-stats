@@ -17,6 +17,7 @@ void Commands_Start()
 	RegConsoleCmd("sm_speed", Command_CheckSpeedOverride, "Opens the jumpstats main menu");
 	RegConsoleCmd("sm_ssj", Command_CheckSsjOverride, "Opens the jumpstats main menu");
 	RegConsoleCmd("sm_fjt", Command_CheckFjtOverride, "Opens the jumpstats main menu");
+	RegConsoleCmd("sm_jsshowkeys", Command_JsShowkeys, "Oopens the jumopstats showkeys menu");
 
 	g_hOverrideJhud = CreateConVar("js-override-jhud", "1", "Override /jhud command? 0 (false) or 1 (true)");
 	g_hOverrideTrainer = CreateConVar("js-override-trainer", "1", "Override /strafetrainer command? 0 (false) or 1 (true)");
@@ -103,4 +104,10 @@ public Action Command_CheckSsjOverride(int client, any args)
 	}
 
 	return Plugin_Continue;
+}
+
+public Action Command_JsShowkeys(int client, any args)
+{
+	ShowShowkeysSettingsMenu(client);
+	return Plugin_Handled;
 }

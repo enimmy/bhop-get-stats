@@ -295,6 +295,21 @@ void ShowTrainerSettingsMenu(int client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
+void ShowShowkeysSettingsMenu(int client)
+{
+	if(!BgsIsValidClient(client))
+	{
+		return;
+	}
+	Menu menu = new Menu(Showkeys_Select);
+	menu.ExitBackButton = true;
+	SetMenuTitle(menu, "Showkeys Settings\n \n");
+	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & SHOWKEYS_ENABLED) ? "[x] Enabled":"[ ] Enabled");
+	AddMenuItem(menu, "simple", (g_iSettings[client][Bools] & SHOWKEYS_SIMPLE) ? "[x] Simple Mode":"[ ] SSimple Mode");
+	AddMenuItem(menu, "center", (g_iSettings[client][Bools] & SHOWKEYS_UNRELIABLE) ? "[x] Center Text":"[ ] Center Text")
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
 public Action ShowPosEditPanel(int client, int args)
 {
 	g_bEditing[client] = true;
@@ -837,6 +852,41 @@ public int Trainer_Select(Menu menu, MenuAction action, int client, int option)
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		BgsSetCookie(client, g_hSettings[TrainerSpeed], g_iSettings[client][TrainerSpeed]);
 		ShowTrainerSettingsMenu(client);
+	}
+	else if(action == MenuAction_Cancel)
+	{
+		if(option == MenuCancel_ExitBack)
+		{
+			ShowStatOverviewMenu(client);
+		}
+	}
+	else if(action == MenuAction_End)
+	{
+		delete menu;
+	}
+	return 0;
+}
+
+public int Showkeys_Select(Menu menu, MenuAction action, int client, int option)
+{
+	if(action == MenuAction_Select)
+	{
+		char info[32];
+		menu.GetItem(option, info, sizeof(info));
+		if(StrEqual(info, "en"))
+		{
+			g_iSettings[client][Bools] ^= SHOWKEYS_ENABLED;
+		}
+		else if(StrEqual(info, "simple"))
+		{
+			g_iSettings[client][Bools] ^= SHOWKEYS_SIMPLE;
+		}
+		else if(StrEqual(info, "center"))
+		{
+			g_iSettings[client][Bools] ^= SHOWKEYS_UNRELIABLE;
+		}
+		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
+		ShowShowkeysSettingsMenu(client);
 	}
 	else if(action == MenuAction_Cancel)
 	{

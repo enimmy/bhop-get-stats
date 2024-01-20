@@ -52,7 +52,7 @@ void PrintJumpTick(int client)
 
 			if(g_iSettings[i][Bools] & FJT_ENABLED)
 			{
-				ShowHudText(i, GetDynamicChannel(3), "FJT: %i", tick);
+				ShowHudText(i, GetDynamicChannel(2), "FJT: %i", tick);
 			}
 
 			if(g_iSettings[i][Bools] & FJT_CHAT)

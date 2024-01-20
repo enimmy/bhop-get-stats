@@ -10,11 +10,18 @@ void ShowKeys_Start()
 
 void ShowKeys_Tick(int client, int buttons, float yawDiff)
 {
+	g_iCmdNum++;
+
+	if(g_iCmdNum % UPDATE_RATE != 0)
+	{
+		return;
+	}
+	g_iCmdNum = 1;
 
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if(i == client && IsPlayerAlive(i) || BgsGetHUDTarget(i) == client && !IsPlayerAlive(i))
+		if( (g_iSettings[i][Bools] & SHOWKEYS_ENABLED) && (i == client && IsPlayerAlive(i) || BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)) )
 		{
 			ShowKeys_Send(i, buttons, yawDiff);
 		}
@@ -23,12 +30,6 @@ void ShowKeys_Tick(int client, int buttons, float yawDiff)
 
 void ShowKeys_Send(int client, int buttons, float yawDiff)
 {
-	g_iCmdNum++;
-
-	if(g_iCmdNum % UPDATE_RATE != 0)
-	{
-		return;
-	}
 
 	char message[512];
 	int size = BgsGetEngineVersion() == Engine_CSGO ? 512 : 254;
