@@ -1,7 +1,14 @@
-#define UPDATE_RATE 7
+#define MIN_UPDATE_RATE 50
 
 UserMsg g_hCenterTextId = view_as<UserMsg>(-1);
-static int g_iCmdNum;
+
+static int g_iCmdNum[MAXPLAYERS + 1];
+static int g_iLastTurnDir[MAXPLAYERS + 1];
+static int g_iLastButtons[MAXPLAYERS + 1];
+
+#define TURNDIR_RIGHT -1
+#define TURNDIR_NONE 0
+#define TURNDIR_LEFT 1
 
 void ShowKeys_Start()
 {
@@ -10,13 +17,27 @@ void ShowKeys_Start()
 
 void ShowKeys_Tick(int client, int buttons, float yawDiff)
 {
-	g_iCmdNum++;
+	int turnDir = TURNDIR_NONE;
 
-	if(g_iCmdNum % UPDATE_RATE != 0)
+	if(yawDiff > 0.0)
 	{
-		return;
+		turnDir = TURNDIR_LEFT;
 	}
-	g_iCmdNum = 1;
+	else if(yawDiff < 0.0)
+	{
+		turnDir = TURNDIR_RIGHT;
+	}
+
+	if(turnDir == g_iLastTurnDir[client] && buttons == g_iLastButtons[client])
+	{
+		g_iCmdNum[client]++;
+
+		if(g_iCmdNum[client] % MIN_UPDATE_RATE != 0)
+		{
+			return;
+		}
+		g_iCmdNum[client] = 1;
+	}
 
 
 	for(int i = 1; i <= MaxClients; i++)
@@ -26,6 +47,9 @@ void ShowKeys_Tick(int client, int buttons, float yawDiff)
 			ShowKeys_Send(i, buttons, yawDiff);
 		}
 	}
+
+	g_iLastButtons[client] = buttons;
+	g_iLastTurnDir[client] = turnDir;
 }
 
 void ShowKeys_Send(int client, int buttons, float yawDiff)
@@ -67,7 +91,7 @@ void ShowKeys_Send(int client, int buttons, float yawDiff)
 	}
 	else
 	{
-		FormatEx(message, size, "%s   %s\n%s  %s  %s\n%s　 %s 　%s\n %s　　%s",
+		FormatEx(message, size, "  %s   %s\n %s  %s  %s\n%s　 %s 　%s\n %s　　%s",
 			(buttons & IN_JUMP) > 0? "Ｊ":"ｰ",
 			(buttons & IN_DUCK) > 0? "Ｃ":"ｰ",
 			(yawDiff > 0) ? "<":"ｰ",
@@ -81,13 +105,13 @@ void ShowKeys_Send(int client, int buttons, float yawDiff)
 	}
 
 
-	if(g_iSettings[client][Bools] & SHOWKEYS_UNRELIABLE)
+	if(IsSource2013(BgsGetEngineVersion()) && g_iSettings[client][Bools] & SHOWKEYS_UNRELIABLE)
 	{
 		UnreliablePrintCenterText(client, message);
 	}
 	else
 	{
-		BgsDisplayHud(client, g_fCacheHudPositions[client][ShowKeys], {255,255,255}, 0.7, GetDynamicChannel(3), false, message);
+		BgsDisplayHud(client, g_fCacheHudPositions[client][ShowKeys], {255,255,255}, 0.65, GetDynamicChannel(3), false, message);
 	}
 
 }

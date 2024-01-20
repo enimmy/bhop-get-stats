@@ -27,7 +27,23 @@ void Speedometer_Tick(int client, float fspeed, bool inbhop, float gain)
 		int speed = RoundToFloor(fspeed);
 
 		char message[256];
-		Format(message, sizeof(message), "%i", speed);
+
+		if(speed < 10)
+		{
+			Format(message, sizeof(message), "   %i", speed);
+		}
+		else if(speed < 10)
+		{
+			Format(message, sizeof(message), "  %i", speed);
+		}
+		else if(speed < 1000)
+		{
+			Format(message, sizeof(message), " %i", speed);
+		}
+		else
+		{
+			Format(message, sizeof(message), "%i", speed);
+		}
 
 		float coeffsum = g_fRawGain[client];
 		coeffsum /= SPEED_UPDATE_INTERVAL;

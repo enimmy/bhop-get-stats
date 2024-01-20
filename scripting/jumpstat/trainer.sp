@@ -134,17 +134,35 @@ void Trainer_GetTrainerString(int client, char message[256], float number, float
 {
 	char sVisualisation[32];
 	Trainer_VisualisationString(sVisualisation, sizeof(sVisualisation), average);
+
 	if(g_fCacheHudPositions[client][Trainer][X_DIM] == -1.0)
 	{
-		Format(message, sizeof(message), "%i\n", RoundFloat(number * 100));
+		Format(message, sizeof(message), "      %i      \n", RoundFloat(number * 100));
 	}
 	else
 	{
-		Format(message, sizeof(message), "              %i\n", RoundFloat(number * 100));
+		int displayNum = RoundFloat(number * 100);
+
+		displayNum = displayNum > 999 ? 999 : displayNum;
+
+		if(displayNum < 10)
+		{
+			Format(message, sizeof(message), "              %i      \n", displayNum);
+		}
+		else if(displayNum < 100)
+		{
+			Format(message, sizeof(message), "             %i      \n", displayNum);
+		}
+		else if(displayNum < 1000)
+		{
+
+			Format(message, sizeof(message), "            %i      \n", displayNum);
+		}
 	}
-	Format(message, sizeof(message), "%s══════^══════\n", message);
+
+	Format(message, sizeof(message), "%s══════II══════\n", message);
 	Format(message, sizeof(message), "%s %s \n", message, sVisualisation);
-	Format(message, sizeof(message), "%s══════^══════", message);
+	Format(message, sizeof(message), "%s══════II══════", message);
 }
 
 void Trainer_VisualisationString(char[] buffer, int maxlength, float percentage)

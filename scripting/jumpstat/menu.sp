@@ -128,6 +128,7 @@ void ShowJsMenu(int client)
 	AddMenuItem(menu, "stats", "Statistics");
 	AddMenuItem(menu, "hud", "Hud Positions");
 	AddMenuItem(menu, "colors", "Colors");
+	AddMenuItem(menu, "info", "Info");
 	AddMenuItem(menu, "reset", "Reset");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -153,6 +154,7 @@ void ShowStatOverviewMenu(int client)
 	}
 
 	AddMenuItem(menu, "trainer", "Trainer (HUD)");
+	AddMenuItem(menu, "showkeys", "Showkeys (HUD)");
 
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -305,8 +307,13 @@ void ShowShowkeysSettingsMenu(int client)
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Showkeys Settings\n \n");
 	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & SHOWKEYS_ENABLED) ? "[x] Enabled":"[ ] Enabled");
-	AddMenuItem(menu, "simple", (g_iSettings[client][Bools] & SHOWKEYS_SIMPLE) ? "[x] Simple Mode":"[ ] SSimple Mode");
-	AddMenuItem(menu, "center", (g_iSettings[client][Bools] & SHOWKEYS_UNRELIABLE) ? "[x] Center Text":"[ ] Center Text")
+	AddMenuItem(menu, "simple", (g_iSettings[client][Bools] & SHOWKEYS_SIMPLE) ? "[x] Simple Mode":"[ ] Simple Mode");
+
+	if(IsSource2013(BgsGetEngineVersion()))
+	{
+		AddMenuItem(menu, "center", (g_iSettings[client][Bools] & SHOWKEYS_UNRELIABLE) ? "[x] Center Text":"[ ] Center Text");
+	}
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -407,6 +414,19 @@ public int Js_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "colors"))
 		{
 			ShowColorsMenu(client);
+		}
+		else if(StrEqual(info, "info"))
+		{
+			BgsPrintToChat(client, "Check Console!");
+			PrintToConsole(client, "------------------------JumpStats------------------------");
+			PrintToConsole(client, "Jumpstats is a plugin for displaying information commonly used by bhoppers.\n\n");
+			PrintToConsole(client, "Source engine games only have limited ways of displaying HUDs to the players though, "
+							..."so you can only have around 5-6 HUDs displaying at the same time. If your HUDs ever flash "
+							... "or disappear, try disabling one of the other less important ones!. The main culprits will "
+							... "Trainer or Speedometer, and the Shavit Top left record text (disable in /hud for extra channel!) "
+							... "Some of the HUDs here (in older source games) have the option to use Center Text, which doesn't "
+							... "use a channel, but cannot be adjusted in the positions editor!");
+			ShowJsMenu(client);
 		}
 		else if(StrEqual(info, "reset"))
 		{
@@ -561,6 +581,10 @@ public int StatOverview_Select(Menu menu, MenuAction action, int client, int opt
 		else if(StrEqual(info, "speedometer"))
 		{
 			ShowSpeedSettingsMenu(client);
+		}
+		else if(StrEqual(info, "showkeys"))
+		{
+			ShowShowkeysSettingsMenu(client);
 		}
 	}
 	else if(action == MenuAction_Cancel)

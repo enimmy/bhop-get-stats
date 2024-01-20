@@ -21,7 +21,7 @@
 #undef REQUIRE_PLUGIN
 #include <shavit>
 
-#define JS_VERSTION "3.5"
+#define JS_VERSTION "3.6"
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -42,7 +42,6 @@ public Plugin myinfo =
 // Showkeys 3
 // Speedometer 4
 // Shavit-Hud Top Left 5 (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
-// If you use 3 and need another channel, i'd disable shavit top left and use that channel
 
 bool g_bLate = false;
 bool g_bShavit = false;
