@@ -164,13 +164,13 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	{
 		g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fRunCmdVelVec[client]);
-		Bgs_ProcessRunCmd(client, buttons, impulse, vel, angles, GetEntityFlags(client), GetEntityMoveType(client));
+		Bgs_ProcessRunCmd(client, buttons, vel, angles, GetEntityFlags(client), GetEntityMoveType(client));
 	}
 
 	return Plugin_Continue;
 }
 
-public void Bgs_ProcessRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int flags, MoveType movetype)
+public void Bgs_ProcessRunCmd(int client, int &buttons, float vel[3], float angles[3], int flags, MoveType movetype)
 {
 	if(flags & FL_ONGROUND)
 	{
