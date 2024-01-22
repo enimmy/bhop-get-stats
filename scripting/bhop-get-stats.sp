@@ -14,7 +14,7 @@ public Plugin myinfo =
 	name = "bhop get stats",
 	author = "Nimmy",
 	description = "central plugin to call bhop stats",
-	version = "1.3",
+	version = "1.4",
 	url = "https://github.com/Nimmy2222/bhop-get-stats"
 }
 
