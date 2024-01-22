@@ -38,10 +38,6 @@ void Fjt_OnJump(int client, int jump)
 
 void PrintJumpTick(int client)
 {
-	if(g_bEditing[client])
-	{
-		return;
-	}
 	for(int i = 1; i < MaxClients; i++)
 	{
 		if(( !(g_iSettings[i][Bools] & FJT_ENABLED) && !(g_iSettings[i][Bools] & FJT_CHAT) ) || !BgsIsValidClient(i))
@@ -50,13 +46,13 @@ void PrintJumpTick(int client)
 		}
 		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
 		{
-			SetHudTextParams(g_fCacheHudPositions[i][Offset][X_DIM], g_fCacheHudPositions[i][Offset][Y_DIM] + 0.05, 2.0, 255, 255, 255, 255);
+			SetHudTextParams(g_fCacheHudPositions[i][FJT][X_DIM], g_fCacheHudPositions[i][FJT][Y_DIM], 2.0, 255, 255, 255, 255);
 			int tick = RoundToNearest(Shavit_GetClientTime(client) * 100);
 			tick = g_bJumpInZone[client] ? (tick*-1):tick;
 
 			if(g_iSettings[i][Bools] & FJT_ENABLED)
 			{
-				ShowHudText(i, GetDynamicChannel(3), "FJT: %i", tick);
+				ShowHudText(i, GetDynamicChannel(2), "FJT: %i", tick);
 			}
 
 			if(g_iSettings[i][Bools] & FJT_CHAT)

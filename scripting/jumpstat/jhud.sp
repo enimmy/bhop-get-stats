@@ -1,10 +1,5 @@
 public void Jhud_Process(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
 {
-	if(g_bEditing[client])
-	{
-		return;
-	}
-
 	for(int i = 1; i < MaxClients; i++)
 	{
 		if(!(g_iSettings[i][Bools] & JHUD_ENABLED) || !BgsIsValidClient(i))
@@ -50,6 +45,6 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 		}
 	}
 	ReplaceString(message, sizeof(message), "PCT", "%%", true);
-	SetHudTextParams(g_fCacheHudPositions[client][Jhud][X_DIM], g_fCacheHudPositions[client][Jhud][Y_DIM], 1.0, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0, 0.0);
-	ShowHudText(client, GetDynamicChannel(1), message);
+
+	BgsDisplayHud(client, g_fCacheHudPositions[client][Jhud], rgb, 1.0, GetDynamicChannel(1), false,  message);
 }

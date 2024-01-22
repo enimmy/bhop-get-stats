@@ -48,6 +48,7 @@ forward void BhopStat_StrafeForward(int client, int offset, bool overlap, bool n
  * @param inBhop                    if player is hoppin or not
  * @param gain						gain
  * @param jss						jss
+ * @param yawDifference             currentAngles[1] - lastAngles[1]
  * @noreturn
  */
-forward void BhopStat_TickForward(int client, float speed, bool inBhop, float gain, float jss);
+forward void BhopStat_TickForward(int client, int buttons, float vel[3], float angles[3], bool inbhop, float speed, float gain, float jss, float yawDiff);

@@ -103,7 +103,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 
 		if(g_iSettings[client][Bools] & SSJ_JSS)
 		{
-			Format(message, sizeof(message), "%s %s|Jss: %s%i", message, g_csChatStrings.sText, g_csChatStrings.sVariable, RoundToFloor(jss * 100));
+			Format(message, sizeof(message), "%s %s| Jss: %s%i", message, g_csChatStrings.sText, g_csChatStrings.sVariable, RoundToFloor(jss * 100));
 		}
 
 		if(g_iSettings[client][Bools] & SSJ_EFFICIENCY)

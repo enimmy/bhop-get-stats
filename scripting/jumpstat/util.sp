@@ -1,5 +1,4 @@
 
-//#define DEBUG
 static bool lateLoad;
 static bool shavitLoaded;
 static EngineVersion engineVersion;
@@ -23,27 +22,30 @@ void Init_Utils(bool late, bool shavit, EngineVersion engine, char[] version)
 	}
 }
 
-bool BgsLateLoaded()
+
+stock bool BgsLateLoaded()
 {
 	return lateLoad;
 }
 
-void BgsVersion(char[] buffer, int len)
+stock void BgsVersion(char[] buffer, int len)
 {
 	Format(buffer, len, "%s", jumpstatsVersion);
 }
 
-bool BgsShavitLoaded()
+
+stock bool BgsShavitLoaded()
 {
 	return shavitLoaded;
 }
 
-int BgsTickRate()
+
+stock int BgsTickRate()
 {
 	return tickrate;
 }
 
-EngineVersion BgsGetEngineVersion()
+stock EngineVersion BgsGetEngineVersion()
 {
 	return engineVersion;
 }
@@ -58,7 +60,7 @@ public void Shavit_OnChatConfigLoaded()
 	Shavit_GetChatStrings(sMessageStyle, g_csChatStrings.sStyle, sizeof(chatstrings_t::sStyle));
 }
 
-int BgsGetHUDTarget(int client, int fallback = 0)
+stock int BgsGetHUDTarget(int client, int fallback = 0)
 {
 	int target = fallback;
 	if(!IsClientObserver(client))
@@ -76,12 +78,12 @@ int BgsGetHUDTarget(int client, int fallback = 0)
 	return target;
 }
 
-bool BgsIsValidClient(int client, bool bAlive = false)
+stock bool BgsIsValidClient(int client, bool bAlive = false)
 {
 	return (client >= 1 && client <= MaxClients && IsClientInGame(client) && !IsClientSourceTV(client) && (!bAlive || IsPlayerAlive(client)));
 }
 
-void BgsPrintToChat(int client, const char[] format, any...)
+stock void BgsPrintToChat(int client, const char[] format, any...)
 {
 	char buffer[300];
 	VFormat(buffer, sizeof(buffer), format, 3);
@@ -96,25 +98,35 @@ void BgsPrintToChat(int client, const char[] format, any...)
 	}
 }
 
-void BgsSetCookie(int client, Cookie hCookie, int n)
+stock void BgsSetCookie(int client, Cookie hCookie, int n)
 {
 	char strCookie[64];
 	IntToString(n, strCookie, sizeof(strCookie));
 	SetClientCookie(client, hCookie, strCookie);
-	PrintDebugMsg(client, "Attempting to set cookie to %i", n);
 }
 
-int GetIntSubValue(int num, int position, int binaryShift, int binaryMask)
+stock int GetIntSubValue(int num, int position, int binaryShift, int binaryMask)
 {
-	return (num >> position * binaryShift) & binaryMask;
+	if(num < 0)
+	{
+		num = ~num;
+		num = num >> (position * binaryShift);
+		num = ~num & binaryMask;
+	}
+	else
+	{
+	  	num = (num >> (position * binaryShift)) & binaryMask;
+	}
+
+	return num;
 }
 
-void SetIntSubValue(int &editNum, int insertVal, int position, int binaryShift, int binaryMask)
+stock void SetIntSubValue(int &editNum, int insertVal, int position, int binaryShift, int binaryMask)
 {
 	editNum = (editNum & ~(binaryMask << (position * binaryShift))) | ((insertVal & binaryMask) << (position * binaryShift));
 }
 
-float GetAdjustedHudCoordinate(int value, float scaler)
+stock float GetAdjustedHudCoordinate(int value, float scaler)
 {
 	float rVal = -1.0;
 	if(value <= 0 || value > RoundToFloor(scaler))
@@ -130,9 +142,9 @@ float GetAdjustedHudCoordinate(int value, float scaler)
 	return rVal;
 }
 
-int GetHudCoordinateToInt(float value, int scaler, int min, int max)
+stock int GetHudCoordinateToInt(float value, int scaler, int min, int max)
 {
-	if(value == -1.0 || value < 0 || value > 1.0)
+	if(value < 0 || value > 1.0)
 	{
 		return 0;
 	}
@@ -149,11 +161,25 @@ int GetHudCoordinateToInt(float value, int scaler, int min, int max)
 	return adjVal;
 }
 
-void PrintDebugMsg(int client, const char[] msg, any...)
+stock void BgsDisplayHud(int client, float pos[2], int rgb[3], float holdTime, int channel, bool force, const char[] message, any...)
 {
-	#if defined DEBUG
-	char buffer[300];
-	VFormat(buffer, sizeof(buffer), msg, 3);
-	PrintToConsole(client, "jumpstats: %s", buffer);
-	#endif
+	if(g_bEditing[client] && !force)
+	{
+		return;
+	}
+
+	char buffer[512];
+	VFormat(buffer, sizeof(buffer), message, 8);
+	SetHudTextParams(pos[0], pos[1], holdTime, rgb[0], rgb[1], rgb[2], 255, 0, 0.0, 0.0, 0.0);
+	ShowHudText(client, channel, message);
+}
+
+stock float FloatMod(float num, float denom)
+{
+	return num - denom * RoundToFloor(num / denom);
+}
+
+stock float operator%(float oper1, float oper2)
+{
+	return FloatMod(oper1, oper2);
 }
