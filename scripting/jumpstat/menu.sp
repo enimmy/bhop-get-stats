@@ -77,6 +77,11 @@ void Menu_CheckEditMode(int client, int& buttons, int mouse[2]) {
 
 void EditHudPosition(int client, int editDim, int val)
 {
+	if(g_iEditHud[client] == Trainer && editDim == X_DIM)
+	{
+		return;
+	}
+	
 	int subValue = GetHudPositionInt(client, g_iEditHud[client], editDim);
 	if(subValue == 0) //Position was dead center
 	{
