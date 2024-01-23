@@ -100,12 +100,13 @@ enum //indexes of settings
 	Positions_Y,
 	Positions2_X,
 	Positions2_Y,
-	TrainerSpeed
+	TrainerSpeed,
+	JhudCutOff
 }
 
 float g_fCacheHudPositions[MAXPLAYERS + 1][sizeof(g_fDefaultHudYPositions)][2]; //Positions are stored in cookies as ints (0-255), this cache holds the players converted poitions
-int g_iSettings[MAXPLAYERS + 1][12];
-Cookie g_hSettings[12];
+int g_iSettings[MAXPLAYERS + 1][13];
+Cookie g_hSettings[13];
 
 public void Settings_Start()
 {
@@ -121,6 +122,7 @@ public void Settings_Start()
 	g_hSettings[Positions2_X] = RegClientCookie("js-hudpositions2-x", "", CookieAccess_Protected);
 	g_hSettings[Positions2_Y] = RegClientCookie("js-hudpositions2-y", "", CookieAccess_Protected);
 	g_hSettings[TrainerSpeed] = RegClientCookie("js-trainer-speed", "", CookieAccess_Protected);
+	g_hSettings[JhudCutOff] = RegClientCookie("js-jhud-cutoff", "", CookieAccess_Protected);
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
@@ -276,6 +278,10 @@ void SetDefaultSetting(int client, int setting)
 	{
 		PushDefaultTrainerSpeed(client);
 	}
+	else if(setting == JhudCutOff)
+	{
+		PushDefaultJhudCutoff(client);
+	}
 }
 
 void PushDefaultBools(int client)
@@ -309,6 +315,7 @@ void PushDefaultBools(int client)
 	//g_iSettings[client][Bools] |= TRAINER_STRICT;
 	//g_iSettings[client][Bools] |= SHOWKEYS_ENABLED;
 	//g_iSettings[client][Bools] |= SHOWKEYS_SIMPLE;
+
 	if(BgsGetEngineVersion() == Engine_CSGO)
 	{
 		//g_iSettings[client][Bools] |= SHOWKEYS_UNRELIABLE;
@@ -325,6 +332,12 @@ void PushDefaultUsage(int client)
 {
 	g_iSettings[client][Usage] = 1;
 	BgsSetCookie(client, g_hSettings[Usage], g_iSettings[client][Usage]);
+}
+
+void PushDefaultJhudCutoff(int client)
+{
+	g_iSettings[client][JhudCutOff] = 0;
+	BgsSetCookie(client, g_hSettings[JhudCutOff], g_iSettings[client][JhudCutOff]);
 }
 
 void PushDefaultPositions1(int client)

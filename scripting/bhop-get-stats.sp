@@ -56,6 +56,7 @@ float g_fLastVel[MAXPLAYERS + 1][3];
 float g_fLastJumpPosition[MAXPLAYERS + 1][3];
 float g_fLastVeer[MAXPLAYERS + 1];
 float g_fTickJss[MAXPLAYERS + 1];
+float g_fLastPerfectAngle[MAXPLAYERS + 1];
 float g_fTickrate = 0.01;
 
 GlobalForward JumpStatsForward;
@@ -239,38 +240,42 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const fl
 
 	if(g_iTicksOnGround[client] == 0)
 	{
-		g_fTickJss[client] = 0.0;
-		if(g_fYawDifference[client] != 0.0)
+		if(g_fYawDifference[client] != 0.0 && (g_fRunCmdVelVec[client][1] != 0.0 || g_fRunCmdVelVec[client][0] != 0.0))
 		{
-			float finalJss = 0.0;
-			if(g_fRunCmdVelVec[client][1] != 0.0 && g_fRunCmdVelVec[client][0] != 0.0 && (vel[0] != 0.0 || vel[1] != 0.0))
+			float perfectAngle = RadToDeg(ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]));
+			float adjJss = 0.0;
+
+			if (vel[0] != 0.0 && vel[1] == 0.0)
 			{
-				float perfectAngle = RadToDeg(ArcTangent2(g_fRunCmdVelVec[client][1], g_fRunCmdVelVec[client][0]));
-				float adjJss = 0.0;
+				adjJss = (g_fYawDifference[client] > 0.0 ? 1.0:-1.0) * 90.0;
+			}
 
-				if (vel[0] != 0.0 && vel[1] == 0.0)
-				{
-					adjJss = (g_fYawDifference[client] > 0.0 ? 1.0:-1.0) * 90.0;
-				}
+			if (vel[0] != 0.0 && vel[1] != 0.0)
+			{
+				adjJss = (vel[1] > 0.0 ? -1.0 : 1.0) * 45.0;
+			}
 
-				if (vel[0] != 0.0 && vel[1] != 0.0)
-				{
-					adjJss = (vel[1] > 0.0 ? -1.0 : 1.0) * 45.0;
-				}
+			adjJss = vel[0] < 0.0 ? (adjJss * -1.0) : adjJss;
+			perfectAngle += adjJss;
 
-				adjJss = vel[0] < 0.0 ? (adjJss * -1.0) : adjJss;
-				perfectAngle += adjJss;
+			float finalJss = 0.0;
 
-				finalJss = FloatAbs(g_fYawDifference[client] / NormalizeAngle(perfectAngle - g_fLastAngles[client][YAW]));
+			if(perfectAngle == g_fLastPerfectAngle[client])
+			{
+				finalJss = g_fTickJss[client]; //this is essentailly serving as last JSS calculated since the value isnt reset yet
 			}
 			else
 			{
-				float perfectYawDiff = RadToDeg(ArcTangent(30 / GetRunCmdVelocity(client, true)));
-				finalJss = FloatAbs(g_fYawDifference[client] / perfectYawDiff);
+				finalJss = FloatAbs(g_fYawDifference[client] / NormalizeAngle(perfectAngle - g_fLastAngles[client][YAW]));
 			}
-
+	
+			g_fLastPerfectAngle[client] = perfectAngle;
 			g_fAvgDiffFromPerf[client] += finalJss;
 			g_fTickJss[client] = finalJss;
+		}
+		else
+		{
+			g_fTickJss[client] = 0.0; //Dont calc jss if player isnt moving mouse or they have no velocity
 		}
 
 		//offset shit
@@ -385,6 +390,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const fl
 		}
 		g_iCmdNum[client]++;
 	}
+	
 	StartTickForward(client, buttons, vel, angles);
 
 	if(g_bTouchesWall[client])
