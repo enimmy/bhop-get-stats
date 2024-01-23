@@ -2,7 +2,7 @@
 
 ## [my discord](https://discord.gg/j9nfnjcUVd)
 
-### credits - me, Alkatraz, Nairda, Oblivious, Xutax, xWidovV, Shavit Timer contributors
+### credits - me, Alkatraz, Nairda, Oblivious, Xutax, xWidovV, Tekno/f0e, Kaldun, Shavit Timer contributors
 
 Central plugin for calling bhop statistic forwards and a plugin for displaying that information.
 
