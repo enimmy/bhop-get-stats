@@ -86,7 +86,7 @@ public void OnLibraryRemoved(const char[] name)
 
 public void BhopStat_TickForward(int client, int buttons, float vel[3], float angles[3], bool inbhop, float speed, float gain, float jss, float yawDiff)
 {
-	Speedometer_Tick(client, speed, inbhop, gain);
+	Speedometer_Tick(client, speed, inbhop);
 	Trainer_Tick(client, speed, inbhop, gain, jss);
 	ShowKeys_Tick(client, buttons, yawDiff);
 }

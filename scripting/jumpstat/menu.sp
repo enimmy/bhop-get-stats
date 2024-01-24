@@ -198,7 +198,6 @@ void ShowSSJMenu(int client, int pos = 0)
 	AddMenuItem(menu, "enDecimals", (g_iSettings[client][Bools] & SSJ_DECIMALS) ? "[x] Decimals":"[ ] Decimals");
 
 	AddMenuItem(menu, "enGain", (g_iSettings[client][Bools] & SSJ_GAIN) ? "[x] Gain":"[ ] Gain");
-	AddMenuItem(menu, "enGainColor", (g_iSettings[client][Bools] & SSJ_GAIN_COLOR) ? "[x] Gain Colors":"[ ] Gain Color");
 	AddMenuItem(menu, "enSync", (g_iSettings[client][Bools] & SSJ_SYNC) ? "[x] Sync":"[ ] Sync");
 	AddMenuItem(menu, "enStrafes", (g_iSettings[client][Bools] & SSJ_STRAFES) ? "[x] Strafes":"[ ] Strafes");
 	AddMenuItem(menu, "enJss", (g_iSettings[client][Bools] & SSJ_JSS) ? "[x] Jss":"[ ] Jss");
@@ -233,7 +232,14 @@ void ShowJhudSettingsMenu(int client)
 	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & JHUD_ENABLED) ? "[x] Enabled":"[ ] Enabled")
 	AddMenuItem(menu, "strafespeed", (g_iSettings[client][Bools] & JHUD_JSS) ? "[x] Jss":"[ ] Jss");
 	AddMenuItem(menu, "sync", (g_iSettings[client][Bools] & JHUD_SYNC) ? "[x] Sync":"[ ] Sync");
-	AddMenuItem(menu, "extraspeeds", (g_iSettings[client][Bools] & JHUD_EXTRASPEED) ? "[x] Extra speeds":"[ ] Extra speeds");
+
+	char message[64];
+	Format(message, sizeof(message), "Speed Colors Till: %i", g_iSettings[client][JhudSpeedColorsJump]);
+	AddMenuItem(menu, "speedColors", message);
+
+	Format(message, sizeof(message), "Cutoff At %i", g_iSettings[client][JhudCutOff]);
+	AddMenuItem(menu, "cutoff", message);
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -279,7 +285,7 @@ void ShowSpeedSettingsMenu(int client)
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Speed Settings\n \n");
 	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Enabled":"[ ] Enabled");
-	AddMenuItem(menu, "speedGainColor", (g_iSettings[client][Bools] & SPEEDOMETER_GAIN_COLOR) ? "[x] Gain Based Color":"[ ] Gain Based Color");
+	AddMenuItem(menu, "enVelDiff", (g_iSettings[client][Bools] & SPEEDOMETER_VELOCITY_DIFF) ? "[x] Speed Difference":"[ ]Speed Difference");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -501,10 +507,6 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			g_iSettings[client][Bools] ^= SSJ_GAIN;
 		}
-		else if(StrEqual(info, "enGainColor"))
-		{
-			g_iSettings[client][Bools] ^= SSJ_GAIN_COLOR;
-		}
 		else if(StrEqual(info, "enSync"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_SYNC;
@@ -709,13 +711,27 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			g_iSettings[client][Bools] ^= JHUD_JSS;
 		}
-		else if(StrEqual(info, "extraspeeds"))
-		{
-			g_iSettings[client][Bools] ^= JHUD_EXTRASPEED;
-		}
 		else if(StrEqual(info, "sync"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_SYNC;
+		}
+		else if(StrEqual(info, "speedColors"))
+		{
+			g_iSettings[client][JhudSpeedColorsJump]++;
+
+			if(g_iSettings[client][JhudSpeedColorsJump] > 16)
+			{
+				g_iSettings[client][JhudSpeedColorsJump] = 0;
+			}
+		}
+		else if(StrEqual(info, "cutoff"))
+		{
+			g_iSettings[client][JhudCutOff]++;
+
+			if(g_iSettings[client][JhudCutOff] > 16)
+			{
+				g_iSettings[client][JhudCutOff] = 0;
+			}
 		}
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowJhudSettingsMenu(client);
@@ -835,9 +851,9 @@ public int Speedometer_Select(Menu menu, MenuAction action, int client, int opti
 		{
 			g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
 		}
-		else if(StrEqual(info, "speedGainColor"))
+		if(StrEqual(info, "enVelDiff"))
 		{
-			g_iSettings[client][Bools] ^= SPEEDOMETER_GAIN_COLOR;
+			g_iSettings[client][Bools] ^= SPEEDOMETER_VELOCITY_DIFF;
 		}
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowSpeedSettingsMenu(client);

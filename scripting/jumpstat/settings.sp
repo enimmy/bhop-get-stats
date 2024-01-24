@@ -1,16 +1,16 @@
 #define JHUD_ENABLED 1 << 0
 #define JHUD_JSS 1 << 1
 #define JHUD_SYNC 1 << 2
-#define JHUD_EXTRASPEED 1 << 3
+//open slot 1 << 3 prev: jhud extra speed replacing with speed colors till 0 - 16
 #define TRAINER_ENABLED 1 << 4
 #define OFFSETS_ENABLED 1 << 5
 #define SPEEDOMETER_ENABLED 1 << 6
-#define SPEEDOMETER_GAIN_COLOR 1 << 7 //maybe remove this
+#define SPEEDOMETER_VELOCITY_DIFF 1 << 7
 #define SSJ_ENABLED 1 << 8
 #define SSJ_REPEAT 1 << 9
 #define SSJ_HEIGHTDIFF 1 << 10
 #define SSJ_GAIN 1 << 11
-#define SSJ_GAIN_COLOR 1 << 12
+//open slot 1 << 12 prev: ssj en gain colors no replacement (always enable)
 #define SSJ_EFFICIENCY 1 << 13
 #define SSJ_SHAVIT_TIME 1 << 14
 #define SSJ_SHAVIT_TIME_DELTA 1 << 15
@@ -27,6 +27,12 @@
 #define SHOWKEYS_ENABLED 1 << 26
 #define SHOWKEYS_SIMPLE 1 << 27
 #define SHOWKEYS_UNRELIABLE 1 << 28
+//closed slot 1 << 29 for jump height by tekno
+//open slot 1 << 30
+//open slot 1 << 31
+//open slot 1 << 32 -> must solve issues (or make sure there are none) with handling sign bit if this is used
+
+//if all slots are used, use concepts from trainer positions to remake
 
 #define COLOR_SETTINGS_START_IDX 0
 #define COLOR_SETTINGS_END_IDX 4
@@ -101,12 +107,13 @@ enum //indexes of settings
 	Positions2_X,
 	Positions2_Y,
 	TrainerSpeed,
-	JhudCutOff
+	JhudCutOff,
+	JhudSpeedColorsJump
 }
 
 float g_fCacheHudPositions[MAXPLAYERS + 1][sizeof(g_fDefaultHudYPositions)][2]; //Positions are stored in cookies as ints (0-255), this cache holds the players converted poitions
-int g_iSettings[MAXPLAYERS + 1][13];
-Cookie g_hSettings[13];
+int g_iSettings[MAXPLAYERS + 1][14];
+Cookie g_hSettings[14];
 
 public void Settings_Start()
 {
@@ -123,6 +130,7 @@ public void Settings_Start()
 	g_hSettings[Positions2_Y] = RegClientCookie("js-hudpositions2-y", "", CookieAccess_Protected);
 	g_hSettings[TrainerSpeed] = RegClientCookie("js-trainer-speed", "", CookieAccess_Protected);
 	g_hSettings[JhudCutOff] = RegClientCookie("js-jhud-cutoff", "", CookieAccess_Protected);
+	g_hSettings[JhudSpeedColorsJump] = RegClientCookie("js-jhud-speed-colors-jump", "", CookieAccess_Protected);
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
@@ -254,6 +262,7 @@ void SetAllDefaults(int client)
 	PushDefaultPositions2(client);
 	PushDefaultColors(client);
 	PushDefaultTrainerSpeed(client);
+	PushDefaultJhudCutoff(client);
 }
 
 void SetDefaultSetting(int client, int setting)
@@ -282,6 +291,10 @@ void SetDefaultSetting(int client, int setting)
 	{
 		PushDefaultJhudCutoff(client);
 	}
+	else if(setting == JhudSpeedColorsJump)
+	{
+		PushDefaultJhudSpeedColorsJump(client);
+	}
 }
 
 void PushDefaultBools(int client)
@@ -290,16 +303,18 @@ void PushDefaultBools(int client)
 	g_iSettings[client][Bools] |= JHUD_ENABLED;
 	//g_iSettings[client][Bools] |= JHUD_JSS;
 	g_iSettings[client][Bools] |= JHUD_SYNC;
-	//g_iSettings[client][Bools] |= JHUD_EXTRASPEED;
+
+
 	//g_iSettings[client][Bools] |= TRAINER_ENABLED;
 	//g_iSettings[client][Bools] |= OFFSETS_ENABLED;
 	//g_iSettings[client][Bools] |= SPEEDOMETER_ENABLED;
-	g_iSettings[client][Bools] |= SPEEDOMETER_GAIN_COLOR;
+	//g_iSettings[client][Bools] |= SPEEDOMETER_VELOCITY_DIFF:
 	g_iSettings[client][Bools] |= SSJ_ENABLED;
 	g_iSettings[client][Bools] |= SSJ_REPEAT;
 	//g_iSettings[client][Bools] |= SSJ_HEIGHTDIFF;
 	g_iSettings[client][Bools] |= SSJ_GAIN;
-	g_iSettings[client][Bools] |= SSJ_GAIN_COLOR;
+
+
 	//g_iSettings[client][Bools] |= SSJ_EFFICIENCY;
 	//g_iSettings[client][Bools] |= SSJ_SHAVIT_TIME;
 	//g_iSettings[client][Bools] |= SSJ_SHAVIT_TIME_DELTA;
@@ -338,6 +353,12 @@ void PushDefaultJhudCutoff(int client)
 {
 	g_iSettings[client][JhudCutOff] = 0;
 	BgsSetCookie(client, g_hSettings[JhudCutOff], g_iSettings[client][JhudCutOff]);
+}
+
+void PushDefaultJhudSpeedColorsJump(int client)
+{
+	g_iSettings[client][JhudSpeedColorsJump] = 6;
+	BgsSetCookie(client, g_hSettings[JhudSpeedColorsJump], g_iSettings[client][JhudSpeedColorsJump]);
 }
 
 void PushDefaultPositions1(int client)

@@ -1,25 +1,16 @@
 #define SPEED_UPDATE_INTERVAL 10
 
 static int g_iLastSpeedometerVel[MAXPLAYERS + 1];
-static float g_fRawGain[MAXPLAYERS + 1];
 static int g_iCmdNum[MAXPLAYERS + 1];
 
-void Speedometer_Tick(int client, float fspeed, bool inbhop, float gain)
+void Speedometer_Tick(int client, float fspeed, bool inbhop)
 {
 	g_iCmdNum[client]++;
 	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
 
 	if(!inbhop)
 	{
-		g_fRawGain[client] = 0.0;
-		if(speedometer)
-		{
-			g_iCmdNum[client] = 0;
-		}
-	}
-	else
-	{
-		g_fRawGain[client] += gain;
+		g_iCmdNum[client] = 0;
 	}
 
 	if(speedometer)
@@ -45,19 +36,20 @@ void Speedometer_Tick(int client, float fspeed, bool inbhop, float gain)
 			Format(message, sizeof(message), "%i", speed);
 		}
 
-		float coeffsum = g_fRawGain[client];
-		coeffsum /= SPEED_UPDATE_INTERVAL;
-		coeffsum *= 100.0;
-		coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+		int speedDelta = speed - g_iLastSpeedometerVel[client];
 
-		int speedIdx, gainIdx;
-		gainIdx = GetGainColorIdx(coeffsum);
+		if(g_iSettings[client][Bools] & SPEEDOMETER_VELOCITY_DIFF)
+		{
+			Format(message, sizeof(message), "%s (%i)", speedDelta);
+		}
 
-		if(speed > g_iLastSpeedometerVel[client])
+		int speedIdx;
+
+		if(speedDelta > 0)
 		{
 			speedIdx = GainReallyGood;
 		}
-		else if (speed == g_iLastSpeedometerVel[client])
+		else if (speed == 0)
 		{
 			speedIdx = GainGood;
 		}
@@ -75,18 +67,10 @@ void Speedometer_Tick(int client, float fspeed, bool inbhop, float gain)
 
 			if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
 			{
-				int settingsIdx = g_iSettings[i][speedIdx];
-
-				if(g_iSettings[i][Bools] & SPEEDOMETER_GAIN_COLOR && inbhop)
-				{
-					settingsIdx = g_iSettings[i][gainIdx];
-				}
-
-				BgsDisplayHud(i, g_fCacheHudPositions[i][Speedometer], g_iBstatColors[settingsIdx], 0.2, GetDynamicChannel(4), false, message);
+				BgsDisplayHud(i, g_fCacheHudPositions[i][Speedometer], g_iBstatColors[g_iSettings[i][speedIdx]], 0.2, GetDynamicChannel(4), false, message);
 			}
 		}
 
-		g_fRawGain[client] = 0.0;
 		g_iLastSpeedometerVel[client] = speed;
 	}
 	return;

@@ -57,30 +57,16 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 
 		if(g_iSettings[client][Bools] & SSJ_GAIN)
 		{
-			if(g_iSettings[client][Bools] & SSJ_GAIN_COLOR)
-			{
-				int idx = GetGainColorIdx(gain);
-				int settingsIdx = g_iSettings[client][idx];
+			int idx = GetGainColorIdx(gain);
+			int settingsIdx = g_iSettings[client][idx];
 
-				if(g_iSettings[client][Bools] & SSJ_DECIMALS)
-				{
-					Format(message, sizeof(message), "%s %s| G: %s%.2f%%", message, g_csChatStrings.sText, g_sBstatColorsHex[settingsIdx], gain);
-				}
-				else
-				{
-					Format(message, sizeof(message), "%s %s| G: %s%i%%", message, g_csChatStrings.sText, g_sBstatColorsHex[settingsIdx], RoundToFloor(gain));
-				}
+			if(g_iSettings[client][Bools] & SSJ_DECIMALS)
+			{
+				Format(message, sizeof(message), "%s %s| G: %s%.2f%%", message, g_csChatStrings.sText, g_sBstatColorsHex[settingsIdx], gain);
 			}
 			else
 			{
-				if(g_iSettings[client][Bools] & SSJ_DECIMALS)
-				{
-					Format(message, sizeof(message), "%s %s| G: %s%.2f%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, gain);
-				}
-				else
-				{
-					Format(message, sizeof(message), "%s %s| G: %s%i%%", message, g_csChatStrings.sText, g_csChatStrings.sVariable, RoundToFloor(gain));
-				}
+				Format(message, sizeof(message), "%s %s| G: %s%i%%", message, g_csChatStrings.sText, g_sBstatColorsHex[settingsIdx], RoundToFloor(gain));
 			}
 		}
 

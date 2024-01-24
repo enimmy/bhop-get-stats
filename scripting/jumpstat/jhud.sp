@@ -15,10 +15,15 @@ public void Jhud_Process(int client, int jump, int speed, int strafecount, float
 
 void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, float jss)
 {
+	if(jump >= g_iSettings[client][JhudCutOff] && g_iSettings[client][JhudCutOff] != 0)
+	{
+		return;
+	}
+
 	char message[256];
 
 	int settingIdx;
-	if((jump <= 6 || jump == 16) || (g_iSettings[client][Bools] & JHUD_EXTRASPEED && jump <= 16))
+	if((jump <= 16) && jump <= g_iSettings[client][JhudSpeedColorsJump])
 	{
 		settingIdx = GetSpeedColorIdx(jump, speed);
 	}
