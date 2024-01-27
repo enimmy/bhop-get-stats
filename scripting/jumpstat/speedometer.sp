@@ -3,18 +3,14 @@
 static int g_iLastSpeedometerVel[MAXPLAYERS + 1];
 static int g_iCmdNum[MAXPLAYERS + 1];
 
-void Speedometer_Tick(int client, float fspeed, bool inbhop)
+void Speedometer_Tick(int client, float fspeed)
 {
 	g_iCmdNum[client]++;
 	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
 
-	if(!inbhop)
-	{
-		g_iCmdNum[client] = 0;
-	}
-
 	if(speedometer)
 	{
+		g_iCmdNum[client] = 0;
 		int speed = RoundToFloor(fspeed);
 
 		char message[256];
@@ -40,7 +36,14 @@ void Speedometer_Tick(int client, float fspeed, bool inbhop)
 
 		if(g_iSettings[client][Bools] & SPEEDOMETER_VELOCITY_DIFF)
 		{
-			Format(message, sizeof(message), "%s (%i)", speedDelta);
+			if(speedDelta > 0)
+			{
+				Format(message, sizeof(message), "%s (+%i)", message, speedDelta);
+			}
+			else
+			{
+				Format(message, sizeof(message), "%s (%i)", message, speedDelta);
+			}
 		}
 
 		int speedIdx;
@@ -49,7 +52,7 @@ void Speedometer_Tick(int client, float fspeed, bool inbhop)
 		{
 			speedIdx = GainReallyGood;
 		}
-		else if (speed == 0)
+		else if (speedDelta == 0)
 		{
 			speedIdx = GainGood;
 		}

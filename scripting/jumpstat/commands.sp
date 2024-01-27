@@ -114,8 +114,8 @@ public Action Command_JsShowkeys(int client, any args)
 	{
 		if(BgsShavitLoaded())
 		{
-			BgsPrintToChat(client, "Warning: JumpStats showkeys can ONLY be enabled from the menu on the left. "
-							..."You can turn off shavit-showkeys by toggling it again with /showkeys command, or in /hud.");
+			BgsPrintToChat(client, "%sWARNING: %sJumpStats showkeys can ONLY be enabled from the menu on the left. "
+							..."You can turn off shavit-showkeys by toggling it again with /showkeys command, or in /hud.", g_sBstatColorsHex[Red], g_sBstatColorsHex[White]);
 		}
 		ShowShowkeysSettingsMenu(client);
 		return Plugin_Handled;

@@ -36,12 +36,13 @@ public Plugin myinfo =
 }
 
 // Dev Notes - Channel Groups (0-5 Max)
-// Trainer 0
-// Jhud 1
-// Offset/Fjt 2
-// Showkeys 3
-// Speedometer 4
-// Shavit-Hud Top Left 5 (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
+// 0 Trainer
+// 1 Jhud
+// 2 Offset
+// 3 Showkeys
+// 4 Speedometer
+// 1-5 FJT will try and use whatever channel is available for that user, and if none, 5
+// 5 Shavit-Hud Top Left (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
 
 bool g_bLate = false;
 bool g_bShavit = false;
@@ -86,7 +87,7 @@ public void OnLibraryRemoved(const char[] name)
 
 public void BhopStat_TickForward(int client, int buttons, float vel[3], float angles[3], bool inbhop, float speed, float gain, float jss, float yawDiff)
 {
-	Speedometer_Tick(client, speed, inbhop);
+	Speedometer_Tick(client, speed);
 	Trainer_Tick(client, speed, inbhop, gain, jss);
 	ShowKeys_Tick(client, buttons, yawDiff);
 }

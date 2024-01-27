@@ -15,7 +15,7 @@ public void Jhud_Process(int client, int jump, int speed, int strafecount, float
 
 void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, float jss)
 {
-	if(jump >= g_iSettings[client][JhudCutOff] && g_iSettings[client][JhudCutOff] != 0)
+	if(jump > g_iSettings[client][JhudCutOff] && g_iSettings[client][JhudCutOff] != 0)
 	{
 		return;
 	}

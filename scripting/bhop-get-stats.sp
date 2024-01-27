@@ -48,15 +48,14 @@ float g_fTickGain[MAXPLAYERS + 1];
 float g_fTrajectory[MAXPLAYERS + 1];
 float g_fTraveledDistance[MAXPLAYERS + 1][3];
 float g_fRunCmdVelVec[MAXPLAYERS + 1][3];
-float g_fLastRunCmdVelVec[MAXPLAYERS + 1][3]; //redo speedloss later
+float g_fLastRunCmdVelVec[MAXPLAYERS + 1][3];
 float g_fLastAngles[MAXPLAYERS + 1][3];
 float g_fAvgDiffFromPerf[MAXPLAYERS + 1];
 float g_fYawDifference[MAXPLAYERS + 1];
-float g_fLastVel[MAXPLAYERS + 1][3];
+float g_fLastNonZeroMove[MAXPLAYERS + 1][2];
 float g_fLastJumpPosition[MAXPLAYERS + 1][3];
 float g_fLastVeer[MAXPLAYERS + 1];
-float g_fTickJss[MAXPLAYERS + 1];
-float g_fLastPerfectAngle[MAXPLAYERS + 1];
+float g_fLastJssYawDiff[MAXPLAYERS + 1];
 float g_fTickrate = 0.01;
 
 GlobalForward JumpStatsForward;
@@ -73,7 +72,7 @@ public void OnPluginStart()
 	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float,
 	 																Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
 	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
-	//yawing not done
+
 	//add airpath, veer, jumpoff angle on j1
 
 	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
@@ -127,6 +126,16 @@ public void OnClientPutInServer(int client)
 	g_iStrafeCount[client] = 0;
 	g_iCmdNum[client] = 0;
 	SDKHook(client, SDKHook_Touch, OnTouch);
+}
+
+public Action Shavit_OnTeleport(int client, int index, int target)
+{
+	g_iCmdNum[client] = 0;
+
+	cp_cache_t checkPoint;
+	Shavit_GetCheckpoint(client, index, checkPoint);
+	g_iJump[client] = checkPoint.aSnapshot.iJumps;
+	return Plugin_Continue;
 }
 
 public Action OnTouch(int client, int entity)
@@ -238,6 +247,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const fl
 {
 	g_fYawDifference[client] = NormalizeAngle(angles[YAW] - g_fLastAngles[client][YAW]);
 
+	float jssThisTick = 0.0;
 	if(g_iTicksOnGround[client] == 0)
 	{
 		if(g_fYawDifference[client] != 0.0 && (g_fRunCmdVelVec[client][1] != 0.0 || g_fRunCmdVelVec[client][0] != 0.0))
@@ -260,30 +270,24 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const fl
 
 			float finalJss = 0.0;
 
-			if(perfectAngle == g_fLastPerfectAngle[client])
+			if(g_fRunCmdVelVec[client][1] == g_fLastRunCmdVelVec[client][1] && g_fRunCmdVelVec[client][0] == g_fLastRunCmdVelVec[client][0] && g_iCmdNum[client] > 0)
 			{
-				finalJss = g_fTickJss[client]; //this is essentailly serving as last JSS calculated since the value isnt reset yet
+				finalJss = FloatAbs(g_fYawDifference[client] / g_fLastJssYawDiff[client]);
 			}
 			else
 			{
 				finalJss = FloatAbs(g_fYawDifference[client] / NormalizeAngle(perfectAngle - g_fLastAngles[client][YAW]));
+				g_fLastJssYawDiff[client] = NormalizeAngle(perfectAngle - g_fLastAngles[client][YAW]);
 			}
-	
-			g_fLastPerfectAngle[client] = perfectAngle;
+
 			g_fAvgDiffFromPerf[client] += finalJss;
-			g_fTickJss[client] = finalJss;
-		}
-		else
-		{
-			g_fTickJss[client] = 0.0; //Dont calc jss if player isnt moving mouse or they have no velocity
+			jssThisTick = finalJss;
 		}
 
 		//offset shit
 		if(g_iCmdNum[client] >= 1)
 		{
-			if(
-				(vel[1] * g_fLastVel[client][SIDEMOVE] < 0 || (g_fLastVel[client][SIDEMOVE] == 0 && vel[1] != 0)) ||
-				(vel[0] * g_fLastVel[client][FORWARDMOVE] < 0 || g_fLastVel[client][FORWARDMOVE] == 0 && vel[0] != 0))
+			if(vel[1] * g_fLastNonZeroMove[client][SIDEMOVE] < 0 || vel[0] * g_fLastNonZeroMove[client][FORWARDMOVE] < 0)
 			{
 				g_iKeyTick[client] = g_iCmdNum[client];
 				g_iStrafeCount[client]++;
@@ -322,6 +326,16 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const fl
 		if(vel[SIDEMOVE] == 0.0 && vel[FORWARDMOVE] == 0.0 && !overlapThisTick)
 		{
 			g_bNoPress[client] = true;
+		}
+
+		if(g_iCmdNum[client] - g_iTurnTick[client] >= 20)
+		{
+			g_bSawTurn[client] = false;
+		}
+
+		if(g_iCmdNum[client] - g_iKeyTick[client] >= 20)
+		{
+			g_bSawPress[client] = false;
 		}
 
 		if(g_bSawPress[client] && g_bSawTurn[client])
@@ -390,8 +404,8 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const fl
 		}
 		g_iCmdNum[client]++;
 	}
-	
-	StartTickForward(client, buttons, vel, angles);
+
+	StartTickForward(client, jssThisTick, buttons, vel, angles);
 
 	if(g_bTouchesWall[client])
 	{
@@ -417,7 +431,12 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const fl
 	}
 
 	g_fLastAngles[client] = angles;
-	g_fLastVel[client] = vel;
+
+	if(vel[0] != 0.0 || vel[1] != 0.0)
+	{
+		g_fLastNonZeroMove[client][0] = vel[0];
+		g_fLastNonZeroMove[client][1] = vel[1];
+	}
 
 	return;
 }
@@ -498,7 +517,7 @@ void StartStrafeForward(int client)
 }
 
 //int client, int buttons, f[3] vel, f[3] angles, bool inbhop, f speed, f gain, f jss, f yawDiff
-void StartTickForward(int client, int buttons, const float vel[3], const float angles[3])
+void StartTickForward(int client, float jssThisTick, int buttons, const float vel[3], const float angles[3])
 {
 	Call_StartForward(TickStatsForward);
 	Call_PushCell(client);
@@ -508,7 +527,7 @@ void StartTickForward(int client, int buttons, const float vel[3], const float a
 	Call_PushCell(view_as<int>((g_iTicksOnGround[client] == 0)));
 	Call_PushFloat(GetRunCmdVelocity(client, true));
 	Call_PushFloat(g_fTickGain[client]);
-	Call_PushFloat(g_fTickJss[client]);
+	Call_PushFloat(jssThisTick);
 	Call_PushFloat(g_fYawDifference[client]);
 	Call_Finish();
 }

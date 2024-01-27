@@ -81,7 +81,7 @@ void EditHudPosition(int client, int editDim, int val)
 	{
 		return;
 	}
-	
+
 	int subValue = GetHudPositionInt(client, g_iEditHud[client], editDim);
 	if(subValue == 0) //Position was dead center
 	{
@@ -723,6 +723,7 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 			{
 				g_iSettings[client][JhudSpeedColorsJump] = 0;
 			}
+			BgsSetCookie(client, g_hSettings[JhudSpeedColorsJump], g_iSettings[client][JhudSpeedColorsJump]);
 		}
 		else if(StrEqual(info, "cutoff"))
 		{
@@ -732,6 +733,7 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 			{
 				g_iSettings[client][JhudCutOff] = 0;
 			}
+			BgsSetCookie(client, g_hSettings[JhudCutOff], g_iSettings[client][JhudCutOff]);
 		}
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowJhudSettingsMenu(client);

@@ -52,7 +52,29 @@ void PrintJumpTick(int client)
 
 			if(g_iSettings[i][Bools] & FJT_ENABLED)
 			{
-				ShowHudText(i, GetDynamicChannel(2), "FJT: %i", tick);
+				int channel = 5;
+				if(!(g_iSettings[i][Bools] & TRAINER_ENABLED))
+				{
+					channel = 0;
+				}
+				else if(!(g_iSettings[i][Bools] & JHUD_ENABLED))
+				{
+					channel = 1;
+				}
+				else if(!(g_iSettings[i][Bools] & OFFSETS_ENABLED))
+				{
+					channel = 2;
+				}
+				else if(!(g_iSettings[i][Bools] & SHOWKEYS_ENABLED))
+				{
+					channel = 3;
+				}
+				else if(!(g_iSettings[i][Bools] & SPEEDOMETER_ENABLED))
+				{
+					channel = 4;
+				}
+
+				ShowHudText(i, GetDynamicChannel(channel), "FJT: %i", tick);
 			}
 
 			if(g_iSettings[i][Bools] & FJT_CHAT)
