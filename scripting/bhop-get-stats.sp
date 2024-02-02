@@ -166,6 +166,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	{
 		return Plugin_Continue;
 	}
+
 	if((g_bShavit && Shavit_IsReplayEntity(client)) || IsFakeClient(client))
 	{
 		//in prog
@@ -233,6 +234,7 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	{
 		return;
 	}
+	
 	if((g_bShavit && Shavit_IsReplayEntity(client)) || IsFakeClient(client))
 	{
 		//in prog

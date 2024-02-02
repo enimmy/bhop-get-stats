@@ -47,7 +47,12 @@ void ShowKeys_Tick(int client, int buttons, float yawDiff)
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if( (g_iSettings[i][Bools] & SHOWKEYS_ENABLED) && (i == client && IsPlayerAlive(i) || BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)) )
+		if(!(g_iSettings[i][Bools] & SHOWKEYS_ENABLED) || !BgsIsValidClient(client))
+		{
+			continue;
+		}
+
+		if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
 		{
 			ShowKeys_Send(i, buttons, yawDiff);
 		}
