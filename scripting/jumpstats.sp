@@ -6,8 +6,9 @@
 #include <usermessages>
 
 #include "jumpstat/colors.sp"
-#include "jumpstat/settings.sp"
 #include "jumpstat/util.sp"
+#include "jumpstat/cvar.sp"
+#include "jumpstat/settings.sp"
 #include "jumpstat/jhud.sp"
 #include "jumpstat/offsets.sp"
 #include "jumpstat/speedometer.sp"
@@ -16,7 +17,7 @@
 #include "jumpstat/fjt.sp"
 #include "jumpstat/showkeys.sp"
 #include "jumpstat/menu.sp"
-#include "jumpstat/commands.sp"
+#include "jumpstat/command.sp"
 
 #undef REQUIRE_PLUGIN
 #include <shavit>
@@ -49,6 +50,7 @@ bool g_bShavit = false;
 
 public void OnPluginStart()
 {
+
 	g_bShavit = LibraryExists("shavit");
 	if(g_bLate && g_bShavit)
 	{
@@ -56,9 +58,11 @@ public void OnPluginStart()
 	}
 
 	Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
+	Cvar_Start();
 	Commands_Start();
 	Settings_Start();
 	ShowKeys_Start();
+	Trainer_Start();
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)

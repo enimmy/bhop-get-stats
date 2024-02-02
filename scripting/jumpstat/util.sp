@@ -78,10 +78,12 @@ stock int BgsGetHUDTarget(int client, int fallback = 0)
 	return target;
 }
 
+
 stock bool BgsIsValidClient(int client, bool bAlive = false)
 {
 	return (client >= 1 && client <= MaxClients && IsClientInGame(client) && !IsClientSourceTV(client) && (!bAlive || IsPlayerAlive(client)));
 }
+
 
 stock void BgsPrintToChat(int client, const char[] format, any...)
 {

@@ -11,10 +11,24 @@ static float g_fTrainerPercentsBarSlow[MAXPLAYERS + 1];
 static float g_fTrainerPercentsBarMedium[MAXPLAYERS + 1];
 static float g_fTrainerPercentsBarFast[MAXPLAYERS + 1];
 
+int g_iTrainerSpeeds[3];
+
 static int g_iCmdNum[MAXPLAYERS + 1];
+
+void Trainer_Start()
+{
+	g_iTrainerSpeeds[Trainer_Slow] = RoundToFloor(BgsTickRate() * (TRAINER_FULLUPDATE_TICK_INTERVAL / 100.0));
+	g_iTrainerSpeeds[Trainer_Medium] = RoundToFloor(BgsTickRate() * 0.06);
+	g_iTrainerSpeeds[Trainer_Fast] = RoundToFloor(BgsTickRate() * 0.03);
+}
 
 public void Trainer_Tick(int client, float speed, bool inbhop, float gain, float jss)
 {
+	if(!g_hEnabledTrainer.BoolValue)
+	{
+		return;
+	}
+
 	g_iCmdNum[client]++;
 
 	if(!inbhop)
@@ -32,10 +46,12 @@ public void Trainer_Tick(int client, float speed, bool inbhop, float gain, float
 		g_fTrainerPercentsBarMedium[client] += jss;
 		g_fTrainerPercentsBarFast[client] += jss;
 
-		if(g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 ||
+		if(
+		g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0 ||
 		g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Slow] == 0 ||
-		g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Medium] == 0 ||
-		g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Fast] == 0)
+		(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Medium] == 0 && g_hAllowTrainerMediumMode.BoolValue) ||
+		(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Fast] == 0 && g_hAllowTrainerFastMode.BoolValue)
+		)
 		{
 
 			if(g_iCmdNum[client] % TRAINER_FULLUPDATE_TICK_INTERVAL == 0)
@@ -51,13 +67,13 @@ public void Trainer_Tick(int client, float speed, bool inbhop, float gain, float
 				g_fTrainerPercentsBarSlow[client] = 0.0;
 			}
 
-			if(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Medium] == 0)
+			if(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Medium] == 0 && g_hAllowTrainerMediumMode.BoolValue)
 			{
 				speeds[Trainer_Medium] = g_fTrainerPercentsBarMedium[client] / g_iTrainerSpeeds[Trainer_Medium];
 				g_fTrainerPercentsBarMedium[client] = 0.0;
 			}
 
-			if(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Fast] == 0)
+			if(g_iCmdNum[client] % g_iTrainerSpeeds[Trainer_Fast] == 0 && g_hAllowTrainerFastMode.BoolValue)
 			{
 				speeds[Trainer_Fast] = g_fTrainerPercentsBarFast[client] / g_iTrainerSpeeds[Trainer_Fast];
 				g_fTrainerPercentsBarFast[client] = 0.0;
@@ -145,7 +161,7 @@ void Trainer_GetTrainerString(char message[256], float number, float average)
 	{
 		if (i != center)
 		{
-			Format(message, sizeof(message), "%s\xE2\x94\x80", message); //u+2500
+			Format(message, sizeof(message), "%s-", message); //u+2500
 		}
 		else
 		{
@@ -161,7 +177,7 @@ void Trainer_GetTrainerString(char message[256], float number, float average)
 	{
 		if (i != center)
 		{
-			Format(message, sizeof(message), "%s\xE2\x94\x80", message);
+			Format(message, sizeof(message), "%s-", message);
 		}
 		else
 		{

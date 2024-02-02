@@ -5,6 +5,11 @@ static int g_iCmdNum[MAXPLAYERS + 1];
 
 void Speedometer_Tick(int client, float fspeed)
 {
+	if(!g_hEnabledSpeedometer.BoolValue)
+	{
+		return;
+	}
+
 	g_iCmdNum[client]++;
 	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
 

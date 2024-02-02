@@ -17,6 +17,11 @@ void ShowKeys_Start()
 
 void ShowKeys_Tick(int client, int buttons, float yawDiff)
 {
+	if(!g_hEnabledShowkeys.BoolValue)
+	{
+		return;
+	}
+
 	int turnDir = TURNDIR_NONE;
 
 	if(yawDiff > 0.0)

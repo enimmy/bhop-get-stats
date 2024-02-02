@@ -4,6 +4,11 @@ public void Ssj_Process(int client, int jump, int speed, int strafecount, float 
 float eff, float yawwing, float jss)
 {
 
+	if(!g_hEnabledSsj.BoolValue)
+	{
+		return;
+	}
+
 	float time = 0.0;
 	if(BgsShavitLoaded())
 	{

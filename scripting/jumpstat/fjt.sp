@@ -2,7 +2,7 @@ static bool g_bJumpInZone[MAXPLAYERS + 1];
 
 void Fjt_Shavit_LeftZone(int client, int type)
 {
-	if(!BgsIsValidClient(client))
+	if(!g_hEnabledFjt.BoolValue || !BgsIsValidClient(client))
 	{
 		return;
 	}
@@ -19,7 +19,7 @@ void Fjt_Shavit_LeftZone(int client, int type)
 
 void Fjt_OnJump(int client, int jump)
 {
-	if(jump != 1 || !BgsShavitLoaded() || !BgsIsValidClient(client))
+	if(!g_hEnabledFjt.BoolValue || jump != 1 || !BgsShavitLoaded() || !BgsIsValidClient(client))
 	{
 		return;
 	}

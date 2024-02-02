@@ -81,12 +81,6 @@ enum
 	Trainer_Fast
 }
 
-int g_iTrainerSpeeds[] = {
-	13,
-	6,
-	2
-};
-
 char g_sTrainerSpeed[][] = {
 	"Slow",
 	"Medium",

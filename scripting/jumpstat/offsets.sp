@@ -6,9 +6,13 @@ static int g_iRepeatedOffsets[MAXPLAYERS + 1];
 int g_iOffsetHistory[MAXPLAYERS + 1][OFFSETS_MAX_FRAME];
 int g_iCurrentFrame[MAXPLAYERS + 1];
 
-
 void Offset_Process(int client, int offset, bool overlap, bool nopress)
 {
+	if(!g_hEnabledOffset.BoolValue)
+	{
+		return;
+	}
+
 	if(g_iLastOffset[client] == offset)
 	{
 		g_iRepeatedOffsets[client]++;
@@ -66,6 +70,11 @@ void Offset_DrawOffset(int client, int offset, int repeats, bool overlap, bool n
 
 void Offset_Dump(int client, int jump, float sync)
 {
+	if(!g_hEnabledOffset.BoolValue)
+	{
+		return;
+	}
+
 	if(jump == 1)
 	{
 		g_iCurrentFrame[client] = 0;
