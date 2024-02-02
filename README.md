@@ -4,17 +4,17 @@
 
 ### credits - me, Alkatraz, Nairda, Oblivious, Xutax, xWidovV, Tekno/f0e, Kaldun, Shavit Timer contributors
 
-Central plugin for calling bhop statistic forwards and a plugin for displaying that information.
-
-These plugins were created to be used in tandem with my sync style, [sync style](https://github.com/Nimmy2222/shavit-syncstyle). This style breaks probably every other SSJ/Jhud/Trainer, so you will need jumpstats. I also just wanted to make it easier for other people to make changes to these types of plugins in the future. Now devs will not have to worry about making mistakes with calculations, and can easily make changes they like.
-
 Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, SSJ, FJT, and Showkeys. Most (if not all) of these HUDs are more full-featured or accurate on my versions.
 
 Get Stats - Supports jump stats (and hopefully other devs plugins in the future), by reducing redundant calculations.
 
+This implementation of these plugins, as of now, are the only versions that still work when [sync style](https://github.com/Nimmy2222/shavit-syncstyle) is used.
+
 # Usage/Directions:
 
 Press the green "Code" button at the top, and download the zip. Extract the zip, then drag the plugins folder into ```cstrike/addons/sourcemod.```
+
+Make sure you have Dynamic Channels installed as well, check the dependencies section below.
 
   JumpStats (Open Menu):
   ```
@@ -24,7 +24,9 @@ Press the green "Code" button at the top, and download the zip. Extract the zip,
   ```
 
 # Cvars:
-* The only CVARs are for jumpstats, and only control if jumpstats will override default commands from other plugins like /jhud, or /showkeys. All enabled by default.
+* Most cvars in jumpstats enable/disable the different modules (jhud, trainer, etc), everything is enabled by default
+* js-allow-trainer-fast: Allows the trainer to update very quickly, only enable for smaller servers with strafe tryhards. off by default
+* js-allow-trainer-medium: Allows the trainer to update semi-quickly, it should be fine to enable for medium servers. off by default
 
 # Dependencies:
 * bhop-get-stats.smx (in this repo) the central plugin. You cannot just install jumpstats by itself, you MUST HAVE bhop-get-stats.smx
