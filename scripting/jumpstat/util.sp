@@ -81,7 +81,7 @@ stock int BgsGetHUDTarget(int client, int fallback = 0)
 
 stock bool BgsIsValidClient(int client)
 {
-	return (client >= 1 && client <= MaxClients && !IsFakeClient(client) && IsClientInGame(client) && !IsClientSourceTV(client));
+	return (client >= 1 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client)&& !IsFakeClient(client) && !IsClientSourceTV(client));
 }
 
 
