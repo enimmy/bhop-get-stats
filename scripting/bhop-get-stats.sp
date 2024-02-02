@@ -162,7 +162,7 @@ public void Player_Jump(Event event, const char[] name, bool dontBroadcast)
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3])
 {
-	if(!IsPlayerAlive(client))
+	if(!IsPlayerAlive(client) || !IsClientInGame(client))
 	{
 		return Plugin_Continue;
 	}
@@ -229,7 +229,7 @@ public void Bgs_ProcessRunCmd(int client, int &buttons, float vel[3], float angl
 
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3])
 {
-	if(!IsPlayerAlive(client))
+	if(!IsPlayerAlive(client) || !IsClientInGame(client))
 	{
 		return;
 	}
