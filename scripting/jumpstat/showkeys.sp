@@ -47,7 +47,7 @@ void ShowKeys_Tick(int client, int buttons, float yawDiff)
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if(!(g_iSettings[i][Bools] & SHOWKEYS_ENABLED) || !BgsIsValidClient(client))
+		if(!(g_iSettings[i][Bools] & SHOWKEYS_ENABLED) || !BgsIsValidClient(i))
 		{
 			continue;
 		}
