@@ -887,16 +887,7 @@ public int Trainer_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "speed"))
 		{
 			g_iSettings[client][TrainerSpeed]++;
-
-			if(g_iSettings[client][TrainerSpeed] == Trainer_Fast && !g_hAllowTrainerFastMode.BoolValue)
-			{
-				g_iSettings[client][TrainerSpeed] = Trainer_Medium;
-			}
-
-			if(g_iSettings[client][TrainerSpeed] == Trainer_Medium && !g_hAllowTrainerMediumMode.BoolValue)
-			{
-				g_iSettings[client][TrainerSpeed] = Trainer_Slow;
-			}
+			ValidateTrainerSettings(client);
 
 			if(g_iSettings[client][TrainerSpeed] >= sizeof(g_iTrainerSpeeds))
 			{

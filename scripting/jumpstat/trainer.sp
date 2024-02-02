@@ -161,7 +161,7 @@ void Trainer_GetTrainerString(char message[256], float number, float average)
 	{
 		if (i != center)
 		{
-			Format(message, sizeof(message), "%s-", message); //u+2500
+			Format(message, sizeof(message), "%s\xE2\x94\x80", message); //u+2500
 		}
 		else
 		{
@@ -177,7 +177,7 @@ void Trainer_GetTrainerString(char message[256], float number, float average)
 	{
 		if (i != center)
 		{
-			Format(message, sizeof(message), "%s-", message);
+			Format(message, sizeof(message), "%s\xE2\x94\x80", message);
 		}
 		else
 		{

@@ -135,6 +135,14 @@ public void Settings_Start()
 	}
 }
 
+void Settings_CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	for(int i = 1; i < MaxClients; i++)
+	{
+		ValidateTrainerSettings(i);
+	}
+}
+
 void PushPosCache(int client)
 {
 	for(int i = 0; i < sizeof(g_fDefaultHudYPositions); i++)
@@ -246,6 +254,20 @@ public void OnClientCookiesCached(int client)
 		}
 	}
 	PushPosCache(client);
+	ValidateTrainerSettings(client);
+}
+
+void ValidateTrainerSettings(int client)
+{
+	if(g_iSettings[client][TrainerSpeed] == Trainer_Medium && !g_hAllowTrainerMediumMode.BoolValue)
+	{
+		g_iSettings[client][TrainerSpeed] = Trainer_Fast;
+	}
+
+	if(g_iSettings[client][TrainerSpeed] == Trainer_Fast && !g_hAllowTrainerFastMode.BoolValue)
+	{
+		g_iSettings[client][TrainerSpeed] = Trainer_Slow;
+	}
 }
 
 void SetAllDefaults(int client)

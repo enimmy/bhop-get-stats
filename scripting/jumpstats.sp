@@ -63,6 +63,9 @@ public void OnPluginStart()
 	Settings_Start();
 	ShowKeys_Start();
 	Trainer_Start();
+
+	HookConVarChange(g_hAllowTrainerFastMode, Settings_CvarChanged);
+	HookConVarChange(g_hAllowTrainerMediumMode, Settings_CvarChanged);
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
