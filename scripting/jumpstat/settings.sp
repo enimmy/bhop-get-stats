@@ -246,7 +246,6 @@ public void OnClientCookiesCached(int client)
 		if(cookie[0] == '\0')
 		{
 			SetDefaultSetting(client, i);
-			break;
 		}
 		else
 		{
