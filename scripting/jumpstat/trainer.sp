@@ -104,14 +104,17 @@ void PushTrainerToClients(int client, float speeds[3], int cmdnum)
 		Trainer_GetTrainerString(speedMessages[Trainer_Fast], g_fLastAverageNumber[client], speeds[Trainer_Fast]);
 	}
 
-	for (int i = 1; i <= MaxClients; i++)
+	for (int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
-		if(!(g_iSettings[i][Bools] & TRAINER_ENABLED) || !BgsIsValidClient(i))
+		
+		int messageTarget = idx == -1 ? client:idx;
+
+		if(!(g_iSettings[messageTarget][Bools] & TRAINER_ENABLED))
 		{
 			continue;
 		}
 
-		int trainerSpeedIdx = g_iSettings[i][TrainerSpeed];
+		int trainerSpeedIdx = g_iSettings[messageTarget][TrainerSpeed];
 		int trainerSpeed = g_iTrainerSpeeds[trainerSpeedIdx];
 
 		if(cmdnum % trainerSpeed != 0)
@@ -119,33 +122,35 @@ void PushTrainerToClients(int client, float speeds[3], int cmdnum)
 			continue;
 		}
 
-		if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
+		float avg = speeds[trainerSpeedIdx] * 100;
+		int cidx = GetGainColorIdx(avg);
+		if(avg > 100.0 && !(g_iSettings[messageTarget][Bools] & TRAINER_STRICT))
 		{
-			float avg = speeds[trainerSpeedIdx] * 100;
-			int idx = GetGainColorIdx(avg);
-			if(avg > 100.0 && !(g_iSettings[i][Bools] & TRAINER_STRICT))
+			if(avg <= 105.0)
 			{
-				if(avg <= 105.0)
-				{
-					idx = GainGood;
-				}
-				else if(avg <= 110.0)
-				{
-					idx = GainMeh;
-				}
-				else if(avg <= 115.0)
-				{
-					idx = GainBad;
-				}
-				else
-				{
-					idx = GainReallyBad;
-				}
+				cidx = GainGood;
 			}
+			else if(avg <= 110.0)
+			{
+				cidx = GainMeh;
+			}
+			else if(avg <= 115.0)
+			{
+				cidx = GainBad;
+			}
+			else
+			{
+				cidx = GainReallyBad;
+			}
+		}
 
-			float holdTime = trainerSpeed / (BgsTickRate() * 1.0) + 0.05;
-			g_fCacheHudPositions[i][Trainer][X_DIM] = -1.0;
-			BgsDisplayHud(i, g_fCacheHudPositions[i][Trainer], g_iBstatColors[g_iSettings[i][idx]], holdTime, GetDynamicChannel(0), false, speedMessages[trainerSpeedIdx])
+		float holdTime = trainerSpeed / (BgsTickRate() * 1.0) + 0.05;
+		g_fCacheHudPositions[messageTarget][Trainer][X_DIM] = -1.0;
+		BgsDisplayHud(messageTarget, g_fCacheHudPositions[messageTarget][Trainer], g_iBstatColors[g_iSettings[messageTarget][cidx]], holdTime, GetDynamicChannel(0), false, speedMessages[trainerSpeedIdx]);
+
+		if(!g_hShowSpectatorsTrainer.BoolValue)
+		{
+			break;
 		}
 	}
 }

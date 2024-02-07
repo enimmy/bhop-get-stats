@@ -7,6 +7,13 @@ static int tickrate;
 chatstrings_t g_csChatStrings;
 bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", menu.sp. defined in here to prevent scoping errors
 
+//The spectator code and memory consumption below heavily reduces run time complexity by having a proper list of the players current specs, which is a lot shorter
+//than looping 64 times for every player when they tick
+
+int g_iSpecList[MAXPLAYERS + 1][MAXPLAYERS + 1]; //First dimension is client ind, second is the list of their current spectators
+int g_iSpecListCurrentFrame[MAXPLAYERS + 1];
+static int g_iCmdNum;
+
 void Init_Utils(bool late, bool shavit, EngineVersion engine, char[] version)
 {
 	lateLoad = late;
@@ -22,6 +29,40 @@ void Init_Utils(bool late, bool shavit, EngineVersion engine, char[] version)
 	}
 }
 
+
+//Updates an array storing all players current spectators every 50 ticks
+Util_GameTick()
+{
+	g_iCmdNum++;
+
+	if(!(g_iCmdNum % 50 == 0)) 
+	{
+		return;
+	}
+
+	g_iCmdNum = 0;
+
+	for(int i = 0; i <= MaxClients; i++)
+	{
+		if(!IsValidClient(i) || !IsClientObserver(i))
+		{
+			return;
+		}
+
+		int target = BgsGetHUDTarget(i, -1);
+
+		if(target == -1)
+		{
+			continue;
+		}
+
+		//Player i, is a spectator, and has a target and correct spec state
+
+		g_iSpecList[target][g_iSpecListCurrentFrame[target]] = i; //Place spectating players client index 
+		g_iSpecListCurrentFrame[target]++;
+	}
+
+}
 
 stock bool BgsLateLoaded()
 {
@@ -67,6 +108,7 @@ stock int BgsGetHUDTarget(int client, int fallback = 0)
 	{
 		return target;
 	}
+
 	int iObserverMode = GetEntProp(client, Prop_Send, "m_iObserverMode");
 	if (iObserverMode >= 3 && iObserverMode <= 7)
 	{

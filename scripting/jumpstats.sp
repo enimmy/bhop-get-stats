@@ -123,5 +123,11 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 	{
 		Menu_CheckEditMode(client, buttons, mouse);
 	}
+	ShowKeys_Tick(client, buttons, angles[1]);
 	return Plugin_Continue;
+}
+
+public void OnGameFrame()
+{
+	Util_GameTick();
 }

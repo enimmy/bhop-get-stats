@@ -5,16 +5,15 @@ public void Jhud_Process(int client, int jump, int speed, int strafecount, float
 		return;
 	}
 
-	for(int i = 1; i < MaxClients; i++)
+	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
-		if(!(g_iSettings[i][Bools] & JHUD_ENABLED) || !BgsIsValidClient(i))
+		int messageTarget = idx == -1 ? client:idx;
+
+		if(!(g_iSettings[messageTarget][Bools] & JHUD_ENABLED))
 		{
 			continue;
 		}
-		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
-		{
-			JHUD_DrawStats(i, jump, speed, gain, sync, jss);
-		}
+		JHUD_DrawStats(messageTarget, jump, speed, gain, sync, jss);
 	}
 }
 

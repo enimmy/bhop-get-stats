@@ -15,16 +15,16 @@ float eff, float yawwing, float jss)
 		time = Shavit_GetClientTime(client);
 	}
 
-	for(int i = 1; i < MaxClients; i++)
+	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
-		if(!(g_iSettings[i][Bools] & SSJ_ENABLED) || !BgsIsValidClient(i))
+		int messageTarget = idx == -1 ? client:idx;
+
+		if(!(g_iSettings[messageTarget][Bools] & SSJ_ENABLED))
 		{
 			continue;
 		}
-		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
-		{
-			SSJ_WriteMessage(i, client, jump, speed, strafecount, heightdelta, gain, sync, eff, jss);
-		}
+
+		SSJ_WriteMessage(messageTarget, client, jump, speed, strafecount, heightdelta, gain, sync, eff, jss);
 	}
 	g_fLastJumpTime[client] = time;
 }

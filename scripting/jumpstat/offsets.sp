@@ -29,17 +29,16 @@ void Offset_Process(int client, int offset, bool overlap, bool nopress)
 		g_iCurrentFrame[client] = 0;
 	}
 
-	for(int i = 1; i < MaxClients; i++)
+	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
-		if(!(g_iSettings[i][Bools] & OFFSETS_ENABLED) || !BgsIsValidClient(i))
+		int messageTarget = idx == -1 ? client:idx;
+
+		if(!(g_iSettings[messageTarget][Bools] & OFFSETS_ENABLED))
 		{
 			continue;
 		}
-
-		if((i == client && IsPlayerAlive(i)) || (!IsPlayerAlive(i) && BgsGetHUDTarget(i) == client))
-		{
-			Offset_DrawOffset(i, offset, g_iRepeatedOffsets[client], overlap, nopress)
-		}
+		
+		Offset_DrawOffset(messageTarget, offset, g_iRepeatedOffsets[client], overlap, nopress)
 	}
 	g_iLastOffset[client] = offset;
 }

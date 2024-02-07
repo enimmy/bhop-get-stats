@@ -66,17 +66,16 @@ void Speedometer_Tick(int client, float fspeed)
 			speedIdx = GainReallyBad;
 		}
 
-		for (int i = 1; i <= MaxClients; i++)
+		for (int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 		{
-			if(!BgsIsValidClient(i) || !(g_iSettings[i][Bools] & SPEEDOMETER_ENABLED))
+
+			int messageTarget = idx == -1 ? client:idx;
+			if(!(g_iSettings[messageTarget][Bools] & SPEEDOMETER_ENABLED))
 			{
 				continue;
 			}
 
-			if((i == client && IsPlayerAlive(i)) || (BgsGetHUDTarget(i) == client && !IsPlayerAlive(i)))
-			{
-				BgsDisplayHud(i, g_fCacheHudPositions[i][Speedometer], g_iBstatColors[g_iSettings[i][speedIdx]], 0.2, GetDynamicChannel(4), false, message);
-			}
+			BgsDisplayHud(messageTarget, g_fCacheHudPositions[messageTarget][Speedometer], g_iBstatColors[g_iSettings[messageTarget][speedIdx]], 0.2, GetDynamicChannel(4), false, message);
 		}
 
 		g_iLastSpeedometerVel[client] = speed;
