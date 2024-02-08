@@ -6,6 +6,7 @@ static int g_iCmdNum[MAXPLAYERS + 1];
 static int g_iLastTurnDir[MAXPLAYERS + 1];
 static int g_iLastButtons[MAXPLAYERS + 1];
 static float g_fLastYaw[MAXPLAYERS + 1];
+static bool g_bUpdateDelayed[MAXPLAYERS + 1];
 
 #define TURNDIR_RIGHT -1
 #define TURNDIR_NONE 0
@@ -23,9 +24,18 @@ void ShowKeys_Tick(int client, int buttons, float yaw)
 		return;
 	}
 
+	g_iCmdNum[client]++;
+
+	int realButtons = buttons;
 	float yawDiff = yaw - g_fLastYaw[client];
 
-	g_iCmdNum[client]++;
+	if(BgsShavitLoaded())
+	{
+		if(Shavit_IsReplayEntity(client))
+		{
+			realButtons = Shavit_GetReplayButtons(client, yawDiff);
+		}
+	}
 
 	int turnDir = TURNDIR_NONE;
 
@@ -38,47 +48,41 @@ void ShowKeys_Tick(int client, int buttons, float yaw)
 		turnDir = TURNDIR_RIGHT;
 	}
 
+	bool updateThisTick = false;
+
+	if(g_bUpdateDelayed[client] || turnDir != g_iLastTurnDir[client] || realButtons != g_iLastButtons[client] || g_iCmdNum[client] % MIN_UPDATE_RATE == 0)
+	{
+		updateThisTick = true;
+	}
+
+	if(updateThisTick && (g_iCmdNum[client] < 5))
+	{
+		g_bUpdateDelayed[client] = true;
+		updateThisTick = false;
+	}
+
 	g_fLastYaw[client] = yaw;
+	g_iLastButtons[client] = realButtons;
+	g_iLastTurnDir[client] = turnDir;
 
-	if(turnDir == g_iLastTurnDir[client] && buttons == g_iLastButtons[client] && g_iCmdNum[client] % MIN_UPDATE_RATE != 0)
+	if(!updateThisTick)
 	{
 		return;
 	}
-
-	//updated last tick, need to delay a bit
-	if(g_iCmdNum[client] == 1)
-	{
-		g_iCmdNum[client] = MIN_UPDATE_RATE - RoundToFloor(BgsTickRate() / 0.03);
-		return;
-	}
-
 
 	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
+		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
-		int messageTarget = idx == -1 ? client:-1;
-		if(!(g_iSettings[messageTarget][Bools] & SHOWKEYS_ENABLED))
+		if(!(g_iSettings[messageTarget][Bools] & SHOWKEYS_ENABLED) || IsFakeClient(messageTarget))
 		{
 			continue;
 		}
 
-		int sendButtons = buttons;
-		float sendYawDiff = yawDiff;
-
-		if(BgsShavitLoaded())
-		{
-			
-			if(Shavit_IsReplayEntity(client))
-			{
-				sendButtons = Shavit_GetReplayButtons(client, yawDiff);
-			}
-		}
-
-		ShowKeys_Send(messageTarget, sendButtons, sendYawDiff);
+		ShowKeys_Send(messageTarget, realButtons, yawDiff);
 	}
 
-	g_iLastButtons[client] = buttons;
-	g_iLastTurnDir[client] = turnDir;
+	g_bUpdateDelayed[client] = false;
 	g_iCmdNum[client] = 0;
 }
 

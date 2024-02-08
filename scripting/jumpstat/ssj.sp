@@ -17,7 +17,7 @@ float eff, float yawwing, float jss)
 
 	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
-		int messageTarget = idx == -1 ? client:idx;
+		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
 		if(!(g_iSettings[messageTarget][Bools] & SSJ_ENABLED))
 		{

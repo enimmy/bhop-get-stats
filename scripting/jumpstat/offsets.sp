@@ -31,13 +31,13 @@ void Offset_Process(int client, int offset, bool overlap, bool nopress)
 
 	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
-		int messageTarget = idx == -1 ? client:idx;
+		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
 		if(!(g_iSettings[messageTarget][Bools] & OFFSETS_ENABLED))
 		{
 			continue;
 		}
-		
+
 		Offset_DrawOffset(messageTarget, offset, g_iRepeatedOffsets[client], overlap, nopress)
 	}
 	g_iLastOffset[client] = offset;
@@ -112,19 +112,19 @@ int Offset_GetColorIdx(int offset) {
     if(offset == 0)
 	{
 		return GainMeh;
-    } 
+    }
 	else if(offset == -1)
 	{
 		return GainReallyGood;
-    } 
+    }
 	else if(offset == -2)
 	{
 		return GainGood;
-	} 
+	}
 	else if(offset == -3)
 	{
 		return GainBad;
-	} 
+	}
 	else
 	{
 		return GainReallyBad;

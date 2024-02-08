@@ -106,8 +106,8 @@ void PushTrainerToClients(int client, float speeds[3], int cmdnum)
 
 	for (int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
-		
-		int messageTarget = idx == -1 ? client:idx;
+
+		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
 		if(!(g_iSettings[messageTarget][Bools] & TRAINER_ENABLED))
 		{

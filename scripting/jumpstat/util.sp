@@ -35,7 +35,7 @@ Util_GameTick()
 {
 	g_iCmdNum++;
 
-	if(!(g_iCmdNum % 50 == 0)) 
+	if(g_iCmdNum % 50 != 0)
 	{
 		return;
 	}
@@ -44,9 +44,15 @@ Util_GameTick()
 
 	for(int i = 0; i <= MaxClients; i++)
 	{
-		if(!IsValidClient(i) || !IsClientObserver(i))
+		g_iSpecListCurrentFrame[i] = 0;
+	}
+
+
+	for(int i = 0; i <= MaxClients; i++)
+	{
+		if(!IsValidClient(i) || IsFakeClient(i) || !IsClientObserver(i))
 		{
-			return;
+			continue;
 		}
 
 		int target = BgsGetHUDTarget(i, -1);
@@ -58,7 +64,7 @@ Util_GameTick()
 
 		//Player i, is a spectator, and has a target and correct spec state
 
-		g_iSpecList[target][g_iSpecListCurrentFrame[target]] = i; //Place spectating players client index 
+		g_iSpecList[target][g_iSpecListCurrentFrame[target]] = i; //Place spectating players client index
 		g_iSpecListCurrentFrame[target]++;
 	}
 
@@ -123,7 +129,7 @@ stock int BgsGetHUDTarget(int client, int fallback = 0)
 
 stock bool BgsIsValidClient(int client)
 {
-	return (client >= 1 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client)&& !IsFakeClient(client) && !IsClientSourceTV(client));
+	return (client >= 1 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client) && !IsClientSourceTV(client));
 }
 
 

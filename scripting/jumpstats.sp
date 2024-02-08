@@ -96,7 +96,6 @@ public void BhopStat_TickForward(int client, int buttons, float vel[3], float an
 {
 	Speedometer_Tick(client, speed);
 	Trainer_Tick(client, speed, inbhop, gain, jss);
-	ShowKeys_Tick(client, buttons, yawDiff);
 }
 
 public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
@@ -119,11 +118,20 @@ public void Shavit_OnLeaveZone(int client, int type, int track, int id, int enti
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
+	if(!IsValidClient(client))
+	{
+		return Plugin_Continue;
+	}
+
 	if(!IsFakeClient(client))
 	{
 		Menu_CheckEditMode(client, buttons, mouse);
 	}
-	ShowKeys_Tick(client, buttons, angles[1]);
+
+	if(IsPlayerAlive(client))
+	{
+		ShowKeys_Tick(client, buttons, angles[1]);
+	}
 	return Plugin_Continue;
 }
 
