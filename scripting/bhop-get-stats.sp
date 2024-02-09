@@ -162,21 +162,14 @@ public void Player_Jump(Event event, const char[] name, bool dontBroadcast)
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3])
 {
-	if(!IsPlayerAlive(client) || !IsClientInGame(client))
+	if(!IsClientConnected(client) || !IsClientInGame(client) || !IsPlayerAlive(client))
 	{
 		return Plugin_Continue;
 	}
 
-	if((g_bShavit && Shavit_IsReplayEntity(client)) || IsFakeClient(client))
-	{
-		//in prog
-	}
-	else
-	{
-		g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
-		GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fRunCmdVelVec[client]);
-		Bgs_ProcessRunCmd(client, buttons, vel, angles, GetEntityFlags(client), GetEntityMoveType(client));
-	}
+	g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
+	GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fRunCmdVelVec[client]);
+	Bgs_ProcessRunCmd(client, buttons, vel, angles, GetEntityFlags(client), GetEntityMoveType(client));
 
 	return Plugin_Continue;
 }
@@ -234,15 +227,16 @@ public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float
 	{
 		return;
 	}
+
+	int realButtons = buttons;
+
+	if(g_bShavit && IsFakeClient(client) && (g_bShavit && Shavit_IsReplayEntity(client)))
+	{
+		float yawDiff;
+		realButtons = Shavit_GetReplayButtons(client, yawDiff);
+	}
 	
-	if((g_bShavit && Shavit_IsReplayEntity(client)) || IsFakeClient(client))
-	{
-		//in prog
-	}
-	else
-	{
-		Bgs_ProcessPostRunCmd(client, buttons, vel, angles);
-	}
+	Bgs_ProcessPostRunCmd(client, realButtons, vel, angles);
 }
 
 void Bgs_ProcessPostRunCmd(int client, int buttons, const float vel[3], const float angles[3])

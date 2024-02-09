@@ -15,7 +15,6 @@ void Cvar_Start()
 	g_hEnabledTrainer = CreateConVar("js-enabled-trainer", "1", "enable trainer? 0 or 1");
 	g_hAllowTrainerFastMode = CreateConVar("js-allow-trainer-fast", "0", "enable strafe trainer to use VERY FAST updating (might be laggy) 0 or 1");
 	g_hAllowTrainerMediumMode = CreateConVar("js-allow-trainer-medium", "0", "enable strafe trainer to use pretty fast updating (might be laggy) 0 or 1");
-	g_hShowSpectatorsTrainer = CreateConVar("js-show-spectators-trainer", "1", "exp feature show trainer to spectators mode");
 	g_hEnabledOffset = CreateConVar("js-enabled-offset", "1", "enable offsets? 0 or 1");
 	g_hEnabledSpeedometer = CreateConVar("js-enabled-speedometer", "1", "enable speedometer? 0 or 1");
 	g_hEnabledSsj = CreateConVar("js-enabled-ssj", "1", "enable ssj? 0 or 1");

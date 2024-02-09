@@ -1,25 +1,58 @@
 #define SPEED_UPDATE_INTERVAL 10
 
-static int g_iLastSpeedometerVel[MAXPLAYERS + 1];
-static int g_iCmdNum[MAXPLAYERS + 1];
+static float g_fCurrentSpeed[MAXPLAYERS + 1];
+static int g_iTickNumber;
 
-void Speedometer_Tick(int client, float fspeed)
+void Speedometer_GameTick()
 {
 	if(!g_hEnabledSpeedometer.BoolValue)
 	{
 		return;
 	}
 
-	g_iCmdNum[client]++;
-	bool speedometer = (g_iCmdNum[client] % SPEED_UPDATE_INTERVAL == 0);
+	g_iTickNumber++;
 
-	if(speedometer)
+	if(g_iTickNumber % SPEED_UPDATE_INTERVAL != 0)
 	{
-		g_iCmdNum[client] = 0;
-		int speed = RoundToFloor(fspeed);
+		return;
+	}
+
+	g_iTickNumber = 0;
+
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(!IsValidClient(i))
+		{
+			continue;
+		}
+
+		float vel[3];
+		GetEntPropVector(i, Prop_Data, "m_vecAbsVelocity", vel);
+		vel[2] = 0;
+
+		int temp = g_fCurrentSpeed[i];
+		g_fCurrentSpeed[i] = GetVectorLength(vel);
+
+		int speedDelta = RoundToFloor(g_fCurrentSpeed[i] - temp);
+
+		int speedColorIdx;
+
+		if(speedDelta > 0)
+		{
+			speedColorIdx = GainReallyGood;
+		}
+		else if (speedDelta == 0)
+		{
+			speedColorIdx = GainGood;
+		}
+		else
+		{
+			speedColorIdx = GainReallyBad;
+		}
+
+		int speed = RoundToFloor(g_fCurrentSpeed[i]);
 
 		char message[256];
-
 		if(speed < 10)
 		{
 			Format(message, sizeof(message), "   %i", speed);
@@ -37,48 +70,31 @@ void Speedometer_Tick(int client, float fspeed)
 			Format(message, sizeof(message), "%i", speed);
 		}
 
-		int speedDelta = speed - g_iLastSpeedometerVel[client];
-
-		if(g_iSettings[client][Bools] & SPEEDOMETER_VELOCITY_DIFF)
+		for(int j = -1; j < g_iSpecListCurrentFrame[i]; j++)
 		{
-			if(speedDelta > 0)
-			{
-				Format(message, sizeof(message), "%s (+%i)", message, speedDelta);
-			}
-			else
-			{
-				Format(message, sizeof(message), "%s (%i)", message, speedDelta);
-			}
-		}
+			int messageTarget = j == -1 ? i:g_iSpecList[i][j];
 
-		int speedIdx;
-
-		if(speedDelta > 0)
-		{
-			speedIdx = GainReallyGood;
-		}
-		else if (speedDelta == 0)
-		{
-			speedIdx = GainGood;
-		}
-		else
-		{
-			speedIdx = GainReallyBad;
-		}
-
-		for (int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
-		{
-
-			int messageTarget = idx == -1 ? client:idx;
-			if(!(g_iSettings[messageTarget][Bools] & SPEEDOMETER_ENABLED))
+			if(!(g_iSettings[messageTarget][Bools] & SPEEDOMETER_ENABLED) || IsFakeClient(messageTarget))
 			{
 				continue;
 			}
 
-			BgsDisplayHud(messageTarget, g_fCacheHudPositions[messageTarget][Speedometer], g_iBstatColors[g_iSettings[messageTarget][speedIdx]], 0.2, GetDynamicChannel(4), false, message);
-		}
+			char sendMessage[256];
 
-		g_iLastSpeedometerVel[client] = speed;
+			if(g_iSettings[messageTarget][Bools] & SPEEDOMETER_VELOCITY_DIFF)
+			{
+				if(speedDelta > 0)
+				{
+					Format(sendMessage, sizeof(sendMessage), "%s (+%i)", message, speedDelta);
+				}
+				else
+				{
+					Format(sendMessage, sizeof(sendMessage), "%s (%i)", message, speedDelta);
+				}
+			}
+
+			BgsDisplayHud(messageTarget, g_fCacheHudPositions[messageTarget][Speedometer], g_iBstatColors[g_iSettings[messageTarget][speedColorIdx]], 0.2, GetDynamicChannel(4), false, sendMessage);
+
+		}
 	}
-	return;
 }

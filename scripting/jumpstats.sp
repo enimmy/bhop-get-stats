@@ -94,7 +94,6 @@ public void OnLibraryRemoved(const char[] name)
 
 public void BhopStat_TickForward(int client, int buttons, float vel[3], float angles[3], bool inbhop, float speed, float gain, float jss, float yawDiff)
 {
-	Speedometer_Tick(client, speed);
 	Trainer_Tick(client, speed, inbhop, gain, jss);
 }
 
@@ -138,4 +137,5 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 public void OnGameFrame()
 {
 	Util_GameTick();
+	Speedometer_GameTick();
 }
