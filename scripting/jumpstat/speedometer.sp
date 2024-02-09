@@ -28,9 +28,9 @@ void Speedometer_GameTick()
 
 		float vel[3];
 		GetEntPropVector(i, Prop_Data, "m_vecAbsVelocity", vel);
-		vel[2] = 0;
+		vel[2] = 0.0;
 
-		int temp = g_fCurrentSpeed[i];
+		float temp = g_fCurrentSpeed[i];
 		g_fCurrentSpeed[i] = GetVectorLength(vel);
 
 		int speedDelta = RoundToFloor(g_fCurrentSpeed[i] - temp);

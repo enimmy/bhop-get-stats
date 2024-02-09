@@ -147,11 +147,6 @@ void PushTrainerToClients(int client, float speeds[3], int cmdnum)
 		float holdTime = trainerSpeed / (BgsTickRate() * 1.0) + 0.05;
 		g_fCacheHudPositions[messageTarget][Trainer][X_DIM] = -1.0;
 		BgsDisplayHud(messageTarget, g_fCacheHudPositions[messageTarget][Trainer], g_iBstatColors[g_iSettings[messageTarget][cidx]], holdTime, GetDynamicChannel(0), false, speedMessages[trainerSpeedIdx]);
-
-		if(!g_hShowSpectatorsTrainer.BoolValue)
-		{
-			break;
-		}
 	}
 }
 

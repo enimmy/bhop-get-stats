@@ -2,7 +2,6 @@ ConVar g_hEnabledJhud;
 ConVar g_hEnabledTrainer;
 ConVar g_hAllowTrainerFastMode;
 ConVar g_hAllowTrainerMediumMode;
-ConVar g_hShowSpectatorsTrainer;
 ConVar g_hEnabledOffset;
 ConVar g_hEnabledSpeedometer;
 ConVar g_hEnabledSsj;
