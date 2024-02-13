@@ -22,7 +22,7 @@
 #undef REQUIRE_PLUGIN
 #include <shavit>
 
-#define JS_VERSTION "3.7"
+#define JS_VERSTION "3.8"
 
 #pragma semicolon 1
 #pragma newdecls required
