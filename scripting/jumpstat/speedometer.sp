@@ -52,24 +52,6 @@ void Speedometer_GameTick()
 
 		int speed = RoundToFloor(g_fCurrentSpeed[i]);
 
-		char message[256];
-		if(speed < 10)
-		{
-			Format(message, sizeof(message), "   %i", speed);
-		}
-		else if(speed < 10)
-		{
-			Format(message, sizeof(message), "  %i", speed);
-		}
-		else if(speed < 1000)
-		{
-			Format(message, sizeof(message), " %i", speed);
-		}
-		else
-		{
-			Format(message, sizeof(message), "%i", speed);
-		}
-
 		for(int j = -1; j < g_iSpecListCurrentFrame[i]; j++)
 		{
 			int messageTarget = j == -1 ? i:g_iSpecList[i][j];
@@ -79,21 +61,37 @@ void Speedometer_GameTick()
 				continue;
 			}
 
-			char sendMessage[256];
+			char message[256];
+			if(speed < 10)
+			{
+				Format(message, sizeof(message), "   %i", speed);
+			}
+			else if(speed < 10)
+			{
+				Format(message, sizeof(message), "  %i", speed);
+			}
+			else if(speed < 1000)
+			{
+				Format(message, sizeof(message), " %i", speed);
+			}
+			else
+			{
+				Format(message, sizeof(message), "%i", speed);
+			}
 
 			if(g_iSettings[messageTarget][Bools] & SPEEDOMETER_VELOCITY_DIFF)
 			{
 				if(speedDelta > 0)
 				{
-					Format(sendMessage, sizeof(sendMessage), "%s (+%i)", message, speedDelta);
+					Format(message, sizeof(message), "%s (+%i)", message, speedDelta);
 				}
 				else
 				{
-					Format(sendMessage, sizeof(sendMessage), "%s (%i)", message, speedDelta);
+					Format(message, sizeof(message), "%s (%i)", message, speedDelta);
 				}
 			}
 
-			BgsDisplayHud(messageTarget, g_fCacheHudPositions[messageTarget][Speedometer], g_iBstatColors[g_iSettings[messageTarget][speedColorIdx]], 0.2, GetDynamicChannel(4), false, sendMessage);
+			BgsDisplayHud(messageTarget, g_fCacheHudPositions[messageTarget][Speedometer], g_iBstatColors[g_iSettings[messageTarget][speedColorIdx]], 0.2, GetDynamicChannel(4), false, message);
 
 		}
 	}

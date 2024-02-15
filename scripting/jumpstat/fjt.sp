@@ -38,7 +38,7 @@ void Fjt_OnJump(int client, int jump)
 
 void PrintJumpTick(int client)
 {
-	int tick = RoundToNearest(Shavit_GetClientTime(client) * 100);
+	int tick = RoundToNearest(Shavit_GetClientTime(client) * BgsTickRate());
 	tick = g_bJumpInZone[client] ? (tick*-1):tick;
 
 	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)

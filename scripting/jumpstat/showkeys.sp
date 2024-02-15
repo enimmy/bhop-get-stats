@@ -7,6 +7,7 @@ static int g_iLastTurnDir[MAXPLAYERS + 1];
 static int g_iLastButtons[MAXPLAYERS + 1];
 static float g_fLastYaw[MAXPLAYERS + 1];
 static bool g_bUpdateDelayed[MAXPLAYERS + 1];
+static int g_iTickDelay;
 
 #define TURNDIR_RIGHT -1
 #define TURNDIR_NONE 0
@@ -15,6 +16,7 @@ static bool g_bUpdateDelayed[MAXPLAYERS + 1];
 void ShowKeys_Start()
 {
 	g_hCenterTextId = GetUserMessageId("TextMsg");
+	g_iTickDelay = RoundToFloor(BgsTickRate() * 0.03);
 }
 
 void ShowKeys_Tick(int client, int buttons, float yaw)
@@ -55,7 +57,7 @@ void ShowKeys_Tick(int client, int buttons, float yaw)
 		updateThisTick = true;
 	}
 
-	if(updateThisTick && (g_iCmdNum[client] < 5))
+	if(updateThisTick && (g_iCmdNum[client] < g_iTickDelay))
 	{
 		g_bUpdateDelayed[client] = true;
 		updateThisTick = false;

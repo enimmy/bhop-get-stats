@@ -123,26 +123,7 @@ void PushTrainerToClients(int client, float speeds[3], int cmdnum)
 		}
 
 		float avg = speeds[trainerSpeedIdx] * 100;
-		int cidx = GetGainColorIdx(avg);
-		if(avg > 100.0 && !(g_iSettings[messageTarget][Bools] & TRAINER_STRICT))
-		{
-			if(avg <= 105.0)
-			{
-				cidx = GainGood;
-			}
-			else if(avg <= 110.0)
-			{
-				cidx = GainMeh;
-			}
-			else if(avg <= 115.0)
-			{
-				cidx = GainBad;
-			}
-			else
-			{
-				cidx = GainReallyBad;
-			}
-		}
+		int cidx = GetPercentageColorIdx(avg, (g_iSettings[messageTarget][Bools] & TRAINER_STRICT) > 0);
 
 		float holdTime = trainerSpeed / (BgsTickRate() * 1.0) + 0.05;
 		g_fCacheHudPositions[messageTarget][Trainer][X_DIM] = -1.0;

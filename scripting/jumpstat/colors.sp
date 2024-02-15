@@ -67,10 +67,29 @@ int g_iJhudSpeedValues[][] = { //jhud colors based on speeds for first 6 or firs
 	{970, 980, 1000, 1020} 	// 16
 };
 
-int GetGainColorIdx(float gain) {
+int GetPercentageColorIdx(float gain, bool strict) {
 	if(gain > 100)
 	{
-		return GainReallyBad;
+		if(strict)
+		{
+			return GainReallyBad;
+		}
+		if(gain <= 105.0)
+		{
+			return GainReallyGood;
+		}
+		else if(gain <= 110.0)
+		{
+			return GainGood;
+		}
+		else if(gain <= 115.0)
+		{
+			return GainBad;
+		}
+		else
+		{
+			return GainReallyBad;
+		}
 	}
 	else if(gain >= 90)
 	{

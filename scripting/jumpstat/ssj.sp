@@ -62,7 +62,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 
 		if(g_iSettings[client][Bools] & SSJ_GAIN)
 		{
-			int idx = GetGainColorIdx(gain);
+			int idx = GetPercentageColorIdx(gain, true);
 			int settingsIdx = g_iSettings[client][idx];
 
 			if(g_iSettings[client][Bools] & SSJ_DECIMALS)

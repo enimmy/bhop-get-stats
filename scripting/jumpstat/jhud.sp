@@ -33,7 +33,7 @@ void JHUD_DrawStats(int client, int jump, int speed, float gain, float sync, flo
 	}
 	else
 	{
-		settingIdx = GetGainColorIdx(gain);
+		settingIdx = GetPercentageColorIdx(gain, true);
 	}
 
 	int rgb[3];
