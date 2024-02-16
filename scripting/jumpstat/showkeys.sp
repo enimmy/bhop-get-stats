@@ -29,7 +29,7 @@ void ShowKeys_Tick(int client, int buttons, float yaw)
 	g_iCmdNum[client]++;
 
 	int realButtons = buttons;
-	float yawDiff = yaw - g_fLastYaw[client];
+	float yawDiff = NormalizeAngle(yaw - g_fLastYaw[client]);
 
 	if(BgsShavitLoaded())
 	{
@@ -57,7 +57,7 @@ void ShowKeys_Tick(int client, int buttons, float yaw)
 		updateThisTick = true;
 	}
 
-	if(updateThisTick && (g_iCmdNum[client] < g_iTickDelay))
+	if(updateThisTick && g_iCmdNum[client] < g_iTickDelay)
 	{
 		g_bUpdateDelayed[client] = true;
 		updateThisTick = false;

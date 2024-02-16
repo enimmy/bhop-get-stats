@@ -458,7 +458,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 void StartJumpForward(int client)
 {
 	float realVelocity[3];
-	realVelocity = (IsShavitReplayBot(client) ? g_fLastRunCmdVelVec[client] : g_fRunCmdVelVec);
+	realVelocity = (IsShavitReplayBot(client) ? g_fLastRunCmdVelVec[client] : g_fRunCmdVelVec[client]);
 
 	int speed = RoundToFloor(GetSpeed(realVelocity, true));
 

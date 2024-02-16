@@ -224,6 +224,20 @@ stock void BgsDisplayHud(int client, float pos[2], int rgb[3], float holdTime, i
 	ShowHudText(client, channel, message);
 }
 
+stock float NormalizeAngle(float ang)
+{
+	while (ang > 180.0)
+	{
+		ang -= 360.0;
+	}
+
+	while (ang < -180.0)
+	{
+		ang += 360.0;
+	}
+	return ang;
+}
+
 stock float FloatMod(float num, float denom)
 {
 	return num - denom * RoundToFloor(num / denom);
