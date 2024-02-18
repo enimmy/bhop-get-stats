@@ -36,7 +36,7 @@ void SSJ_WriteMessage(int client, int target, int jump, int speed, int strafecou
 	{
 		if(g_iSettings[client][Bools] & SSJ_REPEAT)
 		{
-			if(jump % g_iSettings[client][Usage] != 0)
+			if(g_iSettings[client][Usage] > 0 && jump % g_iSettings[client][Usage] != 0)
 			{
 				return;
 			}
