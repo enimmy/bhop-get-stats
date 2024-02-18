@@ -364,7 +364,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 		float speedmulti = GetEntPropFloat(client, Prop_Data, "m_flLaggedMovementValue");
 
 		g_fTraveledDistance[client][0] += velocity[0] * g_fTickrate * speedmulti;
-		g_fTraveledDistance[client][1] += velocity[client][1] * g_fTickrate * speedmulti;
+		g_fTraveledDistance[client][1] += velocity[1] * g_fTickrate * speedmulti;
 
 		g_fTrajectory[client] += GetSpeed(velocity, true) * g_fTickrate * speedmulti;
 
