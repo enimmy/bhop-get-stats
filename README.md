@@ -1,7 +1,5 @@
 # bhop-get-stats
 
-## [my discord](https://discord.gg/j9nfnjcUVd)
-
 ### credits - me, Alkatraz, Nairda, Oblivious, Xutax, xWidovV, Tekno/f0e, Kaldun, Lilac, Shavit Timer contributors
 
 Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, SSJ, FJT, and Showkeys. Most (if not all) of these HUDs are more full-featured or accurate on my versions.
