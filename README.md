@@ -48,4 +48,4 @@ Make sure you have Dynamic Channels installed as well, check the dependencies se
    	  	* 60+ Gain / Bad Speed SSJ / -3 Offset / 60-70 JSS: Orange
    	  	* Any gain lower than 60 / Terrible Speed SSJ / Any positive offset, or below -4 / Any JSS Above 100 or below 60: Red
 
-* I had a changelog here for each plugin, but I cannot keep up with it. Just know I've added a shit ton of features and improvements to almost every single plugin I've merged into this one. There are also better changelogs in my discord.
+* I had a changelog here for each plugin, but I cannot keep up with it. Just know I've added a lot of features and improvements to almost every single plugin I've merged into this one.
