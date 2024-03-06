@@ -14,22 +14,32 @@ public SharedPlugin __pl_bhopgetstats =
 #endif
 };
 
+
 /**
- * Called OnPlayerRunCmdPost, after HookEvent Player_Jump and stuff is calced (doesnt call for bots atm)
+ * Called just for the first jump, will get more stuff later hopefully
+ *
+ * @param client	client index
+ * @param speed	    speed when they left the ground
+ */
+forward void BhopStat_FirstJumpForward(int client, int speed);
+
+/**
+ * Called OnPlayerRunCmdPost, after HookEvent Player_Jump and stuff is calced, NOT CALLED ON FIRST JUMP
  *
  * @param client					Client index
  * @param jump						jump number (resets groundticks > 10, nothing to do with timer zones)
  * @param speed					    Current speed
  * @param strafecount               number of strafes in the jump
+ * @param maxHeight                 max height of the jump
  * @param heightdelta				Height change since last jump
- * @param gain						avg gain of jump
- * @param sync                      strafe sync of jump
- * @param eff                       strafe efficency of jump
- * @param yawwing					% of jump player was turnbinding (unfinished)
+ * @param gain						avg gain
+ * @param sync                      strafe sync
+ * @param eff                       strafe efficency
+ * @param yawwing					% of jump player was turnbindinding
  * @param jss						average strafe speed of the players jump compared to perfect
  * @noreturn
  */
-forward void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss);
+forward void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float maxHeight, float heightdelta, float gain, float sync, float eff, float yawwing, float jss, float absJss);
 
 /**
  * @param client					client index

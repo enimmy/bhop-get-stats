@@ -1,7 +1,7 @@
 #define JHUD_ENABLED 1 << 0
 #define JHUD_JSS 1 << 1
 #define JHUD_SYNC 1 << 2
-//open slot 1 << 3 prev: jhud extra speed replacing with speed colors till 0 - 16
+#define JHUD_GMOD_JSS 1 << 3
 #define TRAINER_ENABLED 1 << 4
 #define OFFSETS_ENABLED 1 << 5
 #define SPEEDOMETER_ENABLED 1 << 6
@@ -10,7 +10,7 @@
 #define SSJ_REPEAT 1 << 9
 #define SSJ_HEIGHTDIFF 1 << 10
 #define SSJ_GAIN 1 << 11
-//open slot 1 << 12 prev: ssj en gain colors no replacement (always enable)
+#define SSJ_JUMP_HEIGHT 1 << 12
 #define SSJ_EFFICIENCY 1 << 13
 #define SSJ_SHAVIT_TIME 1 << 14
 #define SSJ_SHAVIT_TIME_DELTA 1 << 15
@@ -27,7 +27,7 @@
 #define SHOWKEYS_ENABLED 1 << 26
 #define SHOWKEYS_SIMPLE 1 << 27
 #define SHOWKEYS_UNRELIABLE 1 << 28
-//closed slot 1 << 29 for jump height by tekno
+//open slot 1 << 29
 //open slot 1 << 30
 //open slot 1 << 31
 //open slot 1 << 32 -> must solve issues (or make sure there are none) with handling sign bit if this is used
@@ -132,6 +132,14 @@ public void Settings_Start()
 		{
 			OnClientCookiesCached(i);
 		}
+	}
+}
+
+void Settings_OnClientDisconnect(int client)
+{
+	for(int i = 0; i < sizeof(g_iSettings[]); i++)
+	{
+		g_iSettings[client][i] = 0;
 	}
 }
 

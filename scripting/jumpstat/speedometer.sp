@@ -56,7 +56,7 @@ void Speedometer_GameTick()
 		{
 			int messageTarget = j == -1 ? i:g_iSpecList[i][j];
 
-			if(!(g_iSettings[messageTarget][Bools] & SPEEDOMETER_ENABLED) || IsFakeClient(messageTarget))
+			if(!(g_iSettings[messageTarget][Bools] & SPEEDOMETER_ENABLED) || !BgsIsValidPlayer(messageTarget))
 			{
 				continue;
 			}

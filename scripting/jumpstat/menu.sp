@@ -153,7 +153,7 @@ void ShowStatOverviewMenu(int client)
 	AddMenuItem(menu, "offsets", "Offsets (HUD/Console)");
 	AddMenuItem(menu, "speedometer", "Speedometer (HUD)");
 
-	if(BgsShavitLoaded())
+	if(g_bShavitZonesLoaded && g_bShavitCoreLoaded)
 	{
 		AddMenuItem(menu, "fjt", "FJT (HUD/Chat)");
 	}
@@ -196,16 +196,16 @@ void ShowSSJMenu(int client, int pos = 0)
 	Format(message, sizeof(message), "Usage: %i",g_iSettings[client][Usage]);
 	AddMenuItem(menu, "enUsage", message);
 	AddMenuItem(menu, "enDecimals", (g_iSettings[client][Bools] & SSJ_DECIMALS) ? "[x] Decimals":"[ ] Decimals");
-
 	AddMenuItem(menu, "enGain", (g_iSettings[client][Bools] & SSJ_GAIN) ? "[x] Gain":"[ ] Gain");
 	AddMenuItem(menu, "enSync", (g_iSettings[client][Bools] & SSJ_SYNC) ? "[x] Sync":"[ ] Sync");
 	AddMenuItem(menu, "enStrafes", (g_iSettings[client][Bools] & SSJ_STRAFES) ? "[x] Strafes":"[ ] Strafes");
 	AddMenuItem(menu, "enJss", (g_iSettings[client][Bools] & SSJ_JSS) ? "[x] Jss":"[ ] Jss");
 	AddMenuItem(menu, "enEff", (g_iSettings[client][Bools] & SSJ_EFFICIENCY) ? "[x] Efficiency":"[ ] Efficiency");
 	AddMenuItem(menu, "enOffset", (g_iSettings[client][Bools] & SSJ_OFFSETS) ? "[x] Offsets":"[ ] Offsets");
+	AddMenuItem(menu, "enMaxHeight", (g_iSettings[client][Bools] & SSJ_JUMP_HEIGHT) ? "[x] Max Height":"[ ] Max Height");
 	AddMenuItem(menu, "enHeight", (g_iSettings[client][Bools] & SSJ_HEIGHTDIFF) ? "[x] Height Difference":"[ ] Height Difference");
 
-	if(BgsShavitLoaded())
+	if(g_bShavitCoreLoaded)
 	{
 		AddMenuItem(menu, "enTime", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME) ? "[x] Time":"[ ] Time");
 		AddMenuItem(menu, "enTimeDelta", (g_iSettings[client][Bools] & SSJ_SHAVIT_TIME_DELTA) ? "[x] Time Difference":"[ ] Time Difference");
@@ -232,6 +232,7 @@ void ShowJhudSettingsMenu(int client)
 	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & JHUD_ENABLED) ? "[x] Enabled":"[ ] Enabled")
 	AddMenuItem(menu, "strafespeed", (g_iSettings[client][Bools] & JHUD_JSS) ? "[x] Jss":"[ ] Jss");
 	AddMenuItem(menu, "sync", (g_iSettings[client][Bools] & JHUD_SYNC) ? "[x] Sync":"[ ] Sync");
+	AddMenuItem(menu, "gmodJss", (g_iSettings[client][Bools] & JHUD_GMOD_JSS) ? "[x] Gmod Jss" : "[ ] Gmod Jss");
 
 	char message[64];
 	Format(message, sizeof(message), "Speed Colors Till: %i", g_iSettings[client][JhudSpeedColorsJump]);
@@ -523,6 +524,10 @@ public int Ssj_Select(Menu menu, MenuAction action, int client, int option)
 		{
 			g_iSettings[client][Bools] ^= SSJ_EFFICIENCY;
 		}
+		else if(StrEqual(info, "enMaxHeight"))
+		{
+			g_iSettings[client][Bools] ^= SSJ_JUMP_HEIGHT;
+		}
 		else if(StrEqual(info, "enHeight"))
 		{
 			g_iSettings[client][Bools] ^= SSJ_HEIGHTDIFF;
@@ -710,10 +715,24 @@ public int Jhud_Select(Menu menu, MenuAction action, int client, int option)
 		else if(StrEqual(info, "strafespeed"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_JSS;
+
+			if(g_iSettings[client][Bools] & JHUD_JSS && g_iSettings[client][Bools] & JHUD_GMOD_JSS)
+			{
+				g_iSettings[client][Bools] ^= JHUD_GMOD_JSS;
+			}
 		}
 		else if(StrEqual(info, "sync"))
 		{
 			g_iSettings[client][Bools] ^= JHUD_SYNC;
+		}
+		else if(StrEqual(info, "gmodJss"))
+		{
+			g_iSettings[client][Bools] ^= JHUD_GMOD_JSS;
+
+			if(g_iSettings[client][Bools] & JHUD_JSS && g_iSettings[client][Bools] & JHUD_GMOD_JSS)
+			{
+				g_iSettings[client][Bools] ^= JHUD_JSS;
+			}
 		}
 		else if(StrEqual(info, "speedColors"))
 		{

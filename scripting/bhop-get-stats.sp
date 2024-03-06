@@ -3,7 +3,10 @@
 #include <sourcemod>
 
 #undef REQUIRE_PLUGIN
-#include <shavit>
+#include <shavit/core>
+#include <shavit/replay-playback>
+#include <shavit/checkpoints>
+
 bool g_bShavitReplaysLoaded = false;
 
 #pragma semicolon 1
@@ -41,6 +44,7 @@ int g_iTurnTick[MAXPLAYERS + 1];
 int g_iKeyTick[MAXPLAYERS + 1];
 int g_iTurnDir[MAXPLAYERS + 1];
 int g_iCmdNum[MAXPLAYERS + 1];
+int g_iYawwingTick[MAXPLAYERS + 1];
 
 float g_fOldHeight[MAXPLAYERS + 1];
 float g_fRawGain[MAXPLAYERS + 1];
@@ -50,11 +54,14 @@ float g_fRunCmdVelVec[MAXPLAYERS + 1][3];
 float g_fLastRunCmdVelVec[MAXPLAYERS + 1][3];
 float g_fLastAngles[MAXPLAYERS + 1][3];
 float g_fAvgDiffFromPerf[MAXPLAYERS + 1];
+float g_fAvgAbsoluteJss[MAXPLAYERS + 1];
 float g_fLastNonZeroMove[MAXPLAYERS + 1][2];
 float g_fLastJumpPosition[MAXPLAYERS + 1][3];
 float g_fLastVeer[MAXPLAYERS + 1];
 float g_fTickrate = 0.01;
+float g_fJumpPeak[MAXPLAYERS + 1];
 
+GlobalForward FirstJumpStatsForward;
 GlobalForward JumpStatsForward;
 GlobalForward StrafeStatsForward;
 GlobalForward TickStatsForward;
@@ -66,18 +73,21 @@ public void OnPluginStart()
 
 	g_bShavitReplaysLoaded = LibraryExists("shavit-replay-playback");
 
-	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float,
-	 																Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
-	//int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
+	FirstJumpStatsForward = new GlobalForward("BhopStat_FirstJumpForward", ET_Ignore,
+	Param_Cell, Param_Cell);
+//  int client  int speed
 
-	//add airpath, veer, jumpoff angle on j1
+	JumpStatsForward = new GlobalForward("BhopStat_JumpForward", ET_Ignore,
+	Param_Cell, Param_Cell, Param_Cell, Param_Cell, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float, Param_Float);
+//  int client, int jump,   int speed, int strafe#, float hPeak, float hDiff, float gain, float sync, float eff,     float yaw%,   float jss   float abs jss
 
-	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
-	//int client, int offset, bool overlap, bool nopress
+	StrafeStatsForward = new GlobalForward("BhopStat_StrafeForward", ET_Ignore,
+	Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+//  int client, int offset, bool overlap, bool nopress
 
-	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore, Param_Cell, Param_Cell, Param_Array, Param_Array, Param_Cell,
-																Param_Float, Param_Float, Param_Float, Param_Float);
-	//int client, int buttons, f[3] vel, f[3] angles, bool inbhop, f speed, f gain, f jss, f yawDiff
+	TickStatsForward = new GlobalForward("BhopStat_TickForward", ET_Ignore,
+	Param_Cell, Param_Cell, Param_Array, Param_Array, Param_Cell, Param_Float, Param_Float, Param_Float, Param_Float);
+//  int client, int buttons, f[3] vel, f[3] angles, bool inbhop, float speed, float gain, float jss, float yawDiff
 
 	for (int i = 1; i <= MaxClients; i++)
 	{
@@ -117,6 +127,7 @@ public void OnClientPutInServer(int client)
 	g_iSyncedTick[client] = 0;
 	g_fRawGain[client] = 0.0;
 	g_fOldHeight[client] = 0.0;
+	g_fJumpPeak[client] = 0.0;
 	g_fTrajectory[client] = 0.0;
 	g_fTraveledDistance[client] = NULL_VECTOR;
 	g_iTicksOnGround[client] = 0;
@@ -134,6 +145,7 @@ public Action Shavit_OnTeleport(int client, int index, int target)
 	g_iJump[client] = checkPoint.aSnapshot.iJumps;
 	return Plugin_Continue;
 }
+
 
 public Action OnTouch(int client, int entity)
 {
@@ -205,6 +217,7 @@ public void Bgs_ProcessRunCmd(int client, int buttons, const float vel[3], const
 				g_iStrafeCount[client] = 0;
 				g_fTraveledDistance[client] = NULL_VECTOR;
 				g_iCmdNum[client] = 0;
+				g_iYawwingTick[client] = 0;
 				g_bNoPress[client] = false;
 				g_bOverlap[client] = false;
 				g_bSawPress[client] = false;
@@ -286,13 +299,27 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 
 	if(g_iTicksOnGround[client] == 0)
 	{
+
+		float origin[3];
+		GetClientAbsOrigin(client, origin);
+		if(origin[2] > g_fJumpPeak[client])
+		{
+			g_fJumpPeak[client] = origin[2];
+		}
+
 		if(yawDiff != 0.0)
 		{
 			float perfJss = RadToDeg(ArcTangent(30 / GetSpeed(velocity, true)));
 			float finalJss = FloatAbs(yawDiff / perfJss);
 
 			g_fAvgDiffFromPerf[client] += finalJss;
+			g_fAvgAbsoluteJss[client] += 100 - FloatAbs((finalJss * 100.0) - 100);
 			jssThisTick = finalJss;
+		}
+
+		if(buttons & IN_LEFT || buttons & IN_RIGHT)
+		{
+			g_iYawwingTick[client]++;
 		}
 
 
@@ -430,7 +457,16 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 	{
 		GetClientAbsOrigin(client, g_fLastJumpPosition[client]);
 		g_bJumpedThisTick[client] = false;
-		StartJumpForward(client);
+
+		if(g_iJump[client] == 1)
+		{
+			StartFirstJumpForward(client);
+		}
+		else
+		{
+			StartJumpForward(client);
+		}
+
 		float origin[3];
 		GetClientAbsOrigin(client, origin);
 		g_fRawGain[client] = 0.0;
@@ -441,6 +477,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 		g_fTrajectory[client] = 0.0;
 		g_fTraveledDistance[client] = NULL_VECTOR;
 		g_fAvgDiffFromPerf[client] = 0.0;
+		g_fAvgAbsoluteJss[client] = 0.0;
 	}
 
 	g_fLastAngles[client] = angles;
@@ -454,6 +491,20 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 	return;
 }
 
+
+//client, speed, fjt?, jumpoffangle?
+void StartFirstJumpForward(int client)
+{
+	float realVelocity[3];
+	realVelocity = (IsShavitReplayBot(client) ? g_fLastRunCmdVelVec[client] : g_fRunCmdVelVec[client]);
+
+	Call_StartForward(FirstJumpStatsForward);
+	Call_PushCell(client);
+	Call_PushCell(RoundToFloor(GetSpeed(realVelocity, true)));
+	Call_Finish();
+
+}
+
 //int client, int jump, int speed, int heightdelta, int strafecount, float gain, float sync, float eff, float yawwing
 void StartJumpForward(int client)
 {
@@ -462,60 +513,44 @@ void StartJumpForward(int client)
 
 	int speed = RoundToFloor(GetSpeed(realVelocity, true));
 
-	if(g_iJump[client] == 1) //probs a better way to do this idk
+	float origin[3];
+	GetClientAbsOrigin(client, origin);
+
+	float coeffsum = g_fRawGain[client];
+	coeffsum /= g_iStrafeTick[client];
+	coeffsum *= 100.0;
+
+	float distance = GetVectorLength(g_fTraveledDistance[client]);
+
+	if(distance > g_fTrajectory[client])
 	{
-		Call_StartForward(JumpStatsForward);
-		Call_PushCell(client);
-		Call_PushCell(g_iJump[client]);
-		Call_PushCell(speed);
-		Call_PushCell(-1);
-		Call_PushFloat(-1.0);
-		Call_PushFloat(-1.0);
-		Call_PushFloat(-1.0);
-		Call_PushFloat(-1.0);
-		Call_PushFloat(-1.0);
-		Call_PushFloat(-1.0);
-		Call_Finish();
+		distance = g_fTrajectory[client];
 	}
-	else
+
+	float efficiency = 0.0;
+
+	if(distance > 0.0)
 	{
-		float origin[3];
-		GetClientAbsOrigin(client, origin);
-
-		float coeffsum = g_fRawGain[client];
-		coeffsum /= g_iStrafeTick[client];
-		coeffsum *= 100.0;
-
-		float distance = GetVectorLength(g_fTraveledDistance[client]);
-
-		if(distance > g_fTrajectory[client])
-		{
-			distance = g_fTrajectory[client];
-		}
-
-		float efficiency = 0.0;
-
-		if(distance > 0.0)
-		{
-			efficiency = coeffsum * distance / g_fTrajectory[client];
-		}
-
-		coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
-		efficiency = RoundToFloor(efficiency * 100.0 + 0.5) / 100.0;
-
-		Call_StartForward(JumpStatsForward);
-		Call_PushCell(client);
-		Call_PushCell(g_iJump[client]);
-		Call_PushCell(speed);
-		Call_PushCell(g_iStrafeCount[client]);
-		Call_PushFloat(origin[2] - g_fOldHeight[client]);
-		Call_PushFloat(coeffsum);
-		Call_PushFloat(100.0 * g_iSyncedTick[client] / g_iStrafeTick[client]);
-		Call_PushFloat(efficiency);
-		Call_PushFloat(-1.0);
-		Call_PushFloat(g_fAvgDiffFromPerf[client] / g_iStrafeTick[client]);
-		Call_Finish();
+		efficiency = coeffsum * distance / g_fTrajectory[client];
 	}
+
+	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
+	efficiency = RoundToFloor(efficiency * 100.0 + 0.5) / 100.0;
+
+	Call_StartForward(JumpStatsForward);
+	Call_PushCell(client);
+	Call_PushCell(g_iJump[client]);
+	Call_PushCell(speed);
+	Call_PushCell(g_iStrafeCount[client]);
+	Call_PushFloat(g_fJumpPeak[client] - g_fOldHeight[client]);
+	Call_PushFloat(origin[2] - g_fOldHeight[client]);
+	Call_PushFloat(coeffsum);
+	Call_PushFloat(100.0 * g_iSyncedTick[client] / g_iStrafeTick[client]);
+	Call_PushFloat(efficiency);
+	Call_PushFloat(100.0 * g_iYawwingTick[client] / g_iStrafeTick[client]);
+	Call_PushFloat(g_fAvgDiffFromPerf[client] / g_iStrafeTick[client]);
+	Call_PushFloat(g_fAvgAbsoluteJss[client] / g_iStrafeTick[client]);
+	Call_Finish();
 }
 
 //int client, int offset, bool overlap, bool nopress

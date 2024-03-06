@@ -90,7 +90,7 @@ public Action Command_JsShowkeys(int client, any args)
 {
 	if(g_hEnabledShowkeys.IntValue)
 	{
-		if(BgsShavitLoaded())
+		if(g_bShavitCoreLoaded)
 		{
 			BgsPrintToChat(client, "%sWARNING: %sJumpStats showkeys can ONLY be enabled from the menu on the left. "
 							..."You can turn off shavit-showkeys by toggling it again with /showkeys command, or in /hud.", g_sBstatColorsHex[Red], g_sBstatColorsHex[White]);

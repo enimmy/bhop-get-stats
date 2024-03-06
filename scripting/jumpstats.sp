@@ -20,9 +20,11 @@
 #include "jumpstat/command.sp"
 
 #undef REQUIRE_PLUGIN
-#include <shavit>
+#include <shavit/core>
+#include <shavit/replay-playback>
+#include <shavit/zones>
 
-#define JS_VERSTION "3.8"
+#define JS_VERSTION "3.9"
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -46,18 +48,23 @@ public Plugin myinfo =
 // 5 Shavit-Hud Top Left (https://github.com/shavitush/bhoptimer/blob/7fb0f45c2c75714b4192f48e4b7ea030b0f9b5a9/addons/sourcemod/scripting/shavit-hud.sp#L2059)
 
 bool g_bLate = false;
-bool g_bShavit = false;
+bool g_bShavitCore = false;
+bool g_bShavitReplay = false;
+bool g_bShavitZones = false;
 
 public void OnPluginStart()
 {
 
-	g_bShavit = LibraryExists("shavit");
-	if(g_bLate && g_bShavit)
+	g_bShavitCore = LibraryExists("shavit");
+	g_bShavitZones = LibraryExists("shavit-zones");
+	g_bShavitReplay = LibraryExists("shavit-replay-playback");
+
+	if(g_bLate && g_bShavitCore)
 	{
 		Shavit_OnChatConfigLoaded();
 	}
 
-	Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
+	Init_Utils(g_bLate, g_bShavitCore, g_bShavitReplay, g_bShavitZones, GetEngineVersion(), JS_VERSTION);
 	Cvar_Start();
 	Commands_Start();
 	Settings_Start();
@@ -76,20 +83,18 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnLibraryAdded(const char[] name)
 {
-	if(StrEqual(name, "shavit"))
-	{
-		g_bShavit = true;
-		Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
-	}
+	g_bShavitCore = LibraryExists("shavit");
+	g_bShavitZones = LibraryExists("shavit-zones");
+	g_bShavitReplay = LibraryExists("shavit-replay-playback");
+	Init_Utils(g_bLate, g_bShavitCore, g_bShavitReplay, g_bShavitZones, GetEngineVersion(), JS_VERSTION);
 }
 
 public void OnLibraryRemoved(const char[] name)
 {
-	if(StrEqual(name, "shavit"))
-	{
-		g_bShavit = false;
-		Init_Utils(g_bLate, g_bShavit, GetEngineVersion(), JS_VERSTION);
-	}
+	g_bShavitCore = LibraryExists("shavit");
+	g_bShavitZones = LibraryExists("shavit-zones");
+	g_bShavitReplay = LibraryExists("shavit-replay-playback");
+	Init_Utils(g_bLate, g_bShavitCore, g_bShavitReplay, g_bShavitZones, GetEngineVersion(), JS_VERSTION);
 }
 
 public void BhopStat_TickForward(int client, int buttons, float vel[3], float angles[3], bool inbhop, float speed, float gain, float jss, float yawDiff)
@@ -97,11 +102,18 @@ public void BhopStat_TickForward(int client, int buttons, float vel[3], float an
 	Trainer_Tick(client, speed, inbhop, gain, jss);
 }
 
-public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float heightdelta, float gain, float sync, float eff, float yawwing, float jss)
+public void BhopStat_FirstJumpForward(int client, int speed)
 {
-	Jhud_Process(client, jump, speed, strafecount, heightdelta, gain, sync, eff, yawwing, jss);
-	Ssj_Process(client, jump, speed, strafecount, heightdelta, gain, sync, eff, yawwing, jss);
-	Fjt_OnJump(client, jump);
+	Jhud_ProcessFirst(client, speed);
+	Ssj_ProcessFirst(client, speed);
+	Fjt_OnJump(client);
+	Offset_ProcessFirst(client);
+}
+
+public void BhopStat_JumpForward(int client, int jump, int speed, int strafecount, float maxHeight, float heightdelta, float gain, float sync, float eff, float yawwing, float jss, float absJss)
+{
+	Jhud_Process(client, jump, speed, gain, sync, jss, absJss);
+	Ssj_Process(client, jump, speed, strafecount, maxHeight, heightdelta, gain, sync, eff, jss);
 	Offset_Dump(client, jump, sync);
 }
 
@@ -139,3 +151,8 @@ public void OnGameFrame()
 	Util_GameTick();
 	Speedometer_GameTick();
 }
+
+ public void OnClientDisconnect(int client)
+ {
+	Settings_OnClientDisconnect(client);
+ }

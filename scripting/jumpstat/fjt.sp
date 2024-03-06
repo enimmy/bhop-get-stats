@@ -17,9 +17,9 @@ void Fjt_Shavit_LeftZone(int client, int type)
 	}
 }
 
-void Fjt_OnJump(int client, int jump)
+void Fjt_OnJump(int client)
 {
-	if(!g_hEnabledFjt.BoolValue || jump != 1 || !BgsShavitLoaded() || !BgsIsValidClient(client))
+	if(!g_hEnabledFjt.BoolValue || !g_bShavitZonesLoaded || !g_bShavitCoreLoaded || !BgsIsValidClient(client))
 	{
 		return;
 	}
@@ -45,7 +45,7 @@ void PrintJumpTick(int client)
 	{
 		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
-		if(!(g_iSettings[messageTarget][Bools] & FJT_ENABLED) && !(g_iSettings[messageTarget][Bools] & FJT_CHAT))
+		if((!(g_iSettings[messageTarget][Bools] & FJT_ENABLED) && !(g_iSettings[messageTarget][Bools] & FJT_CHAT)) || !BgsIsValidPlayer(messageTarget))
 		{
 			continue;
 		}

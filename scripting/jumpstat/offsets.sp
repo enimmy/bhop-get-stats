@@ -6,6 +6,11 @@ static int g_iRepeatedOffsets[MAXPLAYERS + 1];
 int g_iOffsetHistory[MAXPLAYERS + 1][OFFSETS_MAX_FRAME];
 int g_iCurrentFrame[MAXPLAYERS + 1];
 
+void Offset_ProcessFirst(int client)
+{
+	g_iCurrentFrame[client] = 0;
+}
+
 void Offset_Process(int client, int offset, bool overlap, bool nopress)
 {
 	if(!g_hEnabledOffset.BoolValue)
@@ -33,7 +38,7 @@ void Offset_Process(int client, int offset, bool overlap, bool nopress)
 	{
 		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
-		if(!(g_iSettings[messageTarget][Bools] & OFFSETS_ENABLED))
+		if(!(g_iSettings[messageTarget][Bools] & OFFSETS_ENABLED) || !BgsIsValidPlayer(messageTarget))
 		{
 			continue;
 		}
@@ -71,12 +76,6 @@ void Offset_Dump(int client, int jump, float sync)
 {
 	if(!g_hEnabledOffset.BoolValue)
 	{
-		return;
-	}
-
-	if(jump == 1)
-	{
-		g_iCurrentFrame[client] = 0;
 		return;
 	}
 

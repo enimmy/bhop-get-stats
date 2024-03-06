@@ -31,7 +31,7 @@ void ShowKeys_Tick(int client, int buttons, float yaw)
 	int realButtons = buttons;
 	float yawDiff = NormalizeAngle(yaw - g_fLastYaw[client]);
 
-	if(BgsShavitLoaded())
+	if(g_bShavitReplayLoaded)
 	{
 		if(Shavit_IsReplayEntity(client))
 		{
@@ -76,7 +76,7 @@ void ShowKeys_Tick(int client, int buttons, float yaw)
 	{
 		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
-		if(!(g_iSettings[messageTarget][Bools] & SHOWKEYS_ENABLED) || IsFakeClient(messageTarget))
+		if(!(g_iSettings[messageTarget][Bools] & SHOWKEYS_ENABLED) || !BgsIsValidPlayer(messageTarget))
 		{
 			continue;
 		}

@@ -1,10 +1,26 @@
 
 static bool lateLoad;
-static bool shavitLoaded;
-static EngineVersion engineVersion;
+bool g_bShavitCoreLoaded;
+bool g_bShavitReplayLoaded;
+bool g_bShavitZonesLoaded;
+
 static char jumpstatsVersion[32];
 static int tickrate;
-chatstrings_t g_csChatStrings;
+
+static EngineVersion engineVersion;
+
+enum struct jsChatStrings_t
+{
+	char sPrefix[64];
+	char sText[16];
+	char sWarning[16];
+	char sVariable[16];
+	char sVariable2[16];
+	char sStyle[16];
+}
+
+jsChatStrings_t g_csChatStrings;
+
 bool g_bEditing[MAXPLAYERS + 1]; //Setting to true enables "edit mode", menu.sp. defined in here to prevent scoping errors
 
 //The spectator code and memory consumption below heavily reduces run time complexity by having a proper list of the players current specs, which is a lot shorter
@@ -14,16 +30,18 @@ int g_iSpecList[MAXPLAYERS + 1][MAXPLAYERS + 1]; //First dimension is client ind
 int g_iSpecListCurrentFrame[MAXPLAYERS + 1];
 static int g_iCmdNum;
 
-void Init_Utils(bool late, bool shavit, EngineVersion engine, char[] version)
+void Init_Utils(bool late, bool shavitCore, bool shavitReplays, bool shavitZones, EngineVersion engine, char[] version)
 {
 	lateLoad = late;
-	shavitLoaded = shavit;
+	g_bShavitCoreLoaded = shavitCore;
+	g_bShavitReplayLoaded = shavitReplays;
+	g_bShavitZonesLoaded = shavitZones;
 	engineVersion = engine;
 	tickrate = RoundToFloor(1 / GetTickInterval());
 
 
 	Format(jumpstatsVersion, sizeof(jumpstatsVersion), "%s", version);
-	if(shavitLoaded)
+	if(shavitCore)
 	{
 		Shavit_OnChatConfigLoaded();
 	}
@@ -50,7 +68,7 @@ Util_GameTick()
 
 	for(int i = 0; i <= MaxClients; i++)
 	{
-		if(!IsValidClient(i) || IsFakeClient(i) || !IsClientObserver(i))
+		if(!BgsIsValidPlayer(i) || !IsClientObserver(i))
 		{
 			continue;
 		}
@@ -79,13 +97,6 @@ stock void BgsVersion(char[] buffer, int len)
 {
 	Format(buffer, len, "%s", jumpstatsVersion);
 }
-
-
-stock bool BgsShavitLoaded()
-{
-	return shavitLoaded;
-}
-
 
 stock int BgsTickRate()
 {
@@ -132,13 +143,18 @@ stock bool BgsIsValidClient(int client)
 	return (client >= 1 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client) && !IsClientSourceTV(client));
 }
 
+stock bool BgsIsValidPlayer(int client)
+{
+	return BgsIsValidClient(client) && !IsFakeClient(client);
+}
+
 
 stock void BgsPrintToChat(int client, const char[] format, any...)
 {
 	char buffer[300];
 	VFormat(buffer, sizeof(buffer), format, 3);
 
-	if(BgsShavitLoaded())
+	if(g_bShavitCoreLoaded)
 	{
 		Shavit_PrintToChat(client, "%s[JumpStats]: %s%s", g_csChatStrings.sVariable, g_csChatStrings.sText, buffer)
 	}

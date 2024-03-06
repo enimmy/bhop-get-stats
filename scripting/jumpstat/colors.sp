@@ -74,6 +74,7 @@ int GetPercentageColorIdx(float gain, bool strict) {
 		{
 			return GainReallyBad;
 		}
+
 		if(gain <= 105.0)
 		{
 			return GainReallyGood;
@@ -123,15 +124,15 @@ int GetSpeedColorIdx(int jump, int speed) {
 	{
 		return GainReallyGood;
 	}
-	else if(speed > g_iJhudSpeedValues[jump][2])
+	else if(speed >= g_iJhudSpeedValues[jump][2])
 	{
 		return GainGood;
 	}
-	else if(speed > g_iJhudSpeedValues[jump][1])
+	else if(speed >= g_iJhudSpeedValues[jump][1])
 	{
 		return GainMeh;
 	}
-	else if(speed > g_iJhudSpeedValues[jump][0])
+	else if(speed >= g_iJhudSpeedValues[jump][0])
 	{
 		return GainBad;
 	}

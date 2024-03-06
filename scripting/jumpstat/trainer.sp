@@ -18,8 +18,8 @@ static int g_iCmdNum[MAXPLAYERS + 1];
 void Trainer_Start()
 {
 	g_iTrainerSpeeds[Trainer_Slow] = RoundToFloor(BgsTickRate() * (TRAINER_FULLUPDATE_TICK_INTERVAL / 100.0));
-	g_iTrainerSpeeds[Trainer_Medium] = RoundToFloor(BgsTickRate() * 0.06);
-	g_iTrainerSpeeds[Trainer_Fast] = RoundToFloor(BgsTickRate() * 0.03);
+	g_iTrainerSpeeds[Trainer_Medium] = RoundToFloor(BgsTickRate() * 0.09);
+	g_iTrainerSpeeds[Trainer_Fast] = RoundToFloor(BgsTickRate() * 0.05);
 }
 
 public void Trainer_Tick(int client, float speed, bool inbhop, float gain, float jss)
@@ -109,7 +109,7 @@ void PushTrainerToClients(int client, float speeds[3], int cmdnum)
 
 		int messageTarget = idx == -1 ? client:g_iSpecList[client][idx];
 
-		if(!(g_iSettings[messageTarget][Bools] & TRAINER_ENABLED))
+		if(!(g_iSettings[messageTarget][Bools] & TRAINER_ENABLED) || !BgsIsValidPlayer(messageTarget))
 		{
 			continue;
 		}
