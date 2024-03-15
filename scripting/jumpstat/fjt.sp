@@ -81,6 +81,7 @@ void PrintJumpTick(int client)
 
 		if(g_iSettings[messageTarget][Bools] & FJT_CHAT)
 		{
+			Shavit_StopChatSound();
 			Shavit_PrintToChat(messageTarget, "%sFJT: %s%i", g_csChatStrings.sText, g_csChatStrings.sVariable, tick);
 		}
 	}
