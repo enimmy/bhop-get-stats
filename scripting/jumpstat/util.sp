@@ -156,7 +156,7 @@ stock void BgsPrintToChat(int client, const char[] format, any...)
 
 	if(g_bShavitCoreLoaded)
 	{
-		Shavit_PrintToChat(client, "%s[JumpStats]: %s%s", g_csChatStrings.sVariable, g_csChatStrings.sText, buffer)
+		Shavit_PrintToChat(client, "%s[JumpStats]: %s%s", g_csChatStrings.sVariable, g_csChatStrings.sText, buffer);
 	}
 	else
 	{
@@ -254,12 +254,7 @@ stock float NormalizeAngle(float ang)
 	return ang;
 }
 
-stock float FloatMod(float num, float denom)
-{
-	return num - denom * RoundToFloor(num / denom);
-}
-
 stock float operator%(float oper1, float oper2)
-{
-	return FloatMod(oper1, oper2);
+{ 
+	return __FLOAT_MOD__(oper1, oper2);
 }
