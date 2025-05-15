@@ -45,6 +45,7 @@ int g_iKeyTick[MAXPLAYERS + 1];
 int g_iTurnDir[MAXPLAYERS + 1];
 int g_iCmdNum[MAXPLAYERS + 1];
 int g_iYawwingTick[MAXPLAYERS + 1];
+int g_iLastSpeed[MAXPLAYERS + 1];
 
 float g_fOldHeight[MAXPLAYERS + 1];
 float g_fRawGain[MAXPLAYERS + 1];
@@ -140,6 +141,12 @@ public Action Shavit_OnTeleport(int client, int index, int target)
 {
 	g_iCmdNum[client] = 0;
 
+	int total = Shavit_GetTotalCheckpoints(client);
+	if(index < 0 || index >= total)
+	{
+		return Plugin_Continue;
+	}
+
 	cp_cache_t checkPoint;
 	Shavit_GetCheckpoint(client, index, checkPoint);
 	g_iJump[client] = checkPoint.aSnapshot.iJumps;
@@ -183,6 +190,7 @@ public void OnPlayerRunCmdPre(int client, int buttons, int impulse, const float 
 
 	g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
 	GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fRunCmdVelVec[client]);
+	
 
 	int realButtons = buttons;
 	int realFlags = GetEntityFlags(client);
@@ -421,7 +429,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 			wishspeed = maxspeed;
 		}
 
-		if(wishspeed > 0.0)
+		if(wishspeed > 0.01)
 		{
 			float wishspd = (wishspeed > 30.0) ? 30.0 : wishspeed;
 
@@ -431,8 +439,8 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 
 			if(currentgain < 30.0)
 			{
-				g_iSyncedTick[client]++;
 				gaincoeff = (wishspd - FloatAbs(currentgain)) / wishspd;
+				g_iSyncedTick[client]++;
 			}
 
 			if(g_bTouchesWall[client] && gaincoeff > 0.5)
@@ -440,6 +448,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 				gaincoeff -= 1.0;
 				gaincoeff = FloatAbs(gaincoeff);
 			}
+
 			g_fRawGain[client] += gaincoeff;
 		}
 		g_iCmdNum[client]++;
@@ -498,6 +507,8 @@ void StartFirstJumpForward(int client)
 	float realVelocity[3];
 	realVelocity = (IsShavitReplayBot(client) ? g_fLastRunCmdVelVec[client] : g_fRunCmdVelVec[client]);
 
+	g_iLastSpeed[client] = RoundToFloor(GetSpeed(realVelocity, true));
+
 	Call_StartForward(FirstJumpStatsForward);
 	Call_PushCell(client);
 	Call_PushCell(RoundToFloor(GetSpeed(realVelocity, true)));
@@ -536,6 +547,8 @@ void StartJumpForward(int client)
 
 	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
 	efficiency = RoundToFloor(efficiency * 100.0 + 0.5) / 100.0;
+	
+	g_iLastSpeed[client] = speed;
 
 	Call_StartForward(JumpStatsForward);
 	Call_PushCell(client);
