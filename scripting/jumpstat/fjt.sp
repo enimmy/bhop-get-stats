@@ -1,4 +1,5 @@
 static bool g_bJumpInZone[MAXPLAYERS + 1];
+int g_iFjtJumpTick[MAXPLAYERS + 1];
 
 void Fjt_Shavit_LeftZone(int client, int type)
 {
@@ -40,6 +41,8 @@ void PrintJumpTick(int client)
 {
 	int tick = RoundToNearest(Shavit_GetClientTime(client) * BgsTickRate());
 	tick = g_bJumpInZone[client] ? (tick*-1):tick;
+
+	g_iFjtJumpTick[client] = tick;
 
 	for(int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
 	{
@@ -83,6 +86,27 @@ void PrintJumpTick(int client)
 		{
 			Shavit_StopChatSound();
 			Shavit_PrintToChat(messageTarget, "%sFJT: %s%i", g_csChatStrings.sText, g_csChatStrings.sVariable, tick);
+		}
+	}
+}
+
+public void Shavit_OnFinish(int client, int style, float time, int jumps, int strafes, float sync, int track, float oldtime, float perfs, float avgvel, float maxvel, int timestamp)
+{
+	int tick = g_iFjtJumpTick[client];
+
+	for (int idx = -1; idx < g_iSpecListCurrentFrame[client]; idx++)
+	{
+		int messageTarget = idx == -1 ? client : g_iSpecList[client][idx];
+
+		if ((!(g_iSettings[messageTarget][Bools] & FJT_ENABLED) && !(g_iSettings[messageTarget][Bools] & FJT_CHAT)) || !BgsIsValidPlayer(messageTarget))
+		{
+			continue;
+		}
+
+		if (g_iSettings[messageTarget][Bools] & FJT_CHAT)
+		{
+			Shavit_StopChatSound();
+			Shavit_PrintToChat(messageTarget, "%sYour FJT was: %s%i", g_csChatStrings.sText, g_csChatStrings.sVariable, tick);
 		}
 	}
 }

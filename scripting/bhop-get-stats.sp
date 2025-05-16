@@ -140,6 +140,12 @@ public Action Shavit_OnTeleport(int client, int index, int target)
 {
 	g_iCmdNum[client] = 0;
 
+	int total = Shavit_GetTotalCheckpoints(client);
+	if(index < 0 || index >= total)
+	{
+		return Plugin_Continue;
+	}
+
 	cp_cache_t checkPoint;
 	Shavit_GetCheckpoint(client, index, checkPoint);
 	g_iJump[client] = checkPoint.aSnapshot.iJumps;
@@ -183,6 +189,7 @@ public void OnPlayerRunCmdPre(int client, int buttons, int impulse, const float 
 
 	g_fLastRunCmdVelVec[client] = g_fRunCmdVelVec[client];
 	GetEntPropVector(client, Prop_Data, "m_vecVelocity", g_fRunCmdVelVec[client]);
+	
 
 	int realButtons = buttons;
 	int realFlags = GetEntityFlags(client);
@@ -421,7 +428,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 			wishspeed = maxspeed;
 		}
 
-		if(wishspeed > 0.0)
+		if(wishspeed > 0.01)
 		{
 			float wishspd = (wishspeed > 30.0) ? 30.0 : wishspeed;
 
@@ -431,8 +438,8 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 
 			if(currentgain < 30.0)
 			{
-				g_iSyncedTick[client]++;
 				gaincoeff = (wishspd - FloatAbs(currentgain)) / wishspd;
+				g_iSyncedTick[client]++;
 			}
 
 			if(g_bTouchesWall[client] && gaincoeff > 0.5)
@@ -440,6 +447,7 @@ void Bgs_ProcessPostRunCmd(int client, int buttons, float yawDiff, const float v
 				gaincoeff -= 1.0;
 				gaincoeff = FloatAbs(gaincoeff);
 			}
+
 			g_fRawGain[client] += gaincoeff;
 		}
 		g_iCmdNum[client]++;
