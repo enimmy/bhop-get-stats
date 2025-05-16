@@ -45,7 +45,6 @@ int g_iKeyTick[MAXPLAYERS + 1];
 int g_iTurnDir[MAXPLAYERS + 1];
 int g_iCmdNum[MAXPLAYERS + 1];
 int g_iYawwingTick[MAXPLAYERS + 1];
-int g_iLastSpeed[MAXPLAYERS + 1];
 
 float g_fOldHeight[MAXPLAYERS + 1];
 float g_fRawGain[MAXPLAYERS + 1];
@@ -507,8 +506,6 @@ void StartFirstJumpForward(int client)
 	float realVelocity[3];
 	realVelocity = (IsShavitReplayBot(client) ? g_fLastRunCmdVelVec[client] : g_fRunCmdVelVec[client]);
 
-	g_iLastSpeed[client] = RoundToFloor(GetSpeed(realVelocity, true));
-
 	Call_StartForward(FirstJumpStatsForward);
 	Call_PushCell(client);
 	Call_PushCell(RoundToFloor(GetSpeed(realVelocity, true)));
@@ -547,8 +544,6 @@ void StartJumpForward(int client)
 
 	coeffsum = RoundToFloor(coeffsum * 100.0 + 0.5) / 100.0;
 	efficiency = RoundToFloor(efficiency * 100.0 + 0.5) / 100.0;
-	
-	g_iLastSpeed[client] = speed;
 
 	Call_StartForward(JumpStatsForward);
 	Call_PushCell(client);
