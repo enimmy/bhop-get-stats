@@ -1,6 +1,8 @@
 # bhop-get-stats
 
-### credits - me, Alkatraz, Nairda, Oblivious, Xutax, xWidovV, Tekno/f0e, Kaldun, Lilac, Shavit Timer contributors
+## I do not actively work on this, and I understand that some things have broken due to the 64-bit update. There are active forks though, so check them for newer stuff. I'm happy to accept PRs if the code looks strong enough that it won't require me to test it.
+
+### credits - me, Alkatraz, Nairda, Oblivious, Xutax, xWidovV, Tekno/f0e, Kaldun, Lilac, NekoGan, Shavit Timer contributors
 
 Jumpstats - Drop-in replacement for Jhud, Trainer, Offsets, Speedometer, SSJ, FJT, and Showkeys. Most (if not all) of these HUDs are more full-featured or accurate on my versions.
 
