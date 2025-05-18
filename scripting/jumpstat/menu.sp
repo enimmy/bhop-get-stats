@@ -285,8 +285,11 @@ void ShowSpeedSettingsMenu(int client)
 	Menu menu = new Menu(Speedometer_Select);
 	menu.ExitBackButton = true;
 	SetMenuTitle(menu, "Speed Settings\n \n");
-	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Enabled":"[ ] Enabled");
-	AddMenuItem(menu, "enVelDiff", (g_iSettings[client][Bools] & SPEEDOMETER_VELOCITY_DIFF) ? "[x] Speed Difference":"[ ]Speed Difference");
+
+	AddMenuItem(menu, "en", (g_iSettings[client][Bools] & SPEEDOMETER_ENABLED) ? "[x] Enabled" : "[ ] Enabled");
+	AddMenuItem(menu, "enVelDiff", (g_iSettings[client][Bools] & SPEEDOMETER_VELOCITY_DIFF) ? "[x] Speed Difference" : "[ ] Speed Difference");
+	AddMenuItem(menu, "enVertical", (g_iSettings[client][Bools] & SPEEDOMETER_VERTICAL_ENABLED) ? "[x] Vertical Speed" : "[ ] Vertical Speed");
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -864,32 +867,39 @@ public int Fjt_Select(Menu menu, MenuAction action, int client, int option)
 
 public int Speedometer_Select(Menu menu, MenuAction action, int client, int option)
 {
-	if(action == MenuAction_Select)
+	if (action == MenuAction_Select)
 	{
 		char info[32];
 		menu.GetItem(option, info, sizeof(info));
-		if(StrEqual(info, "en"))
+
+		if (StrEqual(info, "en"))
 		{
 			g_iSettings[client][Bools] ^= SPEEDOMETER_ENABLED;
 		}
-		if(StrEqual(info, "enVelDiff"))
+		else if (StrEqual(info, "enVelDiff"))
 		{
 			g_iSettings[client][Bools] ^= SPEEDOMETER_VELOCITY_DIFF;
 		}
+		else if (StrEqual(info, "enVertical"))
+		{
+			g_iSettings[client][Bools] ^= SPEEDOMETER_VERTICAL_ENABLED;
+		}
+
 		BgsSetCookie(client, g_hSettings[Bools], g_iSettings[client][Bools]);
 		ShowSpeedSettingsMenu(client);
 	}
-	else if(action == MenuAction_Cancel)
+	else if (action == MenuAction_Cancel)
 	{
-		if(option == MenuCancel_ExitBack)
+		if (option == MenuCancel_ExitBack)
 		{
 			ShowStatOverviewMenu(client);
 		}
 	}
-	else if(action == MenuAction_End)
+	else if (action == MenuAction_End)
 	{
 		delete menu;
 	}
+
 	return 0;
 }
 
